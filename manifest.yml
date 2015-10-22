@@ -1,5 +1,7 @@
 applications:
-- disk_quota: 1024M
+- service:
+  - ElephantSQL-w5
+  disk_quota: 1024M
   host: itucsdb1502
   name: itucsdb1502
   path: .
