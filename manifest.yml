@@ -1,5 +1,5 @@
 applications:
-- service:
+- services:
   - ElephantSQL-w5
   disk_quota: 1024M
   host: itucsdb1502
