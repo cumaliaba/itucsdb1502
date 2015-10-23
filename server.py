@@ -13,18 +13,15 @@ from flask.helpers import url_for
 app = Flask(__name__)
 
 
-def get_sqldb_dsn(vcap_services):
-    """Returns the data source name for IBM SQL DB."""
+def get_elephantsql_dsn(vcap_services):
+    """Returns the data source name for ElephantSQL."""
     parsed = json.loads(vcap_services)
-    credentials = parsed["sqldb"][0]["credentials"]
-    user = credentials["username"]
-    password = credentials["password"]
-    host = credentials["hostname"]
-    port = credentials["port"]
-    dbname = credentials["db"]
-    dsn = """DATABASE={};HOSTNAME={};PORT={};UID={};PWD={};""".format(dbname, host, port, user, password)
+    uri = parsed["elephantsql"][0]["credentials"]["uri"]
+    match = re.match('postgres://(.*?):(.*?)@(.*?)(:(\d+))?/(.*)', uri)
+    user, password, host, _, port, dbname = match.groups()
+    dsn = """user='{}' password='{}' host='{}' port={}
+        dbname='{}'""".format(user, password, host, port, dbname)
     return dsn
-
 
 @app.route('/')
 def home_page():
@@ -85,7 +82,7 @@ if __name__ == '__main__':
 
     VCAP_SERVICES = os.getenv('VCAP_SERVICES')
     if VCAP_SERVICES is not None:
-        app.config['dsn'] = get_sqldb_dsn(VCAP_SERVICES)
+        app.config['dsn'] = get_elephantsql_dsn(VCAP_SERVICES)
     else:
         app.config['dsn'] = """dbname=itucsdb host=localhost port=54321 user=vagrant password=vagrant"""
 
