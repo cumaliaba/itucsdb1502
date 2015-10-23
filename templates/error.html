@@ -1,0 +1,7 @@
+{%extends "layout.html"%}
+{%block title%}{{error}}{%endblock%}
+{%block content%}
+    {%if err_code == 404%}
+        <h3>We have no page for this url!</h3>
+    {%endif%}
+{%endblock%}

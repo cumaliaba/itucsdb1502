@@ -1,0 +1,37 @@
+{%extends "layout.html"%}
+
+{%block title%}Home{%endblock%}
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+    {%if g.role == "admin"%}
+        <a href={{url_for('logout')}}>Log out</a>
+        <h1>Welcome {{session['username']}}</h1>
+        <p>Last login: {{g.lastlogin}}</p>
+    {%else%}
+        <h1>Login</h1>
+        <form action="{{ url_for('admin') }}" method=post>
+            <dl>
+                <dt>Username:
+                    <dd><input type=text name=username>
+                <dt>Password:
+                    <dd><input type=password name=password>
+                    <dd><input type=submit value=Login>
+            </dl>
+        </form>
+        <h1>Sign Up</h1>
+        <form action="{{ url_for('signup') }}" method=post>
+            <dl>
+                <dt>Username:
+                    <dd><input type=text name=username>
+                <dt>Password:
+                    <dd><input type=password name=password>
+                    <dd><input type=password name=password2> re-enter password
+                <dt>Email:
+                    <dd><input type=text name=email>
+                <dt>Role:
+                    <dd>Admin<input type=radio name=role value=admin>
+                    <dd><input type=submit value="Sign Up">
+            </dl>
+        </form>
+    {%endif%}
+{%endblock%}
