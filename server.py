@@ -13,6 +13,8 @@ from flask import session
 from flask.helpers import url_for
 
 
+from models import user
+
 app = Flask(__name__)
 
 # generate secret key
@@ -29,9 +31,17 @@ def connectDb():
 
     return conn, cur
 
-def closeDb():
+@app.teardown_appcontext
+def closeDb(exception):
+    print('CLOSECLOSECLOSECLOSE')
     if hasattr(g, 'psdb'):
         conn, cur = getDb()
+        
+        if 'username' in session:
+            username = session['username']
+            cur.execute("UPDATE users SET online=FALSE WHERE username='%s'" % username)
+            conn.commit()
+
         cur.close() # close cursor object
         conn.close() # close database connection
 
@@ -69,15 +79,19 @@ def getCurrTimeStr():
 
 @app.route('/')
 def home():
+    conn, cur = getDb()
     now = datetime.datetime.now()
     return render_template('home.html', current_time=now.ctime())
 
 @app.route('/users')
 def users():
     conn, cur = getDb()
-    cur.execute("SELECT * FROM users;")
-    users = cur.fetchall()
-    return str(users)
+    usr = user.Users(conn, cur)
+    users = usr.get_users()
+
+    if 'username' in session:
+        g.role = 'admin'
+    return render_template('users.html',users=users, error=None, usertable=user.usertable)
 
 @app.route('/admin', methods=['POST', 'GET'])
 def admin():
@@ -99,6 +113,7 @@ def admin():
             
             now = getCurrTimeStr()
             cur.execute("UPDATE users SET lastlogin='%s' WHERE username='%s'"%(now, username))
+            cur.execute("UPDATE users SET online=TRUE WHERE username='%s'" % username)
             conn.commit()
         else:
             error = 'Invalid username or password!'
@@ -121,17 +136,24 @@ def signup():
         password = request.form['password']
         email = str(request.form['email'])
         role = request.form['role']
-        regtime = str(datetime.datetime.now())[:-7]
+        regtime = getCurrTimeStr()
+        lastlogin = regtime
+        online = False
 
-        
-        cur.execute("INSERT INTO users (username, password, email, role, regtime) VALUES ('%s','%s','%s','%s','%s');"
-                % (username, password, email, role, regtime) )
-        conn.commit()
+        usr = user.User(username, password, email, role, lastlogin, regtime, online)
+        users = user.Users(conn, cur)
+        users.add_user(usr)
+
         return redirect(url_for('admin'))
 
 
 @app.route('/logout')
 def logout():
+    conn, cur = getDb()
+    if 'username' in session:
+        username = session['username']
+        cur.execute("UPDATE users SET online=FALSE WHERE username='%s'" % username)
+        conn.commit()
     g.role = 'guest'
     session.pop('username', None)
     return redirect(url_for('home'))
@@ -174,12 +196,14 @@ def initialize_database():
                                role varchar(12) DEFAULT 'level1',
                                lastlogin varchar(26),
                                regtime varchar(26),
-                               online boolean);
+                               online boolean DEFAULT FALSE);
         """
         cur.execute(query)
+
+        now = getCurrTimeStr()
         query = """INSERT INTO users 
-                    (username, password, email, role, lastlogin, online)
-                    values ('admin', '1234', 'admin@test.com', 'admin','21.10.2015', FALSE );"""
+                    (username, password, email, role, lastlogin, regtime, online)
+                    values ('admin', '1234', 'admin@test.com', 'admin','%s', '%s', FALSE );""" % (now, now)
         cur.execute(query)
         conn.commit() # commit changes
     except:

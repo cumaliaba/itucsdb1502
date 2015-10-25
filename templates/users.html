@@ -1,0 +1,36 @@
+{%extends "layout.html"%}
+
+{%block title%}Users{%endblock%}
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+
+    {%if 'username' in session%}
+        <a href={{url_for('logout')}}>Log out</a>
+        <h1>Welcome {{session['username']}}</h1>
+        <p>Last login: {{g.lastlogin}}</p>
+        
+        <table>
+            <tr>
+                {%for var in usertable[1:]%}
+                    <th>{{var}}</th>
+                {%endfor%}
+            </tr>
+            {%for user in users%}
+            <tr>
+                <td>{{user.username}}</td>
+                <td>{{user.password}}</td>
+                <td>{{user.email}}</td>
+                <td>{{user.role}}</td>
+                <td>{{user.lastlogin}}</td>
+                <td>{{user.regtime}}</td>
+                <td>{{user.online}}</td>
+            </tr>
+            {%endfor%}
+        </table>
+
+    {%else%}
+        <h1>You have no permission to see this pages content!</h1>
+        <h1>Go to login page to sign in using this link</h1>
+        <h1><a href="{{url_for('admin')}}">Login</a></h1>
+    {%endif%}
+{%endblock%}

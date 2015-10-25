@@ -2,13 +2,17 @@
 
 {%block title%}Home{%endblock%}
 {%block content%}
-    {%if error%}<p>{{error}}</p>{%endif%}
-    {%if g.role == "admin"%}
+    {%if 'username' in session%}
+        <a href={{url_for('users')}}>Users</a>
         <a href={{url_for('logout')}}>Log out</a>
         <h1>Welcome {{session['username']}}</h1>
         <p>Last login: {{g.lastlogin}}</p>
     {%else%}
+        <p>Default admin settings:</p>
+        <p>username: admin, password:1234</p>
+ 
         <h1>Login</h1>
+        {%if error%}<p>{{error}}</p>{%endif%}
         <form action="{{ url_for('admin') }}" method=post>
             <dl>
                 <dt>Username:

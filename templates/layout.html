@@ -6,11 +6,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   </head>
   <body>
-    {%block content%}    
-        <h1>Hello, Flask!</h1>
-        {%for i in range(5)%}
-          <p>i</p>
-        {%endfor%}
+      <a href="{{url_for('home')}}">Home</a>
+      <a href="{{url_for('admin')}}">Admin Panel</a>
+    {%block content%}
+    <p>Something goes wrong!</p>
     {%endblock%}
     <footer>
       <div id="datetime">{{ current_time }}</div>
