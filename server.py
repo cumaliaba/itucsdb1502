@@ -171,6 +171,10 @@ def counter_page():
     (count,) = cur.fetchone()
     return "This page was accessed %d times." % count
 
+@app.route('/stats')
+def stats():
+    return "Stats page will be here"
+
 @app.route('/initdb')
 def initialize_database():
     conn, cur = getDb()
@@ -205,6 +209,7 @@ def initialize_database():
                     (username, password, email, role, lastlogin, regtime, online)
                     values ('admin', '1234', 'admin@test.com', 'admin','%s', '%s', FALSE );""" % (now, now)
         cur.execute(query)
+        
         conn.commit() # commit changes
     except:
         return 'CREATE TABLE ERROR'
