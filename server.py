@@ -194,6 +194,10 @@ def league_page():
     l = leagues.get_leagues()
     return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
 
+@app.route('/stats')
+def stats():
+    return "Stats page will be here"
+
 @app.route('/initdb')
 def initialize_database():
     conn, cur = getDb()
