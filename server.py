@@ -16,6 +16,7 @@ from flask.helpers import url_for
 from models import user
 from models import league
 from models import player
+from models import award
 
 
 app = Flask(__name__)
@@ -205,6 +206,14 @@ def player_page():
     playerlist = players.get_players()
     return render_template('players.html', playertable=player.playertable, players=playerlist)
 
+# award views
+@app.route('/awards')
+def award_page():
+    conn, cur = getDb()
+    
+    awards = award.Awards(conn, cur)
+    awardlist = awards.get_awards()
+    return render_template('awards.html', awardtable=award.awardtable, awards=awardlist)
 
 @app.route('/stats')
 def stats():
@@ -248,6 +257,8 @@ def initialize_database():
 
         # leagues table
         query = "DROP TABLE IF EXISTS leagues;"
+        cur.execute(query)
+
         query = """CREATE TABLE leagues (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
                                country varchar(32));
@@ -256,15 +267,30 @@ def initialize_database():
 
         # players table
         query = "DROP TABLE IF EXISTS players;"
+        cur.execute(query)
+
         query = """CREATE TABLE players (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
                                country varchar(32), age varchar(3), playing_position varchar(32));
         """
         cur.execute(query)
 
+    
+        # awards table
+        query = "DROP TABLE IF EXISTS awards;"
+        cur.execute(query)
+
+        query = """CREATE TABLE awards (id serial PRIMARY KEY, 
+                               name varchar(32) NOT NULL,
+                               playerid integer, seasonid integer);
+        """
+        cur.execute(query)
+
         conn.commit() # commit changes
+    
     except:
-        return 'CREATE TABLE ERROR'
+        conn.rollback()
+        return 'create table error'
     return redirect(url_for('home'))
 
 

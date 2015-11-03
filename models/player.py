@@ -6,7 +6,7 @@ class Player:
         self.country = country
         self.age = age
         self.playing_position = playing_position
-		self.id=id
+        self.id=id
 		
 class Players:
     def __init__(self, conn, cur):

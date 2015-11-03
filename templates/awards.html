@@ -1,0 +1,22 @@
+{%extends "layout.html"%}
+
+{%block title%}Awards{%endblock%}
+{%block content%}
+         <table>
+            <tr>
+                {%for var in awardtable%}
+                    <th>{{var}}</th>
+                {%endfor%}
+            </tr>
+            {%for award in awards%}
+            <tr>
+                <td>{{award.id}}</td>
+                <td>{{award.name}}</td>
+                <td>{{award.playerID}}</td>
+                <td>{{award.seasonID}}</td>
+            </tr>
+            {%endfor%}
+        </table>      
+
+
+{%endblock%}
