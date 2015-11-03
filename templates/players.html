@@ -1,0 +1,24 @@
+{%extends "layout.html"%}
+
+{%block title%}Players{%endblock%}
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        
+        <table>
+            <tr>
+                {%for var in playertable%}
+                    <th>{{var}}</th>
+                {%endfor%}
+            </tr>
+            {%for p in players%}
+            <tr>
+                <td>{{player.id}}</td>
+                <td>{{player.name}}</td>
+                <td>{{player.country}}</td>
+                <td>{{player.age}}</td>
+                <td>{{player.position}}</td>
+            </tr>
+            {%endfor%}
+        </table>
+
+{%endblock%}

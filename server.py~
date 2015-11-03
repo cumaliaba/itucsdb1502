@@ -203,7 +203,7 @@ def player_page():
     
     players = player.Players(conn, cur)
     playerlist = players.get_players()
-    return render_template('players.html', playertable=player.playertable, players=playerlist)
+    return render_template('leagues.html', playertable=player.playertable, players=playerlist)
 
 
 @app.route('/stats')
