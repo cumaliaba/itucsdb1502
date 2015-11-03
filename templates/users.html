@@ -5,10 +5,15 @@
     {%if error%}<p>{{error}}</p>{%endif%}
 
     {%if 'username' in session%}
-        <a href={{url_for('logout')}}>Log out</a>
         <h1>Welcome {{session['username']}}</h1>
         <p>Last login: {{g.lastlogin}}</p>
-        
+        <script>
+            function buttonClick() {
+                document.getElementById("test").innerHTML = "clicked";
+            }
+        </script>
+        <button onClick="buttonClick()">Change Profile</button>
+        <p id="test"></p>
         <table>
             <tr>
                 {%for var in usertable[1:]%}

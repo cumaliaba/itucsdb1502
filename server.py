@@ -14,6 +14,7 @@ from flask.helpers import url_for
 
 
 from models import user
+from models import league
 
 app = Flask(__name__)
 
@@ -93,6 +94,19 @@ def users():
         g.role = 'admin'
     return render_template('users.html',users=users, error=None, usertable=user.usertable)
 
+@app.route('/profile/<username>')
+def profile(username):
+    conn, cur = getDb()
+    usr = user.Users(conn, cur)
+    puser = usr.get_user(username)
+    return render_template('profile.html', user=puser, usertable=user.usertable)
+
+@app.route('/updateUser', methods=['POST'])
+def updateUser():
+    username = request.form['username']
+    password = request.form['password']
+    return json.dumps({'status':'OK','user':username,'pass':password})
+
 @app.route('/admin', methods=['POST', 'GET'])
 def admin():
     conn, cur = getDb()
@@ -171,6 +185,15 @@ def counter_page():
     (count,) = cur.fetchone()
     return "This page was accessed %d times." % count
 
+# league views
+@app.route('/leagues')
+def league_page():
+    conn, cur = getDb()
+    
+    leagues = league.Leagues(conn, cur)
+    l = leagues.get_leagues()
+    return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
+
 @app.route('/initdb')
 def initialize_database():
     conn, cur = getDb()
@@ -187,6 +210,7 @@ def initialize_database():
         query = """INSERT INTO COUNTER (N) VALUES (0)"""
         cur.execute(query)
 
+        # users table
         query = "DROP TABLE IF EXISTS users;"
         cur.execute(query)
         query = """CREATE TABLE users (id serial PRIMARY KEY, 
@@ -205,6 +229,15 @@ def initialize_database():
                     (username, password, email, role, lastlogin, regtime, online)
                     values ('admin', '1234', 'admin@test.com', 'admin','%s', '%s', FALSE );""" % (now, now)
         cur.execute(query)
+
+        # leagues table
+        query = "DROP TABLE IF EXISTS leagues;"
+        query = """CREATE TABLE leagues (id serial PRIMARY KEY, 
+                               name varchar(32) NOT NULL,
+                               country varchar(32));
+        """
+        cur.execute(query)
+
         conn.commit() # commit changes
     except:
         return 'CREATE TABLE ERROR'

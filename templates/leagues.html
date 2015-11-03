@@ -1,0 +1,21 @@
+{%extends "layout.html"%}
+
+{%block title%}Leagues{%endblock%}
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+
+        <table>
+            <tr>
+                {%for var in leaguetable[1:]%}
+                    <th>{{var}}</th>
+                {%endfor%}
+            </tr>
+            {%for l in leagues%}
+            <tr>
+                <td>{{l.id}}</td>
+                <td>{{l.name}}</td>
+                <td>{{l.country}}</td>
+            </tr>
+            {%endfor%}
+        </table>
+{%endblock%}
