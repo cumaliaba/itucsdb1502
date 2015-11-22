@@ -2,7 +2,7 @@ from final4.db_helper import getDb
 
 # HELPER FUNCS
 def login_success(username, password):
-    conn, cur = db.getDb()
+    conn, cur = getDb()
     cur.execute("SELECT * FROM users WHERE username='%s' AND password='%s'" % (username, password) )
     user = cur.fetchone()
 
