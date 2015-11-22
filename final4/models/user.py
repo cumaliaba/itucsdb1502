@@ -28,28 +28,28 @@ class Users:
     def add_user(self, user):
         query = """INSERT INTO users (username, password, email, role,
                                     lastlogin, regtime, online) 
-                                    values ('%s','%s','%s','%s','%s','%s','%s')""" % user.getAttrs()
+                                    values (%s,%s,%s,%s,%s,%s,%s);"""
 
-        self.cur.execute(query)
+        self.cur.execute(query, user.getAttrs())
         self.conn.commit()
 
     def delete_user(self, username):
-        query = "DELETE FROM users WHERE username='%s'" % username
-        self.cur.execute(query)
+        query = "DELETE FROM users WHERE username=%s;"
+        self.cur.execute(query, (username,))
         self.conn.commit()
 
     def update_user(self, key, user):
         args = user.getAttrs() + (key,)
-        query = """UPDATE users SET username='%s', password='%s', 
-                    email='%s',role='%s', lastlogin='%s', regtime='%s', 
-                    online'%s' WHERE id='%s'""" % args
+        query = """UPDATE users SET username=%s, password=%s, 
+                    email=%s,role=%s, lastlogin=%s, regtime=%s, 
+                    online%s WHERE id=%s;"""
 
-        self.cur.execute(query)
+        self.cur.execute(query, args)
         self.conn.commit()
 
     def get_user(self, username):
-        query = "SELECT * FROM users WHERE username='%s'" % username
-        self.cur.execute(query)
+        query = "SELECT * FROM users WHERE username=%s;"
+        self.cur.execute(query, (username,))
         u = self.cur.fetchone()
         if u:
             print (u)

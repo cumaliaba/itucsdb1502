@@ -4,6 +4,8 @@ import os
 import psycopg2
 import re
 
+
+from flask import abort
 from flask import Flask
 from flask import g
 from flask import redirect
@@ -13,45 +15,17 @@ from flask import session
 from flask.helpers import url_for
 
 
-from models import user
-from models import league
-from models import player
+from final4.config import app
 
+from final4 import db_helper as db
 
-app = Flask(__name__)
+from final4.models import user
+from final4.models import league
+from final4.models import player
+from final4.models import award
 
-# generate secret key
-app.secret_key = os.urandom(32)
+from final4.views import league_view
 
-# DATABASE HELPER FUNCTIONS
-
-def connectDb():
-    '''
-    open a database connection and return connection and cursor
-    '''
-    conn = psycopg2.connect(app.config['dsn'])
-    cur = conn.cursor()
-
-    return conn, cur
-
-@app.teardown_appcontext
-def closeDb(exception):
-    print('CLOSECLOSECLOSECLOSE')
-    if hasattr(g, 'psdb'):
-        conn, cur = getDb()
-        
-        if 'username' in session:
-            username = session['username']
-            cur.execute("UPDATE users SET online=FALSE WHERE username='%s'" % username)
-            conn.commit()
-
-        cur.close() # close cursor object
-        conn.close() # close database connection
-
-def getDb():
-    if not hasattr(g, 'psdb'):
-        g.psdb = connectDb()
-    return g.psdb
 
 def get_elephantsql_dsn(vcap_services):
     """Returns the data source name for ElephantSQL."""
@@ -65,7 +39,7 @@ def get_elephantsql_dsn(vcap_services):
 
 # HELPER FUNCS
 def login_success(username, password):
-    conn, cur = getDb()
+    conn, cur = db.getDb()
     cur.execute("SELECT * FROM users WHERE username='%s' AND password='%s'" % (username, password) )
     user = cur.fetchone()
 
@@ -82,13 +56,13 @@ def getCurrTimeStr():
 
 @app.route('/')
 def home():
-    conn, cur = getDb()
+    conn, cur = db.getDb()
     now = datetime.datetime.now()
     return render_template('home.html', current_time=now.ctime())
 
 @app.route('/users')
 def users():
-    conn, cur = getDb()
+    conn, cur = db.getDb()
     usr = user.Users(conn, cur)
     users = usr.get_users()
 
@@ -98,20 +72,30 @@ def users():
 
 @app.route('/profile/<username>')
 def profile(username):
-    conn, cur = getDb()
+    conn, cur = db.getDb()
     usr = user.Users(conn, cur)
     puser = usr.get_user(username)
     return render_template('profile.html', user=puser, usertable=user.usertable)
 
 @app.route('/updateUser', methods=['POST'])
 def updateUser():
+    if 'username' not in session:
+        return abort(403)
+    
     username = request.form['username']
+    if session['username'] != username:
+        return abort(403)
+
     password = request.form['password']
+    passwordnew = request.form['passwordnew']
+
+    #email = request.form['email']
     return json.dumps({'status':'OK','user':username,'pass':password})
+
 
 @app.route('/admin', methods=['POST', 'GET'])
 def admin():
-    conn, cur = getDb()
+    conn, cur = db.getDb()
     error = None
     roles = None
 
@@ -146,7 +130,7 @@ def admin():
 @app.route('/signup', methods=['POST'])
 def signup():
     if request.method == 'POST':
-        conn, cur = getDb()
+        conn, cur = db.getDb()
         
         username = request.form['username']
         password = request.form['password']
@@ -165,7 +149,7 @@ def signup():
 
 @app.route('/logout')
 def logout():
-    conn, cur = getDb()
+    conn, cur = db.getDb()
     if 'username' in session:
         username = session['username']
         cur.execute("UPDATE users SET online=FALSE WHERE username='%s'" % username)
@@ -176,7 +160,7 @@ def logout():
 
 @app.route('/count')
 def counter_page():
-    conn, cur = getDb()
+    conn, cur = db.getDb()
 
     query = "UPDATE COUNTER SET N = N + 1"
     cur.execute(query)
@@ -187,24 +171,23 @@ def counter_page():
     (count,) = cur.fetchone()
     return "This page was accessed %d times." % count
 
-# league views
-@app.route('/leagues')
-def league_page():
-    conn, cur = getDb()
-    
-    leagues = league.Leagues(conn, cur)
-    l = leagues.get_leagues()
-    return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
-
 # player views
 @app.route('/players')
 def player_page():
-    conn, cur = getDb()
+    conn, cur = db.getDb()
     
     players = player.Players(conn, cur)
     playerlist = players.get_players()
-    return render_template('leagues.html', playertable=player.playertable, players=playerlist)
+    return render_template('players.html', playertable=player.playertable, players=playerlist)
 
+# award views
+@app.route('/awards')
+def award_page():
+    conn, cur = db.getDb()
+    
+    awards = award.Awards(conn, cur)
+    awardlist = awards.get_awards()
+    return render_template('awards.html', awardtable=award.awardtable, awards=awardlist)
 
 @app.route('/stats')
 def stats():
@@ -212,13 +195,13 @@ def stats():
 
 @app.route('/initdb')
 def initialize_database():
-    conn, cur = getDb()
+    conn, cur = db.getDb()
     
     query = """DROP TABLE IF EXISTS COUNTER"""
     cur.execute(query)
     conn.commit()
     try:
-        conn, cur = getDb()
+        conn, cur = db.getDb()
 
         query = """CREATE TABLE COUNTER (N INTEGER)"""
         cur.execute(query)
@@ -248,6 +231,8 @@ def initialize_database():
 
         # leagues table
         query = "DROP TABLE IF EXISTS leagues;"
+        cur.execute(query)
+
         query = """CREATE TABLE leagues (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
                                country varchar(32));
@@ -256,15 +241,30 @@ def initialize_database():
 
         # players table
         query = "DROP TABLE IF EXISTS players;"
+        cur.execute(query)
+
         query = """CREATE TABLE players (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
                                country varchar(32), age varchar(3), playing_position varchar(32));
         """
         cur.execute(query)
 
+    
+        # awards table
+        query = "DROP TABLE IF EXISTS awards;"
+        cur.execute(query)
+
+        query = """CREATE TABLE awards (id serial PRIMARY KEY, 
+                               name varchar(32) NOT NULL,
+                               playerid integer, seasonid integer);
+        """
+        cur.execute(query)
+
         conn.commit() # commit changes
+    
     except:
-        return 'CREATE TABLE ERROR'
+        conn.rollback()
+        return 'create table error'
     return redirect(url_for('home'))
 
 
@@ -276,7 +276,7 @@ def not_found(error):
 
 
 
-if __name__ == '__main__':
+def run_app():
     VCAP_APP_PORT = os.getenv('VCAP_APP_PORT')
     if VCAP_APP_PORT is not None:
         port, debug = int(VCAP_APP_PORT), False

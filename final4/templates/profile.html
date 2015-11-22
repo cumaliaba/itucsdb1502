@@ -1,0 +1,138 @@
+{%extends "layout.html"%}
+
+{%block title%}Users{%endblock%}
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+
+    {%if 'username' in session and user.username == session['username']%}
+        <meta id="activeuser" data-name="{{session['username']}}">
+        <meta id="logout_url" data-name="{{url_for('logout')}}">
+        <script>
+
+	$(function() {
+
+        var validpass=false;
+
+	    $('#updateProfileBtn').click(function() {
+            //document.getElementById("test").innerHTML = "clicked";
+            
+            //var user = $('#username').val();
+            //var pass = $('#password').val();
+            //var passnew = $('#passwordnew').val();
+            //var email = $('#email').val();
+            $.ajax({
+                url: '/updateUser',
+                data: {'username':$('#username').val(),
+                       'password':$('#password').val()
+                },
+                type: 'POST',
+                success: function(response) {
+                console.log(response);
+                },
+                error: function(error) {
+                console.log(error);
+                }
+            });
+	    });
+
+        $('#changePassBtn').click(function() {
+            //document.getElementById("test").innerHTML = "clicked";
+            
+            //var user = $('#username').val();
+            //var pass = $('#password').val();
+            //var passnew = $('#passwordnew').val();
+            //var email = $('#email').val();
+
+            if ($('#changePassDiv').css('display') == 'none')
+            {
+                $('#changePassDiv').show()
+            } else {
+                if(!validpass) return; 
+                $.ajax({
+                    url: '/updateUser',
+                    data: {'username':$('#username').val(),
+                           'password':$('#password').val(),
+                           'passwordnew':$('#passwordnew').val()
+                    },
+                    type: 'POST',
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(error) {
+                        if (error.status=='403') {
+                            $('#mainBoxDiv').html('<h1>Unauthorized Access!</h1>');
+                            setTimeout(function(){
+                                var base_url = window.location.origin;
+
+                                window.location.replace(base_url+ $('#logout_url').data('name')); 
+                            
+                            }, 2000);
+
+                        console.log(error.status);
+                        }
+                    }
+                });
+                
+                $('#changePassDiv').hide()
+            }
+	    });
+
+        $('#passwordnew').change(function(){
+            
+            var oldpass = $('#password').val();
+            if (oldpass === $('#passwordnew').val()) {
+                validpass=false;
+                $('#errorpnew').html('New password should be different than old password!');
+                $('#passwordnew').removeClass("validtbx").addClass("invalidtbx");
+                $('#passwordnewre').attr('disabled', 'disabled');
+            }
+            else {
+                validpass=true;
+                $('#errorpnew').html('');
+                $('#passwordnew').removeClass("invalidtbx").addClass("validtbx");
+                $('#passwordnewre').removeAttr('disabled');
+            }
+        });
+
+        $('#passwordnewre').change(function(){
+            var newpass = $('#passwordnew').val();
+            if (newpass !==  $('#passwordnewre').val()) {
+                validpass=false;
+                $('#errorpnewre').html('Passwords does not match!');
+                $('#passwordnewre').removeClass("validtbx").addClass("invalidtbx");
+            } else {
+                validpass=true;
+                $('#errorpnewre').html('');
+                $('#passwordnewre').removeClass("invalidtbx").addClass("validtbx");
+            }
+        });
+
+	});
+
+        </script>
+
+        <div id="mainBoxDiv">
+            <h1>Welcome {{session['username']}}</h1>
+            <p>Last login: {{g.lastlogin}}</p>
+            <button id="updateProfileBtn">Update Profile</button>
+            <p id="test"></p>
+            <b><p id="error" class="error"></p></b>
+            <p><b>Username:</b> <input type="text" name="username" value={{user.username}} id="username"></p>
+            <p><b>Password:</b> <input type="password" name="password" id="password">
+                <button id="changePassBtn">Change Password</button>
+            </p>
+            <div id="changePassDiv" class="hidden">
+                <p><b>New password:</b> <input type="password" name="passwordnew" id="passwordnew"><p id="errorpnew" class="error"><p></p>
+                <p><b>Re-enter new password:</b> <input type="password" name="passwordnewre" id="passwordnewre"><p id="errorpnewre" class="error"><p></p>
+            </div>
+            <p><b>Email:</b> <input type="text" name="email" value={{user.email}} id="email"></p>
+            <p><b>Role :</b> {{user.role}}</p>
+            <p><b>Last Login:</b> {{user.lastlogin}}</p>
+            <p><b>Registered Time:</b> {{user.regtime}}</p>
+        </div>
+    {%else%}
+        <h1>You have no permission to see this pages content!</h1>
+        <h1>Go to login page to sign in using this link</h1>
+        <h1><a href="{{url_for('admin')}}">Login</a></h1>
+    {%endif%}
+{%endblock%}

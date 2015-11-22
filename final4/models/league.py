@@ -2,7 +2,6 @@ leaguetable = ['id', 'name', 'country']
 
 class League:
     def __init__(self, name, country, _id=None):
-        self._id = _id
         self.name = name
         self.country = country
 
@@ -14,21 +13,23 @@ class Leagues:
 
     def add_league(self, league):
         query = """INSERT INTO leagues (name, country) 
-                                    values ('%s','%s')""" % (league.name, league.country)
+                                    values (%s,%s)""" 
 
-        self.cur.execute(query)
+        self.cur.execute(query, (league.name, league.country))
         self.conn.commit()
 
-    def delete_league(self, _id):
-        query = "DELETE FROM leagues WHERE id='%s'" % _id
-        self.cur.execute(query)
+    def delete_league(self, league):
+        query = "DELETE FROM leagues WHERE name=%s and country=%s" 
+        self.cur.execute(query, (league.name,league.country))
         self.conn.commit()
 
-    def update_league(self, league):
-        query = """UPDATE leagues SET name='%s', country='%s', 
-                    WHERE id='%s'""" % (league.name, league.country, league._id)
-
-        self.cur.execute(query)
+    def update_league(self, old, new):
+        '''
+        old and new are league objects
+        '''
+        query = """UPDATE leagues SET name=%s, country=%s, 
+                    WHERE name=%s and country=%s"""
+        self.cur.execute(query, (new.name, new.country, old.name, old.country))
         self.conn.commit()
 
     def get_leagues(self):
