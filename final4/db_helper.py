@@ -1,4 +1,6 @@
 from flask import g
+from flask import session
+
 from final4.config import app
 import psycopg2
 
