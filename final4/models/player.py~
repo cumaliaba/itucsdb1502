@@ -34,7 +34,7 @@ class Players:
         query = """UPDATE players SET name='%s', country='%s', 
                     age='%s',playing_position='%s', WHERE id=%s"""
 
-        self.cur.execute(query,(new_player.name,new_player.country,new_player.age,new_player.playing_position,_id))
+        self.cur.execute(query,(new_player.name,new_player.country,new_player.age,new_player.playing_position,_id)
         self.conn.commit()
 
     def get_player(self, _id):

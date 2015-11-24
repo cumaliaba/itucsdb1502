@@ -10,7 +10,7 @@ def team_page():
     conn, cur = getDb()
     
     teams = team.Teams(conn, cur)
-    teamlist = team.get_teams()
+    teamlist = teams.get_teams()
     return render_template('teams.html', teamtable=team.teamtable, teams=teamlist)
 
 

@@ -8,6 +8,7 @@ from final4.models import player
 @app.route('/players')
 def player_page():
     conn, cur = getDb()
+    
     players = player.Players(conn, cur)
     playerlist = players.get_players()
     return render_template('players.html', playertable=player.playertable, players=playerlist)
