@@ -9,7 +9,7 @@ from flask import render_template
 from flask import request
 
 # league views
-@app.route('/leagues', methods=['DEL','GET', 'POST', 'PUT'])
+@app.route('/leagues', methods=['DEL','GET', 'POST'])
 def league_page():
     conn, cur = getDb()
     leagues = league.Leagues(conn, cur)
@@ -83,16 +83,17 @@ def league_from_id(lid):
         l = leagues.get_leagues()
         return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
 
-
-@app.route('/leagues/s/<key>', methods=['GET','POST'])
-def search_league(key):
+@app.route('/leagues/s/<key>')
+def search_league(search_key):
+    print('SEARCH')
+    '''
     conn, cur = getDb()
     leagues = league.Leagues(conn, cur)
     
-    result = leagues.get_leagues_by(key, 'name')
-    if result:
-        return json.dumps({'status':'OK', 'league':result})
-    else:
-        return json.dumps({'status':'FAILED'})
+    result = leagues.get_leagues_by(search_key, 'name')
+    if result is None:
+        result = []
+    return render_template('leagues.html', leaguetable=league.leaguetable, leagues=result)
+    '''
 
 

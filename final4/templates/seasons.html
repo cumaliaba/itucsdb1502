@@ -1,6 +1,6 @@
 {%extends "layout.html"%}
 
-{%block title%}Leagues{%endblock%}
+{%block title%}Seasons{%endblock%}
 {%block content%}
     {%if error%}<p>{{error}}</p>{%endif%}
     <script>
@@ -13,7 +13,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/leagues',
+                    url: '/seasons',
                     data: {'ids': ids,
                     },
                     type: 'POST',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/leagues',
+                    url: '/seasons',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -78,20 +78,20 @@
                 console.log(this);
                 var name=this.name;
                 $.ajax({
-                    url: '/leagues/g/'+this.name,
+                    url: '/seasons/'+this.name,
                     data: {'id': this.name,
                     },
                     type: 'GET',
                     success: function(response) {
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
-                            $('#league_item_update').show();
+                            $('#season_item_update').show();
                                                         
-                            league=data['league'];
-                            $('#league_item_update input[name=name]').val(league['name']);
-                            $('#league_item_update input[name=country]').val(league['country']);
-                            $('#league_item_update input[name=id]').val(league['id']);
-                            var newurl = $('#update_form').attr('action') +'/g/' +league['id'];
+                            season=data['season'];
+                            
+                            $('#season_item_update input[name=year]').val(season['year']);
+                            
+                            var newurl = $('#update_form').attr('action') +'/' +season['id'];
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -102,44 +102,32 @@
                 });
             });
 
-            $('#searchBox').change(function(){
-                var key=$('#searchBox').val();
-
-                var newurl = "/leagues/search/" + key
-                $('#update_form').attr('action', newurl);
-            });
-
         });
     </script>
 
-        <div id="search">
-            <form id="searchForm" action="">
-                <input id="searchBox" type="text" name="search" placeholder="Enter search key">
-                <button id="searchBtn">Search</button>
-            </form>
-        </div>
+        
         <table id="table">
             <tr>
                 <th></th>
-                {%for var in leaguetable[1:]%}
+                {%for var in seasontable[1:]%}
                     <th>{{var}}</th>
                 {%endfor%}
             </tr>
-            {%for l in leagues%}
+            {%for l in seasons%}
             <tr name="{{l._id}}">
                 <td><input type="checkbox" name="{{l._id}}" ></td>
-                <td>{{l.name}}</td>
-                <td>{{l.country}}</td>
+                
+                <td>{{l.year}}</td>
                 <td><button name="{{l._id}}" class="delete_itemBtn">Delete</button></td>
                 <td><button name="{{l._id}}" class="update_itemBtn">Update</button></td>
             </tr>
             {%endfor%}
         </table>
-        <div id="league_item_input" class="league_item_input">
-            <form action="{{url_for('league_page')}}" method="post">
+        <div id="season_item_input" class="season_item_input">
+            <form action="{{url_for('season_page')}}" method="post">
             <table id="add_item_table">
                 <tr id="add_item_table_tr">
-                    {%for var in leaguetable[1:] %}
+                    {%for var in seasontable[1:] %}
                         <td><input type="text" name="{{var}}" placeholder="{{var}}"></td> 
                     {%endfor%}
                         <td><input type="submit" name="Add" id="add_itemBtn" value="Add"></td>
@@ -148,11 +136,11 @@
             </form>
         </div>
 
-        <div id="league_item_update" class="hidden">
-            <form id="update_form" action="{{url_for('league_page')}}" method="POST">
+        <div id="season_item_update" class="hidden">
+            <form id="update_form" action="{{url_for('season_page')}}" method="POST">
             <table id="update_item_table">
                 <tr id="update_item_table_tr">
-                    {%for var in leaguetable[1:] %}
+                    {%for var in seasontable[1:] %}
                         <td><input type="text" name="{{var}}" placeholder="{{var}}"></td> 
                     {%endfor%}
                         <td><input type="text" name="id" class="hidden"></td>
@@ -163,7 +151,7 @@
         </div>
 
 
-        {%if leagues|length>=1 %} 
+        {%if seasons|length>=1 %} 
             <button type="button" id="delete_selectedBtn">Delete Selections</button>
         {%endif%}
 {%endblock%}
