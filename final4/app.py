@@ -99,6 +99,14 @@ def initialize_database():
         """
         cur.execute(query)
 
+        #seasons table
+        query="DROP TABLE IF EXISTS seasons;"
+        cur.execute(query)
+
+        query="""CREATE TABLE SEASONS ( ID INTEGER, 
+					YEAR INTEGER);"""
+        cur.execute(query)
+        
         # standings table
         query = "DROP TABLE IF EXISTS standings;"
         cur.execute(query)
@@ -109,32 +117,7 @@ def initialize_database():
 				team_id integer);"""
 
         cur.execute(query)
-	
-        #seasons table
-        query="DROP TABLE IF EXISTS seasons;"
-        cur.execute(query)
 
-        query="""CREATE TABLE SEASONS ( ID INTEGER, 
-					YEAR INTEGER);"""
-
-	# teams table
-        query = "DROP TABLE IF EXISTS teams;"
-        cur.execute(query)
-
-        query = """CREATE TABLE teams (id serial PRIMARY KEY, 
-                               name varchar(32) NOT NULL,
-                               coach_id integer REFERENCES coaches(id));
-        """
-        cur.execute(query)
-	# teamrosters table
-        query = "DROP TABLE IF EXISTS teamrosters;"
-        cur.execute(query)
-
-        query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
-                               team_id integer REFERENCES teams(id),
-                               player_id integer REFERENCES players(id));
-        """
-    
 
         # coaches table
         query = "DROP TABLE IF EXISTS coaches;"
@@ -145,8 +128,27 @@ def initialize_database():
                                nationality varchar(32), 
                                playerid integer, seasonid integer);
         """
-
         cur.execute(query)
+
+        # teams table
+
+        query = "DROP TABLE IF EXISTS teams;"
+        cur.execute(query)
+
+        query = """CREATE TABLE teams (id serial PRIMARY KEY, 
+                               name varchar(32) NOT NULL,
+                               coach_id integer REFERENCES coaches(id));
+        """
+        cur.execute(query)
+        
+	# teamrosters table
+        query = "DROP TABLE IF EXISTS teamrosters;"
+        cur.execute(query)
+
+        query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
+                               team_id integer REFERENCES teams(id),
+                               player_id integer REFERENCES players(id));
+        """
 
 
         conn.commit() # commit changes
