@@ -3,7 +3,7 @@ import json
 import os
 import psycopg2
 import re
-
+import sys
 
 from flask import redirect
 from flask import render_template
@@ -48,9 +48,8 @@ def initialize_database():
     try:
         conn, cur = db.getDb()
 
+        drop_tables()
         # users table
-        query = "DROP TABLE IF EXISTS users;"
-        cur.execute(query)
         query = """CREATE TABLE users (id serial PRIMARY KEY, 
                                username varchar(32) UNIQUE NOT NULL,
                                password varchar(255) NOT NULL,
@@ -69,9 +68,6 @@ def initialize_database():
         cur.execute(query)
 
         # leagues table
-        query = "DROP TABLE IF EXISTS leagues;"
-        cur.execute(query)
-
         query = """CREATE TABLE leagues (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
                                country varchar(32));
@@ -79,9 +75,6 @@ def initialize_database():
         cur.execute(query)
 
         # players table
-        query = "DROP TABLE IF EXISTS players;"
-        cur.execute(query)
-
         query = """CREATE TABLE players (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
                                country varchar(32), age varchar(3), playing_position varchar(32));
@@ -90,9 +83,6 @@ def initialize_database():
 
     
         # awards table
-        query = "DROP TABLE IF EXISTS awards;"
-        cur.execute(query)
-
         query = """CREATE TABLE awards (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
                                playerid integer, seasonid integer);
@@ -100,17 +90,11 @@ def initialize_database():
         cur.execute(query)
 
         #seasons table
-        query="DROP TABLE IF EXISTS seasons;"
-        cur.execute(query)
-
         query="""CREATE TABLE SEASONS ( ID INTEGER, 
 					YEAR INTEGER);"""
         cur.execute(query)
         
         # standings table
-        query = "DROP TABLE IF EXISTS standings;"
-        cur.execute(query)
-
         query="""CREATE TABLE standings (winning varchar(80), 
 				season_id integer, 
 			      	league_id integer, 
@@ -120,9 +104,6 @@ def initialize_database():
 
 
         # coaches table
-        query = "DROP TABLE IF EXISTS coaches;"
-        cur.execute(query)
-
         query = """CREATE TABLE coaches (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL, surname varchar(32) NOT NULL,
                                nationality varchar(32), 
@@ -132,9 +113,6 @@ def initialize_database():
 
         # teams table
 
-        query = "DROP TABLE IF EXISTS teams;"
-        cur.execute(query)
-
         query = """CREATE TABLE teams (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
                                coach_id integer REFERENCES coaches(id));
@@ -142,9 +120,6 @@ def initialize_database():
         cur.execute(query)
         
 	# teamrosters table
-        query = "DROP TABLE IF EXISTS teamrosters;"
-        cur.execute(query)
-
         query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
                                team_id integer REFERENCES teams(id),
                                player_id integer REFERENCES players(id));
@@ -154,9 +129,45 @@ def initialize_database():
         conn.commit() # commit changes
     
     except:
+        print(sys.exc_info())
         conn.rollback()
         return 'create table error'
     return redirect(url_for('home'))
+
+
+def drop_tables():
+    conn, cur = db.getDb()
+    
+    
+    query = "DROP TABLE IF EXISTS teamrosters;"
+    cur.execute(query)
+    
+    query = "DROP TABLE IF EXISTS teams;"
+    cur.execute(query)
+
+    query = "DROP TABLE IF EXISTS coaches;"
+    cur.execute(query)
+
+    query = "DROP TABLE IF EXISTS standings;"
+    cur.execute(query)
+
+    query="DROP TABLE IF EXISTS seasons;"
+    cur.execute(query)
+
+    query = "DROP TABLE IF EXISTS awards;"
+    cur.execute(query)
+
+    query = "DROP TABLE IF EXISTS players;"
+    cur.execute(query)
+
+    query = "DROP TABLE IF EXISTS leagues;"
+    cur.execute(query)
+
+    query = "DROP TABLE IF EXISTS users;"
+    cur.execute(query)
+ 
+
+
 
 
 # ERROR PAGES
