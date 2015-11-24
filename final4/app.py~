@@ -98,24 +98,55 @@ def initialize_database():
                                playerid integer, seasonid integer);
         """
         cur.execute(query)
-	# standings table
-	query = "DROP TABLE IF EXISTS standings;"
-	cur.execute(query)
 
-	query="""CREATE TABLE standings (winning varchar(80), 
+        # standings table
+        query = "DROP TABLE IF EXISTS standings;"
+        cur.execute(query)
+
+        query="""CREATE TABLE standings (winning varchar(80), 
 				season_id integer, 
 			      	league_id integer, 
 				team_id integer);"""
 
-	cur.execute(query)
+        cur.execute(query)
 	
-	#seasons table
-	query="DROP TABLE IF EXISTS seasons;"
-	cur.execute(query)
+        #seasons table
+        query="DROP TABLE IF EXISTS seasons;"
+        cur.execute(query)
 
-	query="""CREATE TABLE SEASONS ( ID INTEGER, 
+        query="""CREATE TABLE SEASONS ( ID INTEGER, 
 					YEAR INTEGER);"""
-	cur.execute(query)
+
+	# teams table
+        query = "DROP TABLE IF EXISTS teams;"
+        cur.execute(query)
+
+        query = """CREATE TABLE teams (id serial PRIMARY KEY, 
+                               name varchar(32) NOT NULL,
+                               coach_id integer REFERENCES coaches(id));
+        """
+        cur.execute(query)
+	# teamrosters table
+        query = "DROP TABLE IF EXISTS teamrosters;"
+        cur.execute(query)
+
+        query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
+                               team_id integer REFERENCES teams(id),
+                               player_id integer REFERENCES players(id));
+        """
+    
+
+        # coaches table
+        query = "DROP TABLE IF EXISTS coaches;"
+        cur.execute(query)
+
+        query = """CREATE TABLE coaches (id serial PRIMARY KEY, 
+                               name varchar(32) NOT NULL, surname varchar(32) NOT NULL,
+                               nationality varchar(32), 
+                               playerid integer, seasonid integer);
+        """
+
+        cur.execute(query)
 
 
         conn.commit() # commit changes

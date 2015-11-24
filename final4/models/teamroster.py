@@ -13,27 +13,27 @@ class Teamrosters:
         self.last_key = None
 
     def add_teamroster(self, teamroster):
-        query = """INSERT INTO Teamrosters (team_id, player_id,id) 
+        query = """INSERT INTO teamrosters (team_id, player_id,id) 
                                     values ('%s','%s','%s')""" % teamroster.getAttrs()
 
         self.cur.execute(query)
         self.conn.commit()
 
     def delete_teamroster(self, team_id):
-        query = "DELETE FROM Teamrosters WHERE team_id='%s'" % team_id
+        query = "DELETE FROM teamrosters WHERE team_id='%s'" % team_id
         self.cur.execute(query)
         self.conn.commit()
 
     def update_teamroster(self, key, teamroster):
         args = teamroster.getAttrs() + (key,)
-        query = """UPDATE Teamrosters SET team_id='%s', player_id='%s', 
+        query = """UPDATE teamrosters SET team_id='%s', player_id='%s', 
                     id='%s'""" % args
 
         self.cur.execute(query)
         self.conn.commit()
 
     def get_teamroster(self, team_id):
-        query = "SELECT * FROM Teamrosters WHERE team_id='%s'" % team_id
+        query = "SELECT * FROM teamrosters WHERE team_id='%s'" % team_id
         self.cur.execute(query)
         tr = self.cur.fetchone()
         if tr:
@@ -46,7 +46,7 @@ class Teamrosters:
         return None
 
     def get_teamrosters(self):
-        query = "SELECT * FROM Teamrosters;"
+        query = "SELECT * FROM teamrosters;"
         self.cur.execute(query)
         teamrosters = self.cur.fetchall()
         teamrosterlist = []

@@ -2,8 +2,12 @@ leaguetable = ['id', 'name', 'country']
 
 class League:
     def __init__(self, name, country, _id=None):
+        self._id = _id
         self.name = name
         self.country = country
+
+    def getAttrs(self):
+        return (dict(zip(leaguetable, (self._id, self.name, self.country))))
 
 class Leagues:
     def __init__(self, conn, cur):
@@ -12,25 +16,38 @@ class Leagues:
         self.last_key = None
 
     def add_league(self, league):
+        print("addleague ", league)
         query = """INSERT INTO leagues (name, country) 
                                     values (%s,%s)""" 
 
         self.cur.execute(query, (league.name, league.country))
         self.conn.commit()
 
-    def delete_league(self, league):
-        query = "DELETE FROM leagues WHERE name=%s and country=%s" 
-        self.cur.execute(query, (league.name,league.country))
+    def delete_league(self, _id):
+        query = """DELETE FROM leagues WHERE id=%s"""
+        # variables should be in tuple object
+        self.cur.execute(query, (_id,))
         self.conn.commit()
 
-    def update_league(self, old, new):
+    def update_league(self, _id, new):
         '''
-        old and new are league objects
+        new : league object
         '''
-        query = """UPDATE leagues SET name=%s, country=%s, 
-                    WHERE name=%s and country=%s"""
-        self.cur.execute(query, (new.name, new.country, old.name, old.country))
+        query = """UPDATE leagues SET name=%s, country=%s
+                    WHERE id=%s"""
+        self.cur.execute(query, (new.name, new.country, _id))
         self.conn.commit()
+
+    def get_league(self,_id):
+        query = """SELECT * FROM leagues WHERE id=%s"""
+        self.cur.execute(query, (_id,))
+        l = self.cur.fetchone()
+        if l:
+            ld = dict(zip(leaguetable, l))
+            league = League(ld['name'], ld['country'], ld['id'])
+            return league
+        else:
+            return None
 
     def get_leagues(self):
         query = "SELECT * FROM leagues;"
