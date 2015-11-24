@@ -1,3 +1,6 @@
+import json
+import sys
+
 from flask import abort
 from flask import g
 from flask import redirect
@@ -12,6 +15,8 @@ from final4.db_helper import getDb
 from final4.helper import login_success, getCurrTimeStr
 
 from final4.models import user
+
+from psycopg2 import IntegrityError
 
 @app.route('/users')
 def users():
@@ -35,6 +40,8 @@ def updateUser():
     if 'username' not in session:
         return abort(403)
     
+    conn, cur = getDb()
+
     username = request.form['username']
     if session['username'] != username:
         return abort(403)
@@ -42,9 +49,19 @@ def updateUser():
     password = request.form['password']
     passwordnew = request.form['passwordnew']
 
-    #email = request.form['email']
-    return json.dumps({'status':'OK','user':username,'pass':password})
-
+    users = user.Users(conn, cur)
+    muser = users.get_user(username)
+    if password == muser.password:
+        muser.password = passwordnew
+        try:
+            users.update_user(username, muser)
+            return json.dumps({'status':'OK','user':username,'pass':passwordnew})
+        except:
+            error = sys.exc_info()[0]
+            return json.dumps({'status':'FAILED','error':error})
+    else:
+        error = "The password you entered is wrong!"
+        return json.dumps({'status':'FAILED', 'error':error})
 
 @app.route('/admin', methods=['POST', 'GET'])
 def admin():
@@ -83,21 +100,32 @@ def admin():
 @app.route('/signup', methods=['POST'])
 def signup():
     if request.method == 'POST':
-        conn, cur = getDb()
+        try:
+            conn, cur = getDb()
         
-        username = request.form['username']
-        password = request.form['password']
-        email = str(request.form['email'])
-        role = request.form['role']
-        regtime = getCurrTimeStr()
-        lastlogin = regtime
-        online = False
+            username = request.form['username']
+            password = request.form['password']
+            email = str(request.form['email'])
+            role = request.form['role']
+            regtime = getCurrTimeStr()
+            lastlogin = regtime
+            online = False
 
-        usr = user.User(username, password, email, role, lastlogin, regtime, online)
-        users = user.Users(conn, cur)
-        users.add_user(usr)
+            usr = user.User(username, password, email, role, lastlogin, regtime, online)
+            users = user.Users(conn, cur)
+            users.add_user(usr)
 
-        return redirect(url_for('admin'))
+            return redirect(url_for('admin'))
+        except IntegrityError:
+            conn.rollback()
+            roles=None
+            error = "This username already registered."
+            return render_template('adminpanel.html', error=error, roles=roles)
+        else:
+            conn.rollback()
+            error = sys.exc_info()[0]
+            roles=None
+            return render_template('adminpanel.html', error=error, roles=roles)
 
 
 @app.route('/logout')

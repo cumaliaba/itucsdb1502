@@ -117,6 +117,18 @@ def initialize_database():
         """
     
 
+        # coaches table
+        query = "DROP TABLE IF EXISTS coaches;"
+        cur.execute(query)
+
+        query = """CREATE TABLE coaches (id serial PRIMARY KEY, 
+                               name varchar(32) NOT NULL, surname varchar(32) NOT NULL,
+                               nationality varchar(32), 
+                               playerid integer, seasonid integer);
+        """
+        cur.execute(query)
+
+
         conn.commit() # commit changes
     
     except:

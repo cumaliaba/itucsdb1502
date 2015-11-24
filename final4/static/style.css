@@ -29,11 +29,15 @@ div#datetime {
     background-color: green;
 }
 
-p.error {
-    color: red;
-}
 
 .hidden {
     display: none;
 }
 
+p.error {
+    color: red;
+}
+
+p.success {
+    color: green;
+}
