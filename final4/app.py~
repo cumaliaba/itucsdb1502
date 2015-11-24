@@ -21,7 +21,7 @@ from final4.views import league_view
 from final4.views import player_view
 from final4.views import award_view
 from final4.views import stat_view
-
+from final4.views import season_view
 
 def get_elephantsql_dsn(vcap_services):
     """Returns the data source name for ElephantSQL."""
@@ -103,15 +103,16 @@ def initialize_database():
         query="DROP TABLE IF EXISTS seasons;"
         cur.execute(query)
 
-        query="""CREATE TABLE SEASONS ( ID INTEGER, 
-					YEAR INTEGER);"""
-	cur.execute(query)
+        query="""CREATE TABLE SEASONS ( id serial PRIMARY KEY, 
+					year INTEGER);"""
+        cur.execute(query)
         
         # standings table
         query = "DROP TABLE IF EXISTS standings;"
         cur.execute(query)
 
-        query="""CREATE TABLE standings (winning varchar(80), 
+        query="""CREATE TABLE standings (id serial PRIMARY KEY,
+                                winning varchar(80), 
 				season_id integer, 
 			      	league_id integer, 
 				team_id integer);"""

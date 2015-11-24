@@ -1,0 +1,61 @@
+seasontable = ['id', 'year']
+
+class Season:
+    def __init__(self, year, _id=None):
+        self._id = _id
+        self.year = year
+        
+
+    def getAttrs(self):
+        return (dict(zip(seasontable, (self._id, self.year))))
+
+class Seasons:
+    def __init__(self, conn, cur):
+        self.conn = conn
+        self.cur = cur
+        self.last_key = None
+
+    def add_season(self, season):
+        print("addseason ", season)
+        query = """INSERT INTO seasons (year) 
+                                    values (%d)""" 
+
+        self.cur.execute(query, (season.year))
+        self.conn.commit()
+
+    def delete_season(self, _id):
+        query = """DELETE FROM seasons WHERE id=%s"""
+        # variables should be in tuple object
+        self.cur.execute(query, (_id,))
+        self.conn.commit()
+
+    def update_season(self, _id, new):
+        '''
+        new : season object
+        '''
+        query = """UPDATE seasons SET year=%d
+                    WHERE id=%s"""
+        self.cur.execute(query, (new.year, _id))
+        self.conn.commit()
+
+    def get_season(self,_id):
+        query = """SELECT * FROM seasons WHERE id=%s"""
+        self.cur.execute(query, (_id,))
+        l = self.cur.fetchone()
+        if l:
+            ld = dict(zip(seasontable, l))
+            season = Season(ld['year'], ld['id'])
+            return season
+        else:
+            return None
+
+    def get_seasons(self):
+        query = "SELECT * FROM seasons;"
+        self.cur.execute(query)
+        seasons = self.cur.fetchall()
+        seasonlist = []
+        for l in seasons:
+            ld = dict(zip(seasontable, l))
+            season = Season( ld['year'],ld['id'])
+            seasonlist.append(season)
+        return seasonlist
