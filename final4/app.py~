@@ -98,24 +98,6 @@ def initialize_database():
                                playerid integer, seasonid integer);
         """
         cur.execute(query)
-	# teams table
-        query = "DROP TABLE IF EXISTS teams;"
-        cur.execute(query)
-
-        query = """CREATE TABLE teams (id serial PRIMARY KEY, 
-                               name varchar(32) NOT NULL,
-                               coach_id integer REFERENCES coaches(id));
-        """
-        cur.execute(query)
-	# teamrosters table
-        query = "DROP TABLE IF EXISTS teamrosters;"
-        cur.execute(query)
-
-        query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
-                               team_id integer REFERENCES teams(id),
-                               player_id integer REFERENCES players(id));
-        """
-    
 
         conn.commit() # commit changes
     

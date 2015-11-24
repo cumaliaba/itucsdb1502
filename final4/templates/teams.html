@@ -1,0 +1,22 @@
+{%extends "layout.html"%}
+
+{%block title%}Teams{%endblock%}
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        
+        <table>
+            <tr>
+                {%for var in teamtable%}
+                    <th>{{var}}</th>
+                {%endfor%}
+            </tr>
+            {%for t in teams%}
+            <tr>
+                <td>{{team.id}}</td>
+                <td>{{team.name}}</td>
+                <td>{{team.coach_id}}</td>
+            </tr>
+            {%endfor%}
+        </table>
+
+{%endblock%}

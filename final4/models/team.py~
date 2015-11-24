@@ -13,27 +13,27 @@ class Teams:
         self.last_key = None
 
     def add_team(self, team):
-        query = """INSERT INTO teams (name, coach_id,id) 
+        query = """INSERT INTO Teams (name, coach_id,id) 
                                     values ('%s','%s','%s')""" % team.getAttrs()
 
         self.cur.execute(query)
         self.conn.commit()
 
     def delete_team(self, name):
-        query = "DELETE FROM teams WHERE name='%s'" % name
+        query = "DELETE FROM Teams WHERE name='%s'" % name
         self.cur.execute(query)
         self.conn.commit()
 
     def update_team(self, key, team):
         args = team.getAttrs() + (key,)
-        query = """UPDATE teams SET name='%s', coach_id='%s', 
+        query = """UPDATE Teams SET name='%s', coach_id='%s', 
                     id='%s'""" % args
 
         self.cur.execute(query)
         self.conn.commit()
 
     def get_team(self, name):
-        query = "SELECT * FROM teams WHERE name='%s'" % name
+        query = "SELECT * FROM Teams WHERE name='%s'" % name
         self.cur.execute(query)
         t = self.cur.fetchone()
         if t:
@@ -45,7 +45,7 @@ class Teams:
         return None
 
     def get_teams(self):
-        query = "SELECT * FROM teams;"
+        query = "SELECT * FROM Teams;"
         self.cur.execute(query)
         teams = self.cur.fetchall()
         teamlist = []
@@ -53,4 +53,5 @@ class Teams:
             td = dict(zip(teamtable, t))
             team = Team.fromDict(td)
             teamlist.append(team)
+            
         return teamlist
