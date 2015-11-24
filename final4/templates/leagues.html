@@ -78,7 +78,7 @@
                 console.log(this);
                 var name=this.name;
                 $.ajax({
-                    url: '/leagues/'+this.name,
+                    url: '/leagues/g/'+this.name,
                     data: {'id': this.name,
                     },
                     type: 'GET',
@@ -91,7 +91,7 @@
                             $('#league_item_update input[name=name]').val(league['name']);
                             $('#league_item_update input[name=country]').val(league['country']);
                             $('#league_item_update input[name=id]').val(league['id']);
-                            var newurl = $('#update_form').attr('action') +'/' +league['id'];
+                            var newurl = $('#update_form').attr('action') +'/g/' +league['id'];
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -102,10 +102,22 @@
                 });
             });
 
+            $('#searchBox').change(function(){
+                var key=$('#searchBox').val();
+
+                var newurl = "/leagues/search/" + key
+                $('#update_form').attr('action', newurl);
+            });
+
         });
     </script>
 
-        
+        <div id="search">
+            <form id="searchForm" action="">
+                <input id="searchBox" type="text" name="search" placeholder="Enter search key">
+                <button id="searchBtn">Search</button>
+            </form>
+        </div>
         <table id="table">
             <tr>
                 <th></th>

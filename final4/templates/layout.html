@@ -9,8 +9,12 @@
   <body>
       <a href="{{url_for('home')}}">Home</a>
       <a href="{{url_for('admin')}}">Admin Panel</a>
+<<<<<<< HEAD
       <a href="{{url_for('standing_page')}}">Standings</a>
       <a href="{{url_for('season_page')}}">Seasons</a>
+=======
+      <a href="{{url_for('league_page')}}">Leagues</a>
+>>>>>>> fe1e63ac0269634ca53627baac43f99e4004480c
       {%block navigation%}
       {%endblock%}
       {%if 'username' in session%}

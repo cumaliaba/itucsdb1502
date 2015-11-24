@@ -1,15 +1,16 @@
-leaguetable = ['id', 'name', 'country']
+leaguetable = ['id', 'name', 'code', 'nationality']
 
-class League:
-    def __init__(self, name, country, _id=None):
+class Country:
+    def __init__(self, name, code, nationality,  _id=None):
         self._id = _id
         self.name = name
-        self.country = country
+        self.code = code
+        self.nationality = nationality
 
     def getAttrs(self):
         return (dict(zip(leaguetable, (self._id, self.name, self.country))))
 
-class Leagues:
+class Country:
     def __init__(self, conn, cur):
         self.conn = conn
         self.cur = cur
@@ -59,16 +60,3 @@ class Leagues:
             league = League(ld['name'], ld['country'],ld['id'])
             leaguelist.append(league)
         return leaguelist
-
-    def get_leagues_by(self, key, var):
-        query = "SELECT * FROM leagues WHERE name LIKE %s"+"\%;";
-        self.cur.execute(query, (key,))
-        leagues = self.cur.fetchall()
-        leaguelist = []
-        for l in leagues:
-            ld = dict(zip(leaguetable, l))
-            league = League(ld['name'], ld['country'],ld['id'])
-            leaguelist.append(league)
-        return leaguelist
-
-
