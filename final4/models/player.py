@@ -19,10 +19,10 @@ class Players:
 
     def add_player(self, player):
         print("addplayer",player)
-        query = """INSERT INTO players (name, country, age,playing_position,id) 
-                                    values ('%s','%s','%s','%s','%s')""" % player.getAttrs()
+        query = """INSERT INTO players (name, country,age,playing_position) 
+                                    values (%s,%s,%s,%s)"""
 
-        self.cur.execute(query)
+        self.cur.execute(query,(player.name,player.country,player.age,player.playing_position))
         self.conn.commit()
 
     def delete_player(self, _id):

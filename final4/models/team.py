@@ -13,14 +13,14 @@ class Teams:
         self.last_key = None
 
     def add_team(self, team):
-        print("addplayer",player)
-        query = """INSERT INTO players (name, coach_id) 
-                                    values ('%s','%s')"""
+        print("addteam",team)
+        query = """INSERT INTO teams (name, coach_id) 
+                                    values (%s,%s)"""
         self.cur.execute(query,(team.name,team.coach_id))
         self.conn.commit()
 
     def delete_team(self, _id):
-        query = "DELETE FROM teams WHERE id='%s"""
+        query = "DELETE FROM teams WHERE id=%s"""
         self.cur.execute(query,(_id,))
         self.conn.commit()
 
@@ -50,8 +50,8 @@ class Teams:
         self.cur.execute(query)
         teams = self.cur.fetchall()
         teamlist = []
-        for t in Teams:
+        for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(ld['name'], ld['country'],ld['id'])
+            team = Team(td['name'], td['coach_id'],td['id'])
             teamlist.append(team)
         return teamlist

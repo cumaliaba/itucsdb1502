@@ -9,7 +9,6 @@
   <body>
       <a href="{{url_for('home')}}">Home</a>
       <a href="{{url_for('admin')}}">Admin Panel</a>
-      <a href="{{url_for('team_page')}}">Teams</a>
       {%block navigation%}
       {%endblock%}
       {%if 'username' in session%}

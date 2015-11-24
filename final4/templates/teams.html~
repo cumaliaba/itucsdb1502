@@ -105,14 +105,13 @@
         });
     </script>
 
-        <p>coach_id references coaches table</p>
+        
         <table id="table">
             <tr>
                 <th></th>
-                {%for var in teamtable[1:]%}
+                {%for var in teamtable[t:]%}
                     <th>{{var}}</th>
                 {%endfor%}
-                
             </tr>
             {%for t in teams%}
             <tr name="{{t._id}}">
