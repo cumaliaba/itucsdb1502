@@ -5,7 +5,6 @@
     {%if error%}<p>{{error}}</p>{%endif%}
 
     {%if 'username' in session and user.username == session['username']%}
-        <meta id="activeuser" data-name="{{session['username']}}">
         <meta id="logout_url" data-name="{{url_for('logout')}}">
         <script>
 
@@ -45,6 +44,7 @@
 
             if ($('#changePassDiv').css('display') == 'none')
             {
+                $('#notice').html('');
                 $('#changePassDiv').show()
             } else {
                 if(!validpass) return; 
@@ -56,9 +56,18 @@
                     },
                     type: 'POST',
                     success: function(response) {
-                        console.log(response);
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            $('#notice').removeClass("error").addClass("success");
+                            $('#notice').html('Password successfully changed.');
+                        } else {
+                            // ERROR
+                            $('#notice').removeClass("success").addClass("error");
+                            $('#notice').html(data.error);
+                        }
                     },
                     error: function(error) {
+                        // ERROR
                         if (error.status=='403') {
                             $('#mainBoxDiv').html('<h1>Unauthorized Access!</h1>');
                             setTimeout(function(){
@@ -67,8 +76,9 @@
                                 window.location.replace(base_url+ $('#logout_url').data('name')); 
                             
                             }, 2000);
-
-                        console.log(error.status);
+                        } else if(error.status == 'FAILED') {
+                            $('#notice').removeClass("success").addClass("error");
+                            $('#notice').html('Password cannot be changed. Please try again after a while.');
                         }
                     }
                 });
@@ -115,7 +125,7 @@
             <h1>Welcome {{session['username']}}</h1>
             <p>Last login: {{g.lastlogin}}</p>
             <button id="updateProfileBtn">Update Profile</button>
-            <p id="test"></p>
+            <p id="notice"></p>
             <b><p id="error" class="error"></p></b>
             <p><b>Username:</b> <input type="text" name="username" value={{user.username}} id="username"></p>
             <p><b>Password:</b> <input type="password" name="password" id="password">

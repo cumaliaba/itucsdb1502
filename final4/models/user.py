@@ -38,11 +38,11 @@ class Users:
         self.cur.execute(query, (username,))
         self.conn.commit()
 
-    def update_user(self, key, user):
-        args = user.getAttrs() + (key,)
+    def update_user(self, username, user):
+        args = user.getAttrs() + (username,)
         query = """UPDATE users SET username=%s, password=%s, 
                     email=%s,role=%s, lastlogin=%s, regtime=%s, 
-                    online%s WHERE id=%s;"""
+                    online=%s WHERE username=%s;"""
 
         self.cur.execute(query, args)
         self.conn.commit()
