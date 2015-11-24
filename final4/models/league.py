@@ -61,9 +61,11 @@ class Leagues:
         return leaguelist
 
     def get_leagues_by(self, key, var):
-        query = "SELECT * FROM leagues WHERE name LIKE %s"+"\%;";
-        self.cur.execute(query, (key,))
+        skey = str(key) + '%'
+        query = "SELECT * FROM leagues WHERE name LIKE %s;";
+        self.cur.execute(query, (skey,))
         leagues = self.cur.fetchall()
+        print('leagues:', leagues)
         leaguelist = []
         for l in leagues:
             ld = dict(zip(leaguetable, l))

@@ -16,7 +16,7 @@
                     url: '/leagues',
                     data: {'ids': ids,
                     },
-                    type: 'POST',
+                    type: 'DEL',
                     success: function(response) {
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
@@ -37,10 +37,6 @@
                         ids=[];
                     }
                 });
-
-            
-
-
             });
 
             $('.delete_itemBtn').click(function() {
@@ -105,19 +101,21 @@
             $('#searchBox').change(function(){
                 var key=$('#searchBox').val();
 
-                var newurl = "/leagues/search/" + key
-                $('#update_form').attr('action', newurl);
+                var base_url = window.location.origin;
+                var search_url = base_url + "/leagues/s/" + key
+                window.location.replace(search_url); 
             });
 
         });
     </script>
 
         <div id="search">
-            <form id="searchForm" action="">
-                <input id="searchBox" type="text" name="search" placeholder="Enter search key">
-                <button id="searchBtn">Search</button>
-            </form>
+            <input id="searchBox" type="text" name="search" placeholder="Enter search key">
+            <button id="searchBtn">Search</button>
         </div>
+        {%if leagues|length==0%}
+        <p id="no_result"class="notice">No result found for selected criterias</p>
+        {%else%}
         <table id="table">
             <tr>
                 <th></th>
@@ -135,6 +133,7 @@
             </tr>
             {%endfor%}
         </table>
+        {%endif%}
         <div id="league_item_input" class="league_item_input">
             <form action="{{url_for('league_page')}}" method="post">
             <table id="add_item_table">

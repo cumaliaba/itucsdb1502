@@ -9,7 +9,7 @@ from flask import render_template
 from flask import request
 
 # league views
-@app.route('/leagues', methods=['DEL','GET', 'POST', 'PUT'])
+@app.route('/leagues', methods=['DEL','GET', 'POST'])
 def league_page():
     conn, cur = getDb()
     leagues = league.Leagues(conn, cur)
@@ -45,20 +45,6 @@ def league_page():
             print (_id)
             leagues.delete_league(_id)
         return json.dumps({'status':'OK', 'idlist':idlist})
-        '''
-        try:
-            for _id in idlist:
-                print (_id)
-                leagues.delete_league(_id)
-            return json.dumps({'status':'OK', 'idlist':idlist})
-        except:
-            error = sys.exc_info()[0]
-            return json.dumps({'status':'FAILED', 'error':error})
-        '''
-        #return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
-
-
-
 
 @app.route('/leagues/g/<lid>', methods=['GET','POST'])
 def league_from_id(lid):
@@ -76,7 +62,6 @@ def league_from_id(lid):
         lid = request.form['id']
         name = request.form['name']
         country = request.form['country']
-        print(lid, name, country)
         lg = league.League(name, country)
         leagues.update_league(lid, lg)
 
@@ -88,11 +73,5 @@ def league_from_id(lid):
 def search_league(key):
     conn, cur = getDb()
     leagues = league.Leagues(conn, cur)
-    
     result = leagues.get_leagues_by(key, 'name')
-    if result:
-        return json.dumps({'status':'OK', 'league':result})
-    else:
-        return json.dumps({'status':'FAILED'})
-
-
+    return render_template('leagues.html', leaguetable=league.leaguetable, leagues=result)
