@@ -1,0 +1,198 @@
+{%extends "layout.html"%}
+
+{%block title%}Coaches{%endblock%}
+
+{%block script%}
+    <script>
+        $(document).ready(function(){
+            $('#delete_selectedBtn').click(function(){
+                var ids=[];
+                $('#table input:checked').each(function(){
+                    ids.push(this.name);
+                });
+                console.log(ids);
+                
+                $.ajax({
+                    url: '/coaches',
+                    data: {'ids': ids,
+                    },
+                    type: 'DEL',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            
+                            console.log('DELETED');
+                            console.log(data['idlist']);
+                            console.log(data.idlist.length);
+                            for(var i=0; i<data.idlist.length; i++) {
+                                var domname = "tr[name="+data.idlist[i]+"]";
+                                console.log(domname);
+                                $(domname).hide()
+                            }
+                        }
+                        ids=[];
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        ids=[];
+                    }
+                });
+            });
+
+            $('.delete_itemBtn').click(function() {
+                console.log("deleteItem");
+                console.log(this.name);
+                $.ajax({
+                    url: '/coaches',
+                    data: {'id': this.name,
+                    },
+                    type: 'DEL',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            
+                            console.log('DELETED');
+                            console.log(data['idlist']);
+                            console.log(data.idlist.length);
+                            for(var i=0; i<data.idlist.length; i++) {
+                                var domname = "tr[name="+data.idlist[i]+"]";
+                                console.log(domname);
+                                $(domname).hide()
+                            }
+                        }
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+
+            });
+            
+            $('.update_itemBtn').click(function() {
+                console.log("updateItem");
+                console.log(this.name);
+                console.log(this);
+                var name=this.name;
+                $.ajax({
+                    url: '/coaches/g/'+this.name,
+                    data: {'id': this.name,
+                    },
+                    type: 'GET',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            $('#coach_item_update').removeClass('hidden');
+                                                        
+                            coach=data['coach'];
+                            $('#coach_item_update input[name=name]').val(coach['name']);
+                            $('#coach_item_update input[name=surname]').val(coach['surname']);
+                            $('#coach_item_update select[name=country]').val(coach['country_id']);
+                            $('#coach_item_update input[name=id]').val(coach['id']);
+                            var base_url = window.location.origin;
+                            var newurl = base_url + "/coaches/g/" + coach['id']; 
+                            $('#update_form').attr('action', newurl);
+                        }
+                        
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+
+            $('#searchBox').change(function(){
+                var key=$('#searchBox').val();
+
+                var base_url = window.location.origin;
+                var search_url = base_url + "/coaches/s/" + key
+                window.location.replace(search_url); 
+            });
+
+        });
+    </script>
+{%endblock%}
+
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div id="search">
+            <input id="searchBox" type="text" name="search" placeholder="Enter search key">
+            <button id="searchBtn">Search</button>
+        </div>
+        {%if coaches|length==0%}
+        <p id="no_result"class="notice">No result found for selected criterias</p>
+        {%else%}
+        <table id="table">
+            <tr>
+                <th></th>
+                {%for var in coachtable[1:]%}
+                    <th>{{var}}</th>
+                {%endfor%}
+            </tr>
+            {%for c in coaches%}
+            <tr name="{{c._id}}">
+                <td><input type="checkbox" name="{{c._id}}" ></td>
+                <td>{{c.name}}</td>
+                <td>{{c.surname}}</td>
+                <td>{{c.country}}</td>
+                <td><button name="{{c._id}}" class="delete_itemBtn">Delete</button></td>
+                <td><button name="{{c._id}}" class="update_itemBtn">Update</button></td>
+            </tr>
+            {%endfor%}
+        </table>
+        {%endif%}
+        <div id="coach_item_input" class="coach_item_input">
+            <form action="{{url_for('coach_page')}}" method="post">
+            <table id="add_item_table">
+                <tr id="add_item_table_tr">
+                    {%for var in coachtable[1:] %}
+                    <td>
+                        {%if var=='country_id'%}
+                        {%elif var=='country'%}
+                        <select id="country" name="{{var}}">
+                                {%for c in countries%}
+                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                {%endfor%}
+                            </select>
+                        {%else%}
+                        <input type="text" name="{{var}}" placeholder="{{var}}">
+                        {%endif%}
+                    </td> 
+                    {%endfor%}
+                    <td><input type="submit" name="Add" id="add_itemBtn" value="Add"></td>
+                </tr>
+            </table>
+            </form>
+        </div>
+
+        <div id="coach_item_update" class="hidden">
+            <form id="update_form" action="{{url_for('coach_page')}}" method="POST">
+            <table id="update_item_table">
+                <tr id="update_item_table_tr">
+                    {%for var in coachtable[1:] %}
+                    <td>
+                        {% if var=='country_id'%}
+                        {% elif var=='country'%}
+                        <select id="country" name="{{var}}">
+                                {%for c in countries%}
+                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                {%endfor%}
+                            </select>
+                        {%else%}
+                        <input type="text" name="{{var}}" placeholder="{{var}}">
+                        {%endif%}
+                    </td> 
+                    {%endfor%}
+                        <td><input type="text" name="id" class="hidden"></td>
+                        <td><input type="submit" name="Update" id="update" value="Update"></td>
+                </tr>
+            </table>
+            </form>
+        </div>
+
+
+        {%if coaches|length>=1 %} 
+            <button type="button" id="delete_selectedBtn">Delete Selections</button>
+        {%endif%}
+{%endblock%}
+
+

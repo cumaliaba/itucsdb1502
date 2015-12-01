@@ -3,31 +3,31 @@ import json
 
 from final4.config import app
 from final4.db_helper import getDb
-from final4.models import league
+from final4.models import country
 
 from flask import render_template
 from flask import request
 
-# league views
-@app.route('/leagues', methods=['DEL','GET', 'POST'])
-def league_page():
+# country views
+@app.route('/countries', methods=['DEL','GET', 'POST'])
+def country_page():
     conn, cur = getDb()
-    leagues = league.Leagues(conn, cur)
-    print('LEAGUES PAGE')
+    countries = country.Countries(conn, cur)
+    print('countries PAGE')
     if request.method == 'GET':
-        l = leagues.get_leagues()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
+        c = countries.get_countries()
+        return render_template('countries.html', countrytable=country.countrytable, countries=c)
     elif request.method == 'POST':
         name = request.form['name']
-        country = request.form['country']
-        lg = league.League(name, country)
-        leagues.add_league(lg)
+        code = request.form['code']
+        ct = country.Country(name, code)
+        countries.add_country(ct)
         
-        l = leagues.get_leagues()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
+        c = countries.get_countries()
+        return render_template('countries.html', countrytable=country.countrytable, countries=c)
 
     elif request.method == 'DEL':
-        print ('DELETE REQUEST:LEAGUES PAGE')
+        print ('DELETE REQUEST:countries PAGE')
         print (request.form)
         # concat json var with '[]' for calling array getted with request
         idlist = request.form.getlist('ids[]')
@@ -43,57 +43,35 @@ def league_page():
         print(json.dumps({'status':'OK', 'idlist':idlist}))
         for _id in idlist:
             print (_id)
-            leagues.delete_league(_id)
+            countries.delete_country(_id)
         return json.dumps({'status':'OK', 'idlist':idlist})
-        '''
-        try:
-            for _id in idlist:
-                print (_id)
-                leagues.delete_league(_id)
-            return json.dumps({'status':'OK', 'idlist':idlist})
-        except:
-            error = sys.exc_info()[0]
-            return json.dumps({'status':'FAILED', 'error':error})
-        '''
-        #return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
 
-
-
-
-@app.route('/leagues/g/<lid>', methods=['GET','POST'])
-def league_from_id(lid):
+@app.route('/countries/g/<cid>', methods=['GET','POST'])
+def country_from_id(cid):
     conn, cur = getDb()
-    leagues = league.Leagues(conn, cur)
+    countries = country.Countries(conn, cur)
     
     if request.method == 'GET':
-        l = leagues.get_league(lid)
-        if l:
-            return json.dumps({'status':'OK', 'league':l.getAttrs()})
+        c = countries.get_country(cid)
+        if c:
+            return json.dumps({'status':'OK', 'country':c.getAttrs()})
         else:
             return json.dumps({'status':'FAILED'})
     elif request.method == 'POST':
         print("PUT METHOD REQUEST")
         lid = request.form['id']
         name = request.form['name']
-        country = request.form['country']
-        print(lid, name, country)
-        lg = league.League(name, country)
-        leagues.update_league(lid, lg)
+        code = request.form['code']
+        ct = country.Country(name, code)
+        countries.update_country(cid, ct)
 
-        l = leagues.get_leagues()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l)
+        c = countries.get_countries()
+        return render_template('countries.html', countrytable=country.countrytable, countries=c)
 
-@app.route('/leagues/s/<key>')
-def search_league(search_key):
-    print('SEARCH')
-    '''
+
+@app.route('/countries/s/<key>', methods=['GET','POST'])
+def search_country(key):
     conn, cur = getDb()
-    leagues = league.Leagues(conn, cur)
-    
-    result = leagues.get_leagues_by(search_key, 'name')
-    if result is None:
-        result = []
-    return render_template('leagues.html', leaguetable=league.leaguetable, leagues=result)
-    '''
-
-
+    countries = country.Countries(conn, cur)
+    result = countries.get_countries_by(key, 'name')
+    return render_template('countries.html', countrytable=country.countrytable, countries=result)
