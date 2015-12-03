@@ -97,7 +97,8 @@ def initialize_database():
         cur.execute(query)
         
         # standings table
-        query="""CREATE TABLE standings (winning varchar(80), 
+        query="""CREATE TABLE standings ( id serial PRIMARY KEY,
+                                winning varchar(80), 
 				season_id integer, 
 			      	league_id integer, 
 				team_id integer);"""

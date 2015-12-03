@@ -91,28 +91,13 @@ def initialize_database():
         cur.execute(query)
 
         #seasons table
-<<<<<<< HEAD
-        query="DROP TABLE IF EXISTS seasons;"
-        cur.execute(query)
 
         query="""CREATE TABLE SEASONS ( id serial PRIMARY KEY, 
 					year INTEGER);"""
         cur.execute(query)
         
         # standings table
-        query = "DROP TABLE IF EXISTS standings;"
-        cur.execute(query)
-
-        query="""CREATE TABLE standings (id serial PRIMARY KEY,
-                                winning varchar(80), 
-=======
-        query="""CREATE TABLE SEASONS ( ID INTEGER, 
-					YEAR INTEGER);"""
-        cur.execute(query)
-        
-        # standings table
         query="""CREATE TABLE standings (winning varchar(80), 
->>>>>>> fe1e63ac0269634ca53627baac43f99e4004480c
 				season_id integer, 
 			      	league_id integer, 
 				team_id integer);"""
