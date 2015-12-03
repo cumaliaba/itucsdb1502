@@ -55,18 +55,25 @@ class Leagues:
         else:
             return None
 
-    def get_leagues(self):
+    def get_leagues(self, limit, offset):
+
+        query = """SELECT count(leagues.id)
+                        FROM leagues,countries WHERE countries.id=leagues.country_id
+                          """
+        self.cur.execute(query)
+        total = self.cur.fetchone()[0]
+
         query = """SELECT leagues.id, leagues.name, countries.id, countries.name 
                         FROM leagues,countries WHERE countries.id=leagues.country_id
-                          ORDER BY leagues.name"""
-        self.cur.execute(query)
+                          ORDER BY leagues.name LIMIT %s OFFSET %s"""
+        self.cur.execute(query, (limit, offset))
         leagues = self.cur.fetchall()
         leaguelist = []
         for l in leagues:
             ld = dict(zip(leaguetable, l))
             league = League(ld['name'], ld['country_id'], ld['country'],ld['id'])
             leaguelist.append(league)
-        return leaguelist
+        return leaguelist, total
 
     def get_leagues_by(self, key, var):
         skey = str(key) + '%'

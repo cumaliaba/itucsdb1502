@@ -10,7 +10,7 @@ class Player:
         
 
     def getAttrs(self):
-        return (dict(zip(playertable, (self._id, self.name, self.country,self.age,self.playing_position))))		
+        return (dict(zip(playertable, (self._id, self.name, self.country,self.age,self.playing_position))))
 class Players:
     def __init__(self, conn, cur):
         self.conn = conn

@@ -17,9 +17,9 @@ def league_page():
     countries = country.Countries(conn, cur)
     print('LEAGUES PAGE')
     if request.method == 'GET':
-        l = leagues.get_leagues()
+        l, total = leagues.get_leagues(5,0)
         c = countries.get_countries()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c)
+        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c, total=total)
     elif request.method == 'POST':
         print('ADD LEAGUE')
         name = request.form['name']
@@ -27,9 +27,9 @@ def league_page():
         lg = league.League(name, country_id)
         leagues.add_league(lg)
         
-        l = leagues.get_leagues()
+        l, total = leagues.get_leagues(5,0)
         c = countries.get_countries()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c)
+        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c, total=total)
 
     elif request.method == 'DEL':
         print ('DELETE REQUEST:LEAGUES PAGE')
@@ -71,9 +71,9 @@ def league_from_id(lid):
         lg = league.League(name, country_id)
         leagues.update_league(lid, lg)
 
-        l = leagues.get_leagues()
+        l, total = leagues.get_leagues(5,0)
         c = countries.get_countries()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c)
+        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c, total=total)
 
 
 @app.route('/leagues/s/<key>', methods=['GET','POST'])
