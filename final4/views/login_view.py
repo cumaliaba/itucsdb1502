@@ -18,6 +18,42 @@ from final4.models import user
 
 from psycopg2 import IntegrityError
 
+@app.route('/signin')
+def signin():
+    conn, cur = getDb()
+    error = None
+    roles = None
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if login_success(username, password):
+            error = 'Logged in!'
+            cur.execute("SELECT role, lastlogin FROM users WHERE username='%s';"%username)
+            role,lastlogin = cur.fetchone()
+            g.role = role
+            g.lastlogin = lastlogin
+            session['username'] = request.form['username']
+            
+            now = getCurrTimeStr()
+            cur.execute("UPDATE users SET lastlogin='%s' WHERE username='%s'"%(now, username))
+            cur.execute("UPDATE users SET online=TRUE WHERE username='%s'" % username)
+            conn.commit()
+        else:
+            error = 'Invalid username or password!'
+
+    if 'username' in session:
+        username = session['username']
+        cur.execute("SELECT role, lastlogin FROM users WHERE username='%s';"%username)
+        role,lastlogin = cur.fetchone()
+        g.role = role
+        g.lastlogin = lastlogin
+    
+    return render_template('signin.html')
+
+
+
 @app.route('/users')
 def users():
     conn, cur = getDb()

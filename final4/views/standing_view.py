@@ -62,7 +62,7 @@ def standing_page():
 
 
 
-@app.route('/standing/<lid>', methods=['GET','POST'])
+@app.route('/standing/g/<lid>', methods=['GET','POST'])
 def standing_from_id(lid):
     conn, cur = getDb()
     standings = standing.standings(conn, cur)

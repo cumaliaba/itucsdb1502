@@ -3,36 +3,37 @@ import json
 
 from final4.config import app
 from final4.db_helper import getDb
-from final4.models import league
+from final4.models import coach
 from final4.models import country
 
 from flask import render_template
 from flask import request
 
-# league views
-@app.route('/leagues', methods=['DEL','GET', 'POST'])
-def league_page():
+# coach views
+@app.route('/coaches', methods=['DEL','GET', 'POST'])
+def coach_page():
     conn, cur = getDb()
-    leagues = league.Leagues(conn, cur)
+    coaches = coach.Coaches(conn, cur)
     countries = country.Countries(conn, cur)
-    print('LEAGUES PAGE')
+    print('coaches PAGE')
     if request.method == 'GET':
-        l = leagues.get_leagues()
+        l = coaches.get_coaches()
         c = countries.get_countries()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c)
+        return render_template('coaches.html', coachtable=coach.coachtable, coaches=l, countries=c)
     elif request.method == 'POST':
-        print('ADD LEAGUE')
+        print('ADD coach')
         name = request.form['name']
+        surname = request.form['surname']
         country_id = request.form['country']
-        lg = league.League(name, country_id)
-        leagues.add_league(lg)
+        lg = coach.Coach(name, surname, country_id)
+        coaches.add_coach(lg)
         
-        l = leagues.get_leagues()
+        l = coaches.get_coaches()
         c = countries.get_countries()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c)
+        return render_template('coaches.html', coachtable=coach.coachtable, coaches=l, countries=c)
 
     elif request.method == 'DEL':
-        print ('DELETE REQUEST:LEAGUES PAGE')
+        print ('DELETE REQUEST:coaches PAGE')
         print (request.form)
         # concat json var with '[]' for calling array getted with request
         idlist = request.form.getlist('ids[]')
@@ -48,40 +49,41 @@ def league_page():
         print(json.dumps({'status':'OK', 'idlist':idlist}))
         for _id in idlist:
             print (_id)
-            leagues.delete_league(_id)
+            coaches.delete_coach(_id)
         return json.dumps({'status':'OK', 'idlist':idlist})
 
-@app.route('/leagues/g/<lid>', methods=['GET','POST'])
-def league_from_id(lid):
+@app.route('/coaches/g/<lid>', methods=['GET','POST'])
+def coach_from_id(lid):
     conn, cur = getDb()
-    leagues = league.Leagues(conn, cur)
+    coaches = coach.Coaches(conn, cur)
     countries = country.Countries(conn, cur)
     
     if request.method == 'GET':
-        l= leagues.get_league(lid)
+        l= coaches.get_coach(lid)
         if l:
-            return json.dumps({'status':'OK', 'league':l.getAttrs()})
+            return json.dumps({'status':'OK', 'coach':l.getAttrs()})
         else:
             return json.dumps({'status':'FAILED'})
     elif request.method == 'POST':
         print("POST METHOD REQUEST")
         lid = request.form['id']
         name = request.form['name']
+        surname = request.form['surname']
         country_id = request.form['country']
-        lg = league.League(name, country_id)
-        leagues.update_league(lid, lg)
+        lg = coach.Coach(name, surname, country_id)
+        coaches.update_coach(lid, lg)
 
-        l = leagues.get_leagues()
+        l = coaches.get_coaches()
         c = countries.get_countries()
-        return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c)
+        return render_template('coaches.html', coachtable=coach.coachtable, coaches=l, countries=c)
 
 
-@app.route('/leagues/s/<key>', methods=['GET','POST'])
-def search_league(key):
+@app.route('/coaches/s/<key>', methods=['GET','POST'])
+def search_coach(key):
     conn, cur = getDb()
-    leagues = league.Leagues(conn, cur)
+    coaches = coach.Coaches(conn, cur)
     countries = country.Countries(conn, cur)
 
-    result = leagues.get_leagues_by(key, 'name')
+    result = coaches.get_coaches_by(key, 'name')
     c = countries.get_countries()
-    return render_template('leagues.html', leaguetable=league.leaguetable, leagues=result, countries=c)
+    return render_template('coaches.html', coachtable=coach.coachtable, coaches=result, countries=c)

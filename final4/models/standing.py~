@@ -42,11 +42,14 @@ class Standings:
         self.conn.commit()
 
     def get_standing(self,_id):
-        query = """SELECT * FROM standings WHERE id=%s"""
+        query = """SELECT standings.id, standings.winning,standings.season_id,standings.league_id,standings.team_id
+                        FROM standings
+                        ORDER BY standings.winning
+                        """
         self.cur.execute(query, (_id,))
         l = self.cur.fetchone()
         if l:
-            ld = dict(zip(leaguetable, l))
+            ld = dict(zip(standingtable, l))
             standing = Standing(ld['winning'], ld['season_id'],ld['league_id'],ld['team_id'], ld['id'])
             return standing
         else:
@@ -59,6 +62,6 @@ class Standings:
         standinglist = []
         for l in standings:
             ld = dict(zip(standingtable, l))
-            standing = Standing(ld['winning'], ld['season_id'],ld['league_id'],ld['team_id'],ld['id'])
+            standing = Standing(ld['winning'], ld['season_id'], ld['league_id'], ld['team_id'], ld['id'])
             standinglist.append(standing)
         return standinglist

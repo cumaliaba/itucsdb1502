@@ -45,7 +45,7 @@
             if ($('#changePassDiv').css('display') == 'none')
             {
                 $('#notice').html('');
-                $('#changePassDiv').show()
+                $('#changePassDiv').removeClass('hidden')
             } else {
                 if(!validpass) return; 
                 $.ajax({
@@ -83,7 +83,7 @@
                     }
                 });
                 
-                $('#changePassDiv').hide()
+                $('#changePassDiv').addClass("hidden");
             }
 	    });
 

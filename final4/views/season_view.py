@@ -45,19 +45,6 @@ def season_page():
             print (_id)
             seasons.delete_season(_id)
         return json.dumps({'status':'OK', 'idlist':idlist})
-        '''
-        try:
-            for _id in idlist:
-                print (_id)
-                seasons.delete_season(_id)
-            return json.dumps({'status':'OK', 'idlist':idlist})
-        except:
-            error = sys.exc_info()[0]
-            return json.dumps({'status':'FAILED', 'error':error})
-        '''
-        #return render_template('seasons.html', seasontable=season.seasontable, seasons=l)
-
-
 
 
 @app.route('/seasons/<lid>', methods=['GET','POST'])

@@ -42,12 +42,12 @@ class Standings:
         self.conn.commit()
 
     def get_standing(self,_id):
-        query = """SELECT * FROM standings WHERE id=%s"""
+        query = """SELECT *FROM standings WHERE id=%s"""   
         self.cur.execute(query, (_id,))
         l = self.cur.fetchone()
         if l:
             ld = dict(zip(standingtable, l))
-            standing = Standing(ld['winning'], ld['season_id'],ld['league_id'],ld['team_id'], ld['id'])
+            standing = Standing(ld['winning'], ld['season_id'], ld['league_id'], ld['team_id'], ld['id'])
             return standing
         else:
             return None
