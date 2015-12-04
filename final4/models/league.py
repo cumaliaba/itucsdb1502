@@ -75,12 +75,20 @@ class Leagues:
             leaguelist.append(league)
         return leaguelist, total
 
-    def get_leagues_by(self, key, var):
+    def get_leagues_by(self, key, var, limit, offset):
         skey = str(key) + '%'
+
+        query = """SELECT count(leagues.id)
+                        FROM leagues,countries WHERE leagues.name LIKE %s AND 
+                            countries.id=leagues.country_id"""
+        self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+
         query = """SELECT leagues.id, leagues.name, leagues.country_id, countries.name
                         FROM leagues,countries WHERE leagues.name LIKE %s AND 
-                            countries.id=leagues.country_id ORDER BY leagues.name"""
-        self.cur.execute(query, (skey,))
+                            countries.id=leagues.country_id ORDER BY leagues.name
+                            LIMIT %s OFFSET %s"""
+        self.cur.execute(query, (skey,limit, offset))
         leagues = self.cur.fetchall()
         print('leagues:', leagues)
         leaguelist = []
@@ -88,5 +96,5 @@ class Leagues:
             ld = dict(zip(leaguetable, l))
             league = League(ld['name'], ld['country_id'], ld['country'],ld['id'])
             leaguelist.append(league)
-        return leaguelist
+        return leaguelist, total
 
