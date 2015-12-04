@@ -214,6 +214,7 @@
 
                 console.log('selected:'+selected_page);
                 var limit = $('#result_limit').attr('data-limit');
+                if (!limit) limit = 10;
                 if (window.location.pathname.startsWith('/leagues/g/')) {
                     window.location.replace(window.location.origin + '/leagues?' + 'limit='+limit+'&page='+selected_page);
                 } else {
