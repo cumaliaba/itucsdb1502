@@ -1,6 +1,6 @@
 {%extends "layout.html"%}
 
-{%block title%}Teams{%endblock%}
+{%block title%}Players{%endblock%}
 
 {%block script%}
     <script>
@@ -14,7 +14,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/teams',
+                    url: '/players',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -44,7 +44,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/teams',
+                    url: '/players',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -75,7 +75,7 @@
                 console.log(this);
                 var name=this.name;
                 $.ajax({
-                    url: '/teams/g/'+this.name,
+                    url: '/players/g/'+this.name,
                     data: {'id': this.name,
                     },
                     type: 'GET',
@@ -83,23 +83,24 @@
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
                             // show update item form
-                            $('#team_item_update').removeClass('hidden');
+                            $('#player_item_update').removeClass('hidden');
                             
                             // scroll page to update element
                             $('html, body').animate({
-                                        scrollTop: $("#team_item_update").offset().top
+                                        scrollTop: $("#player_item_update").offset().top
                                                 }, 1000);
                             
                             // show cancel button for editable item
                             //$('#cancel_updateBtn').removeClass('hidden');
                             
                             // get selected item data from server response 
-                            team=data['team'];
-                            $('#team_item_update input[name=name]').val(team['name']);
-                            $('#team_item_update select[name=coach]').val(team['coach_id']);
-                            $('#team_item_update input[name=id]').val(team['id']);
+                            player=data['player'];
+                            $('#player_item_update input[name=name]').val(player['name']);
+                           // $('#player_item_update input[age=age]').val(player['age']);
+                            $('#player_item_update select[name=country]').val(player['country_id']);
+                            $('#player_item_update input[name=id]').val(player['id']);
                             var base_url = window.location.origin;
-                            var newurl = base_url + "/teams/g/" + team['id']; 
+                            var newurl = base_url + "/players/g/" + player['id']; 
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -112,7 +113,7 @@
 
 
             $('#cancel_updateBtn').click(function(){
-                $('#team_item_update').addClass('hidden');
+                $('#player_item_update').addClass('hidden');
                 //$('#cancel_updateBtn').addClass('hidden');
             });
 
@@ -120,7 +121,7 @@
                 var key=$('#searchBox').val();
 
                 var base_url = window.location.origin;
-                var search_url = base_url + "/teams/s/" + key
+                var search_url = base_url + "/players/s/" + key
                 window.location.replace(search_url); 
             });
 
@@ -215,8 +216,8 @@
                 console.log('selected:'+selected_page);
                 var limit = $('#result_limit').attr('data-limit');
                 if (!limit) limit = 10;
-                if (window.location.pathname.startsWith('/teams/g/')) {
-                    window.location.replace(window.location.origin + '/teams?' + 'limit='+limit+'&page='+selected_page);
+                if (window.location.pathname.startsWith('/players/g/')) {
+                    window.location.replace(window.location.origin + '/players?' + 'limit='+limit+'&page='+selected_page);
                 } else {
                     window.location.search = 'limit='+limit+'&page='+selected_page;
                 }
@@ -254,7 +255,7 @@
                             <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
                         </div>
                         <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
-                        <a href="{{url_for('team_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                        <a href="{{url_for('player_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
                     </div>
                 </div>
             </div>
@@ -262,18 +263,18 @@
             <div class="col-md-6">
 
                 <div class="panel panel-success">
-                    <div class="panel-heading">Add Team</div>
+                    <div class="panel-heading">Add Player</div>
                     <div class="panel-body">
-                        <div id="team_item_input" class="team_item_input">
-                            <form action="{{url_for('team_page')}}" method="post">
+                        <div id="player_item_input" class="player_item_input">
+                            <form action="{{url_for('player_page')}}" method="post">
                             <table id="add_item_table" class="table">
                                 <tr id="add_item_table_tr">
-                                    {%for var in teamtable[1:] %}
+                                    {%for var in playertable[1:] %}
                                     <td>
-                                        {%if var=='coach_id'%}
-                                        {%elif var=='coach'%}
-                                        <select id="coach" name="{{var}}" class="form-control">
-                                                {%for c in coaches%}
+                                        {%if var=='country_id'%}
+                                        {%elif var=='country'%}
+                                        <select id="country" name="{{var}}" class="form-control">
+                                                {%for c in countries%}
                                                 <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
                                                 {%endfor%}
                                             </select>
@@ -291,15 +292,15 @@
                 </div>
             </div>
 
-            <!-- Show teams table -->
+            <!-- Show players table -->
             <div class="col-md-8">
-            {%if teams|length==0%}
+            {%if players|length==0%}
             <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
             {%else%}
             
-                <!-- Team table panel -->
+                <!-- Player table panel -->
                 <div class="panel panel-default">
-                    <div class="panel-heading">Team Table</div>
+                    <div class="panel-heading">Player Table</div>
                     <div class="panel-body">
                                 <form class="form-inline">
                                     <div class="form-group">
@@ -322,19 +323,20 @@
                         <table id="table" class="table table-hover">
                             <tr>
                                 <th></th>
-                                {%for var in teamtable[1:]%}
-                                    {%if var=='coach_id'%}
+                                {%for var in playertable[1:]%}
+                                    {%if var=='country_id'%}
                                     {%else%}
                                     <th>{{var}}</th>
                                     {%endif%}
                                 {%endfor%}
                                     <th></th>
                             </tr>
-                            {%for l in teams%}
+                            {%for l in players%}
                             <tr name="{{l._id}}">
                                 <td><input type="checkbox" name="{{l._id}}" ></td>
                                 <td>{{l.name}}</td>
-                                <td>{{l.coach}}</td>
+                                <td>{{l.age}}</td>
+                                <td>{{l.country}}</td>
                                 <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn"><i class="fa fa-trash fa-md"></i></button>
                                     <button name="{{l._id}}" class="btn btn-warning update_itemBtn"><i class="fa fa-pencil fa-md"></i></button>
                                     <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
@@ -369,16 +371,16 @@
                             * Primarily hidden. 
                             * This form will be visible when edit button clicked 
                         -->
-                        <div id="team_item_update" class="hidden">
-                            <form id="update_form" action="{{url_for('team_page')}}" method="POST">
+                        <div id="player_item_update" class="hidden">
+                            <form id="update_form" action="{{url_for('player_page')}}" method="POST">
                             <table id="update_item_table" class="table">
                                 <tr id="update_item_table_tr">
-                                    {%for var in teamtable[1:] %}
+                                    {%for var in playertable[1:] %}
                                     <td>
-                                        {% if var=='coach_id'%}
-                                        {% elif var=='coach'%}
-                                        <select id="coach" name="{{var}}" class="form-control">
-                                                {%for c in coaches%}
+                                        {% if var=='country_id'%}
+                                        {% elif var=='country'%}
+                                        <select id="country" name="{{var}}" class="form-control">
+                                                {%for c in countries%}
                                                 <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
                                                 {%endfor%}
                                             </select>
@@ -398,7 +400,7 @@
                     </div>
                 </div>
 
-                {%if teams|length>=1 %} 
+                {%if players|length>=1 %} 
                     <button type="button" id="delete_selectedBtn" class="btn btn-danger">Delete Selections</button>
                 {%endif%}
             </div>
