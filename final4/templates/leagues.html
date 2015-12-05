@@ -350,14 +350,14 @@
                                 <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
-                            {%for i in range(((total/limit)+0.5)|round|int)%}
+                            {%for i in range((total/limit)|round(0,'ceil')|int)%}
                                 {%if i==page %}
                                 <li class=active><a name="{{i}}">{{i+1}}</a></li>
                                 {%else%}
                                 <li><a name="{{i}}">{{i+1}}</a></li>
                                 {%endif%}
                             {%endfor%}
-                            <li {%if page==((total/limit))|round(1,'floor')|int %}class="disabled"{%endif%}>
+                            <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
                                 <a aria-label="Next" name="next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
