@@ -275,9 +275,11 @@
                                     <td>
                                         {%if var=='country_id'%}
                                         {%elif var=='country'%}
-                                        <select id="country" name="{{var}}" class="form-control">
+                                        <select id="country" name="{{var}}" class="form-control icon-menu">
                                                 {%for c in countries%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                                <option value="{{c._id}}" name="{{c.name}}" style="background-image:url('{{c.flagpath}}')">
+                                                    {{c.name}}
+                                                </option>
                                                 {%endfor%}
                                             </select>
                                         {%else%}

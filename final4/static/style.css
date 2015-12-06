@@ -40,3 +40,11 @@ p.error {
 p.success {
     color: green;
 }
+
+/* text with icon for select - option box */
+select.icon-menu option {
+    background-repeat:no-repeat;
+    background-position:bottom left;
+    padding-left:30px;
+    background-size:30px;
+}
