@@ -96,7 +96,7 @@ def initialize_database():
         # players table
         query = """CREATE TABLE players (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
-                               age varchar(3),
+                                age varchar(3),
                                country_id integer references countries(id), playing_position varchar(32));
         """
         cur.execute(query)

@@ -14,7 +14,7 @@ from flask import request
 def team_page():
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    coaches = coach.Coaches(conn, cur)
+    coaches = coach.Countries(conn, cur)
     print('TEAMS PAGE')
     if request.method == 'GET':
         print ('GET REQUEST', request.args)
@@ -68,7 +68,7 @@ def team_page():
 def team_from_id(lid):
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    coaches = coach.Coaches(conn, cur)
+    coaches = coach.Countries(conn, cur)
     
     if request.method == 'GET':
         l= teams.get_team(lid)
@@ -100,7 +100,7 @@ def team_from_id(lid):
 def search_team(key):
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    coaches = coach.Coaches(conn, cur)
+    coaches = coach.Countries(conn, cur)
 
     limit = int(request.args['limit']) if 'limit' in request.args else 10
     page = int(request.args['page']) if 'page' in request.args else 0
