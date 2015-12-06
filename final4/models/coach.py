@@ -57,25 +57,39 @@ class Coaches:
         else:
             return None
 
-    def get_coaches(self):
+    def get_coaches(self, limit=100, offset=0):
+        query = """SELECT count(coaches.id)
+                        FROM coaches,countries WHERE countries.id=coaches.country_id
+                          """
+        self.cur.execute(query)
+        total = self.cur.fetchone()[0]
+
         query = """SELECT coaches.id, coaches.name, coaches.surname, countries.id, countries.name 
                         FROM coaches,countries WHERE countries.id=coaches.country_id
-                          ORDER BY coaches.name"""
-        self.cur.execute(query)
+                          ORDER BY coaches.name LIMIT %s OFFSET %s"""
+        self.cur.execute(query, (limit, offset))
         coaches = self.cur.fetchall()
         coachlist = []
         for l in coaches:
             ld = dict(zip(coachtable, l))
             coach = Coach(ld['name'], ld['surname'], ld['country_id'], ld['country'],ld['id'])
             coachlist.append(coach)
-        return coachlist
+        return coachlist, total
 
-    def get_coaches_by(self, key, var):
-        skey = str(key) + '%'
-        query = """SELECT coaches.id, coaches.name, coaches.surname, coaches.country_id, countries.name
-                        FROM coaches,countries WHERE coaches.name LIKE %s AND 
-                            countries.id=coaches.country_id ORDER BY coaches.name"""
+    def get_coaches_by(self, attrib, search_key, limit=100, offset=0):
+        skey = str(search_key)
+        
+        query = """SELECT count(coaches.id)
+                        FROM coaches,countries WHERE coaches.{attrib}=%s AND 
+                            countries.id=coaches.country_id""".format(attrib=attrib)
         self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+        
+        query = """SELECT coaches.id, coaches.name, coaches.surname, coaches.country_id, countries.name
+                        FROM coaches,countries WHERE coaches.{attrib}=%s AND 
+                            countries.id=coaches.country_id ORDER BY coaches.name 
+                            LIMIT %s OFFSET %s""".format(attrib=attrib)
+        self.cur.execute(query, (skey, limit, offset))
         coaches = self.cur.fetchall()
         print('coaches:', coaches)
         coachlist = []
@@ -83,5 +97,28 @@ class Coaches:
             ld = dict(zip(coachtable, l))
             coach = Coach(ld['name'], ld['surname'], ld['country_id'], ld['country'],ld['id'])
             coachlist.append(coach)
-        return coachlist
+        return coachlist, total
+
+    def get_coaches_search_by(self, attrib, search_key, limit=100, offset=0):
+        skey = str(search_key) + '%'
+        
+        query = """SELECT count(coaches.id)
+                        FROM coaches,countries WHERE coaches.{attrib} LIKE %s AND 
+                            countries.id=coaches.country_id""".format(attrib=attrib)
+        self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+        
+        query = """SELECT coaches.id, coaches.name, coaches.surname, coaches.country_id, countries.name
+                        FROM coaches,countries WHERE coaches.{attrib} LIKE %s AND 
+                            countries.id=coaches.country_id ORDER BY coaches.name 
+                            LIMIT %s OFFSET %s""".format(attrib=attrib)
+        self.cur.execute(query, (skey, limit, offset))
+        coaches = self.cur.fetchall()
+        print('coaches:', coaches)
+        coachlist = []
+        for l in coaches:
+            ld = dict(zip(coachtable, l))
+            coach = Coach(ld['name'], ld['surname'], ld['country_id'], ld['country'],ld['id'])
+            coachlist.append(coach)
+        return coachlist, total
 

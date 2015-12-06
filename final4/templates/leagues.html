@@ -339,7 +339,7 @@
                             <tr name="{{l._id}}">
                                 <td><input type="checkbox" name="{{l._id}}" ></td>
                                 <td>{{l.name}}</td>
-                                <td>{{l.country}}</td>
+                                <td><a href="{{url_for('view_country', country_name=l.country)}}">{{l.country}}</a></td>
                                 <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
                                     <button name="{{l._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
                                     <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>

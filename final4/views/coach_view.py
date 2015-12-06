@@ -17,7 +17,7 @@ def coach_page():
     countries = country.Countries(conn, cur)
     print('coaches PAGE')
     if request.method == 'GET':
-        l = coaches.get_coaches()
+        l, total_leagues = coaches.get_coaches()
         c = countries.get_countries()
         return render_template('coaches.html', coachtable=coach.coachtable, coaches=l, countries=c)
     elif request.method == 'POST':
@@ -28,7 +28,7 @@ def coach_page():
         lg = coach.Coach(name, surname, country_id)
         coaches.add_coach(lg)
         
-        l = coaches.get_coaches()
+        l, total_leagues = coaches.get_coaches()
         c = countries.get_countries()
         return render_template('coaches.html', coachtable=coach.coachtable, coaches=l, countries=c)
 
@@ -73,7 +73,7 @@ def coach_from_id(lid):
         lg = coach.Coach(name, surname, country_id)
         coaches.update_coach(lid, lg)
 
-        l = coaches.get_coaches()
+        l, total_leagues = coaches.get_coaches()
         c = countries.get_countries()
         return render_template('coaches.html', coachtable=coach.coachtable, coaches=l, countries=c)
 
@@ -84,6 +84,6 @@ def search_coach(key):
     coaches = coach.Coaches(conn, cur)
     countries = country.Countries(conn, cur)
 
-    result = coaches.get_coaches_by(key, 'name')
+    result, total_leagues = coaches.get_coaches_search_by('name', key)
     c = countries.get_countries()
     return render_template('coaches.html', coachtable=coach.coachtable, coaches=result, countries=c)

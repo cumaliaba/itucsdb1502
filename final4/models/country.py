@@ -48,8 +48,21 @@ class Countries:
         self.conn.commit()
 
     def get_country(self,_id):
-        query = """SELECT * FROM countries WHERE id=%s ORDER BY name"""
+        query = """SELECT * FROM countries WHERE id=%s"""
         self.cur.execute(query, (_id,))
+        # c: country attributes array
+        # cd: country dictionary
+        c = self.cur.fetchone()
+        if c:
+            cd = dict(zip(countrytable, c))
+            country = Country(cd['name'], cd['code'], cd['id'])
+            return country
+        else:
+            return None
+
+    def get_country_name(self, name):
+        query = """SELECT * FROM countries WHERE name=%s"""
+        self.cur.execute(query, (name,))
         # c: country attributes array
         # cd: country dictionary
         c = self.cur.fetchone()

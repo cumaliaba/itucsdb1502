@@ -107,7 +107,7 @@ def search_league(key):
     
     offset = page*limit
 
-    result,total = leagues.get_leagues_by(key, 'name', limit, offset)
+    result,total = leagues.get_leagues_search_by('name', key,  limit, offset)
     c = countries.get_countries()
     return render_template('leagues.html', leaguetable=league.leaguetable, leagues=result, countries=c, total=total, 
                             limit=limit, page=page)
