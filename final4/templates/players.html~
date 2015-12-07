@@ -96,7 +96,9 @@
                             // get selected item data from server response 
                             player=data['player'];
                             $('#player_item_update input[name=name]').val(player['name']);
-                           // $('#player_item_update input[age=age]').val(player['age']);
+                            $('#player_item_update input[surname=surname]').val(player['surname']);
+                            $('#player_item_update input[age=age]').val(player['age']);
+                            $('#player_item_update input[pp=pp]').val(player['pp']);
                             $('#player_item_update select[name=country]').val(player['country_id']);
                             $('#player_item_update input[name=id]').val(player['id']);
                             var base_url = window.location.origin;
@@ -270,6 +272,7 @@
                             <table id="add_item_table" class="table">
                                 <tr id="add_item_table_tr">
                                     {%for var in playertable[1:] %}
+                                    
                                     <td>
                                         {%if var=='country_id'%}
                                         {%elif var=='country'%}
@@ -323,6 +326,7 @@
                         <table id="table" class="table table-hover">
                             <tr>
                                 <th></th>
+                                <th>photo</th>
                                 {%for var in playertable[1:]%}
                                     {%if var=='country_id'%}
                                     {%else%}
@@ -331,15 +335,18 @@
                                 {%endfor%}
                                     <th></th>
                             </tr>
-                            {%for l in players%}
-                            <tr name="{{l._id}}">
-                                <td><input type="checkbox" name="{{l._id}}" ></td>
-                                <td>{{l.name}}</td>
-                                <td>{{l.age}}</td>
-                                <td>{{l.country}}</td>
-                                <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn"><i class="fa fa-trash fa-md"></i></button>
-                                    <button name="{{l._id}}" class="btn btn-warning update_itemBtn"><i class="fa fa-pencil fa-md"></i></button>
-                                    <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
+                            {%for p in players%}
+                            <tr name="{{p._id}}">
+                                <td><input type="checkbox" name="{{p._id}}" ></td>
+                                <td><img src={{p.photo}} width=32></td>
+                                <td>{{p.name}}</td>
+                                <td>{{p.surname}}</td>
+                                <td>{{p.age}}</td>
+                                <td>{{p.pp}}</td>
+                                <td>{{p.country}}</td>
+                                <td><button name="{{p._id}}" class="btn btn-danger delete_itemBtn"><i class="fa fa-trash fa-md"></i></button>
+                                    <button name="{{p._id}}" class="btn btn-warning update_itemBtn"><i class="fa fa-pencil fa-md"></i></button>
+                                    <button name="{{p._id}}" id="{{p._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
                             </tr>
                             {%endfor%}
                         </table>

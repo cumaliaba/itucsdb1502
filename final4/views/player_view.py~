@@ -15,7 +15,7 @@ def player_page():
     conn, cur = getDb()
     players = player.Players(conn, cur)
     countries = country.Countries(conn, cur)
-    print('LEAGUES PAGE')
+    print('PLAYERS PAGE')
     if request.method == 'GET':
         print ('GET REQUEST', request.args)
         limit = int(request.args['limit']) if 'limit' in request.args else 10
@@ -24,29 +24,31 @@ def player_page():
         offset = page*limit
         print('page:',page,'limit',limit,'offset',offset)
         orderby = request.args['orderby'] if 'orderby' in request.args else 'asc'
-        l, total = players.get_players(limit, offset)
+        p, total = players.get_players(limit, offset)
         c = countries.get_countries()
-        return render_template('players.html', playertable=player.playertable, players=l, countries=c, total=total, 
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
                                 limit=limit, page=page)
     elif request.method == 'POST':
-        print('ADD LEAGUE')
+        print('ADD PLAYER')
         name = request.form['name']
+        surname = request.form['surname']
         age = request.form['age']
+        pp = request.form['pp']
         country_id = request.form['country']
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
         orderby = request.form['orderby'] if 'orderby' in request.form else 'asc'
-        lg = player.Player(name,age, country_id)
-        players.add_player(lg)
+        pl = player.Player(name,surname,age,pp,country_id)
+        players.add_player(pl)
         
-        l, total = players.get_players(limit, offset)
+        p, total = players.get_players(limit, offset)
         c = countries.get_countries()
-        return render_template('players.html', playertable=player.playertable, players=l, countries=c, total=total, 
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
                                 limit=limit, page=page)
 
     elif request.method == 'DEL':
-        print ('DELETE REQUEST:LEAGUES PAGE')
+        print ('DELETE REQUEST:PLAYERS PAGE')
         print (request.form)
         # concat json var with '[]' for calling array getted with request
         idlist = request.form.getlist('ids[]')
@@ -65,22 +67,25 @@ def player_page():
             players.delete_player(_id)
         return json.dumps({'status':'OK', 'idlist':idlist})
 
-@app.route('/players/g/<lid>', methods=['GET','POST'])
-def player_from_id(lid):
+@app.route('/players/g/<pid>', methods=['GET','POST'])
+def player_from_id(pid):
     conn, cur = getDb()
     players = player.Players(conn, cur)
     countries = country.Countries(conn, cur)
     
     if request.method == 'GET':
-        l= players.get_player(lid)
-        if l:
-            return json.dumps({'status':'OK', 'player':l.getAttrs()})
+        p= players.get_player(pid)
+        if p:
+            return json.dumps({'status':'OK', 'player':p.getAttrs()})
         else:
             return json.dumps({'status':'FAILED'})
     elif request.method == 'POST':
         print("POST METHOD REQUEST")
-        lid = request.form['id']
+        pid = request.form['id']
         name = request.form['name']
+        surname = request.form['surname']
+        age = request.form['age']
+        pp = request.form['pp']  
         country_id = request.form['country']
         # limit: number of result showing each page
         # offset: selectedpage x limit
@@ -88,12 +93,12 @@ def player_from_id(lid):
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
         orderby = request.form['orderby'] if 'orderby' in request.form else 'asc'
-        lg = player.Player(name, country_id)
-        players.update_player(lid, lg)
+        pl = player.Player(age,pp,country_id)
+        players.update_player(pid, pl)
         
-        l, total = players.get_players(limit, offset)
+        p, total = players.get_players(limit, offset)
         c = countries.get_countries()
-        return render_template('players.html', playertable=player.playertable, players=l, countries=c, total=total, 
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
                                 limit=limit, page=page)
 
 

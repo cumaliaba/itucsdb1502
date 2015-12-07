@@ -1,0 +1,7 @@
+{%extends "layout.html"%}
+
+{%block title%}Home{%endblock%}
+
+{%block content%}
+        <img src=~/itucsdb1502/final4/static/data/players/hidayettürkoğlu.png>
+{%endblock%}

@@ -26,6 +26,7 @@ from final4.views import stat_view
 from final4.views import country_view
 from final4.views import coach_view
 from final4.views import team_view
+from final4.views import teamroster_view
 from final4.views import season_view
 from final4.views import standing_view
 
@@ -96,8 +97,10 @@ def initialize_database():
         # players table
         query = """CREATE TABLE players (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
+                               surname varchar(32) NOT NULL,
                                age varchar(3),
-                               country_id integer references countries(id), playing_position varchar(32));
+                               pp  varchar(32),
+                               country_id integer references countries(id));
         """
         cur.execute(query)
 
@@ -135,14 +138,14 @@ def initialize_database():
         # teams table
         query = """CREATE TABLE teams (id serial PRIMARY KEY, 
                                name varchar(255) NOT NULL,
-                               coach_id integer references coaches(id) );
+                               country_id integer references countries(id) );
         """
         cur.execute(query)
 	# teamrosters table
         query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
                                team_id integer REFERENCES teams(id),
                                player_id integer REFERENCES players(id));
-        """
+"        """
 
 
         conn.commit() # commit changes

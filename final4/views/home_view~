@@ -1,0 +1,30 @@
+import sys
+import json
+
+from final4.config import app
+from final4.db_helper import getDb
+from final4.models import player
+from final4.models import country
+
+from flask import render_template
+from flask import request
+
+# player views
+@app.route('/home', methods=['GET'])
+def player_page():
+    conn, cur = getDb()
+    players = player.Players(conn, cur)
+    countries = country.Countries(conn, cur)
+    print('PLAYERS PAGE')
+    if request.method == 'GET':
+        print ('GET REQUEST', request.args)
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        orderby = request.args['orderby'] if 'orderby' in request.args else 'asc'
+        p, total = players.get_players(limit, offset)
+        c = countries.get_countries()
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
+                                limit=limit, page=page)

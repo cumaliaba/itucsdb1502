@@ -73,7 +73,7 @@ class Teamrosters:
             teamteamrosterlist.append(teamroster)
         return teamteamrosterlist, total
 
-    def get_teamrosters_by(self, key, var, limit, offset):
+    def get_teams_by(self, key, var, limit, offset):
         skey = str(key) + '%'
 
         query = """SELECT count(teamrosters.id)
@@ -87,11 +87,11 @@ class Teamrosters:
                             LIMIT %s OFFSET %s"""
         self.cur.execute(query, (skey,limit, offset))
         teams = self.cur.fetchall()
-        print('teamrosters:', teamrosters)
-        teamrosterlist = []
-        for tr in teamrosters:
-            trd = dict(zip(teamrostertable, tr))
-            teamroster = Teamroster(trd['team_id'], trd['player_id'], trd['team'],trd['player'],trd['id'])
-            teamrosterlist.append(teamroster)
-        return teamrosterlist, total
+        print('teams:', teams)
+        teamlist = []
+        for l in teams:
+            ld = dict(zip(teamtable, l))
+            team = Team(ld['name'], ld['coach_id'], ld['coach'],ld['id'])
+            teamlist.append(team)
+        return teamlist, total
 
