@@ -86,11 +86,11 @@
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
                             // show update item form
-                            $('#league_item_update').removeClass('hidden');
+                            $('#update_item_div').removeClass('hidden');
                             
                             // scroll page to update element
                             $('html, body').animate({
-                                        scrollTop: $("#league_item_update").offset().top
+                                        scrollTop: $("#update_item_div").offset().top
                                                 }, 1000);
                             
                             // show cancel button for editable item
@@ -98,9 +98,9 @@
                             
                             // get selected item data from server response 
                             league=data['league'];
-                            $('#league_item_update input[name=name]').val(league['name']);
-                            $('#league_item_update select[name=country]').val(league['country_id']);
-                            $('#league_item_update input[name=id]').val(league['id']);
+                            $('#update_item_div input[name=name]').val(league['name']);
+                            $('#update_item_div select[name=country]').val(league['country_id']);
+                            $('#update_item_div input[name=id]').val(league['id']);
                             var base_url = window.location.origin;
                             var newurl = base_url + "/leagues/g/" + league['id']; 
                             $('#update_form').attr('action', newurl);
@@ -115,7 +115,7 @@
 
 
             $('#cancel_updateBtn').click(function(){
-                $('#league_item_update').addClass('hidden');
+                $('#update_item_div').addClass('hidden');
                 //$('#cancel_updateBtn').addClass('hidden');
             });
 
@@ -282,7 +282,9 @@
                             <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
                         </div>
                         <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
+                        {%block search_reset_link%}
                         <a href="{{url_for('league_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                        {%endblock%}
                     </div>
                 </div>
             </div>
@@ -290,9 +292,10 @@
             <div class="col-md-6">
 
                 <div class="panel panel-success">
-                    <div class="panel-heading">Add League</div>
+                    <div class="panel-heading">{%block add_item_panel_heading%}Add League{%endblock%}</div>
                     <div class="panel-body">
-                        <div id="league_item_input" class="league_item_input">
+                        <div id="table_item_input" class="table_item_input">
+                            {%block add_item_form%}
                             <form action="{{url_for('league_page')}}" method="post">
                             <table id="add_item_table" class="table">
                                 <tr id="add_item_table_tr">
@@ -316,20 +319,21 @@
                                 </tr>
                             </table>
                             </form>
+                            {%endblock%}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Show leagues table -->
+            <!-- Show items table -->
             <div class="col-md-8">
             {%if total==0%}
             <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
             {%else%}
             
-                <!-- League table panel -->
+                <!-- Items table panel -->
                 <div class="panel panel-default">
-                    <div class="panel-heading">League Table</div>
+                    <div class="panel-heading">{%block item_table_panel_heading%}League Table{%endblock%}</div>
                     <div class="panel-body">
                                 <form class="form-inline">
                                     <div class="form-group">
@@ -349,6 +353,7 @@
                         <span class="label label-success">
                             <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span> result found.
                         </span>
+                        {%block item_table_panel_table%}
                         <table id="table" class="table table-hover">
                             <tr>
                                 <th></th>
@@ -373,8 +378,10 @@
                             </tr>
                             {%endfor%}
                         </table>
-                        {%endif%}
-
+                        {%endblock%}
+            {%endif%}
+                        <!--Pagination-->
+                        {%block pagination%}
                         <nav>
                             <ul class="pagination pagination-sm" id="pagination" data-end="{{((total/limit)+0.5)|round|int}}"name="aaa">
                             <li {%if page==0 %}class="disabled"{%endif%}>
@@ -396,12 +403,15 @@
                             </li>
                         </ul>
                         </nav>
+                        {%endblock%}
+                        <!--end pagination-->
 
                         <!-- Update item form. 
                             * Primarily hidden. 
                             * This form will be visible when edit button clicked 
                         -->
-                        <div id="league_item_update" class="hidden">
+                        <div id="update_item_div" class="hidden">
+                            {%block update_item_form%}
                             <form id="update_form" action="{{url_for('league_page')}}" method="POST">
                             <table id="update_item_table" class="table">
                                 <tr id="update_item_table_tr">
@@ -425,14 +435,17 @@
                                 </tr>
                             </table>
                             </form>
+                            {%endblock%}
                         </div>
 
                     </div>
                 </div>
 
+                {%block delete_selected%}
                 {%if total>=1 %} 
                     <button type="button" id="delete_selectedBtn" class="btn btn-danger">Delete Selections</button>
                 {%endif%}
+                {%endblock%}
             </div>
         </div>
 {%endblock%}

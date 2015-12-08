@@ -1,3 +1,5 @@
+from flask import url_for
+
 coachtable = ['id', 'name', 'surname', 'country_id', 'country']
 
 class Coach:
@@ -7,6 +9,14 @@ class Coach:
         self.surname = surname
         self.country_id = country_id
         self.country = country
+    
+    def img_path(self, _id=None):
+        if _id==None and self._id==None:
+            return url_for('static',filename='.') + 'data/img/coaches/na.png'
+        if _id:
+            return url_for('static',filename='.') + 'data/img/coaches/' + str(_id) + '.png'
+        else:
+            return url_for('static',filename='.') +'data/img/coaches/' + str(self._id) + '.png'
 
     def getAttrs(self):
         return (dict(zip(coachtable, (self._id, self.name, self.surname, self.country_id, self.country))))
@@ -20,10 +30,12 @@ class Coaches:
     def add_coach(self, coach):
         print("addcoach ", coach)
         query = """INSERT INTO coaches (name, surname, country_id) 
-                                    values (%s,%s,%s)""" 
+                                    values (%s,%s,%s) RETURNING id""" 
 
         self.cur.execute(query, (coach.name, coach.surname, coach.country_id))
+        insert_id = self.cur.fetchone()[0]
         self.conn.commit()
+        return insert_id
 
     def delete_coach(self, _id):
         query = """DELETE FROM coaches WHERE id=%s"""
