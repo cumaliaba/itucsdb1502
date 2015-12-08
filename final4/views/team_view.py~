@@ -4,7 +4,7 @@ import json
 from final4.config import app
 from final4.db_helper import getDb
 from final4.models import team
-from final4.models import coach
+from final4.models import country
 
 from flask import render_template
 from flask import request
@@ -14,7 +14,7 @@ from flask import request
 def team_page():
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    coaches = coach.Countries(conn, cur)
+    countries = country.Countries(conn, cur)
     print('TEAMS PAGE')
     if request.method == 'GET':
         print ('GET REQUEST', request.args)
@@ -24,24 +24,24 @@ def team_page():
         offset = page*limit
         print('page:',page,'limit',limit,'offset',offset)
         orderby = request.args['orderby'] if 'orderby' in request.args else 'asc'
-        l, total = teams.get_teams(limit, offset)
-        c = coaches.get_coaches()
-        return render_template('teams.html', teamtable=team.teamtable, teams=l, coaches=c, total=total, 
+        t, total = teams.get_teams(limit, offset)
+        c = countries.get_countries()
+        return render_template('teams.html', teamtable=team.teamtable, teams=t, countries=c, total=total, 
                                 limit=limit, page=page)
     elif request.method == 'POST':
         print('ADD TEAM')
         name = request.form['name']
-        coach_id = request.form['coach']
+        country_id = request.form['country']
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
         orderby = request.form['orderby'] if 'orderby' in request.form else 'asc'
-        lg = team.Team(name, coach_id)
+        lg = team.Team(name, country_id)
         teams.add_team(lg)
         
-        l, total = teams.get_teams(limit, offset)
-        c = coaches.get_coaches()
-        return render_template('teams.html', teamtable=team.teamtable, teams=l, coaches=c, total=total, 
+        t, total = teams.get_teams(limit, offset)
+        c = countries.get_countries()
+        return render_template('teams.html', teamtable=team.teamtable, teams=t, countries=c, total=total, 
                                 limit=limit, page=page)
 
     elif request.method == 'DEL':
@@ -64,35 +64,35 @@ def team_page():
             teams.delete_team(_id)
         return json.dumps({'status':'OK', 'idlist':idlist})
 
-@app.route('/teams/g/<lid>', methods=['GET','POST'])
-def team_from_id(lid):
+@app.route('/teams/g/<tid>', methods=['GET','POST'])
+def team_from_id(tid):
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    coaches = coach.Countries(conn, cur)
+    countries = country.Countries(conn, cur)
     
     if request.method == 'GET':
-        l= teams.get_team(lid)
-        if l:
-            return json.dumps({'status':'OK', 'team':l.getAttrs()})
+        t= teams.get_team(tid)
+        if t:
+            return json.dumps({'status':'OK', 'team':t.getAttrs()})
         else:
             return json.dumps({'status':'FAILED'})
     elif request.method == 'POST':
         print("POST METHOD REQUEST")
-        lid = request.form['id']
+        tid = request.form['id']
         name = request.form['name']
-        coach_id = request.form['coach']
+        country_id = request.form['country']
         # limit: number of result showing each page
         # offset: selectedpage x limit
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
         orderby = request.form['orderby'] if 'orderby' in request.form else 'asc'
-        lg = team.Team(name, coach_id)
-        teams.update_team(lid, lg)
+        lg = team.Team(name, country_id)
+        teams.update_team(tid, lg)
         
-        l, total = teams.get_teams(limit, offset)
-        c = coaches.get_coaches()
-        return render_template('teams.html', teamtable=team.teamtable, teams=l, coaches=c, total=total, 
+        t, total = teams.get_teams(limit, offset)
+        c = countries.get_countries()
+        return render_template('teams.html', teamtable=team.teamtable, teams=t, countries=c, total=total, 
                                 limit=limit, page=page)
 
 
@@ -100,14 +100,14 @@ def team_from_id(lid):
 def search_team(key):
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    coaches = coach.Countries(conn, cur)
+    countries = country.Countries(conn, cur)
 
     limit = int(request.args['limit']) if 'limit' in request.args else 10
     page = int(request.args['page']) if 'page' in request.args else 0
     
     offset = page*limit
 
-    result,total = teams.get_teams_by(key, 'name', limit, offset)
-    c = coaches.get_coaches()
-    return render_template('teams.html', teamtable=team.teamtable, teams=result, coaches=c, total=total, 
+    result,total = teams.get_teams_search_by('name', key,  limit, offset)
+    c = countries.get_countries()
+    return render_template('teams.html', teamtable=team.teamtable, teams=result, countries=c, total=total, 
                             limit=limit, page=page)
