@@ -65,7 +65,7 @@ class Leagues:
 
         query = """SELECT leagues.id, leagues.name, countries.id, countries.name 
                         FROM leagues,countries WHERE countries.id=leagues.country_id
-                          ORDER BY leagues.name LIMIT %s OFFSET %s"""
+                          ORDER BY leagues.name ASC LIMIT %s OFFSET %s"""
         self.cur.execute(query, (limit, offset))
         leagues = self.cur.fetchall()
         leaguelist = []
@@ -101,6 +101,8 @@ class Leagues:
         return leaguelist, total
 
     def get_leagues_search_by(self, attrib, search_key, limit=100, offset=0):
+        # convert search key to special sql search syntax that means
+        # all matches that starts with search_key
         skey = str(search_key) + '%'
 
         # WARNING !!! SQL INJECTION?
