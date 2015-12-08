@@ -12,7 +12,7 @@ class Coach:
     
     def img_path(self, _id=None):
         if _id==None and self._id==None:
-            return url_for('static',filename='.') + 'data/img/coaches/na.png'
+            return url_for('static',filename='.') + 'data/img/coaches/not_available.png'
         if _id:
             return url_for('static',filename='.') + 'data/img/coaches/' + str(_id) + '.png'
         else:
