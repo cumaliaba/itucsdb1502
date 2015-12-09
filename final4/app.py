@@ -113,7 +113,8 @@ def initialize_database():
         # awards table
         query = """CREATE TABLE awards (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
-                               player_id integer references players(id), season_id integer references seasons(id));
+                               player_id integer references players(id), 
+                               season_id integer references seasons(id));
         """
         cur.execute(query)
 
@@ -174,15 +175,15 @@ def drop_tables():
     query = "DROP TABLE IF EXISTS standings;"
     cur.execute(query)
 
-    query="DROP TABLE IF EXISTS seasons;"
-    cur.execute(query)
-
     query = "DROP TABLE IF EXISTS awards;"
+    cur.execute(query)
+    
+    query="DROP TABLE IF EXISTS seasons;"
     cur.execute(query)
 
     query = "DROP TABLE IF EXISTS players;"
     cur.execute(query)
-
+    
     query = "DROP TABLE IF EXISTS leagues;"
     cur.execute(query)
 

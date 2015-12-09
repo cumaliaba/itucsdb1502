@@ -300,15 +300,24 @@
                                     {%for var in awardtable[1:] %}
                                     <td>
                                         {%if var=='player_id'%}
-                                        {%if var=='season_id'%}
-                                        {%if var=='player_name'%}
+                                        {%elif var=='season_id'%}
+										{%elif var=='player_surname'%}
+                                        {%elif var=='player_name'%}
                                         <select id="player" name="{{var}}" class="form-control">
-                                                {%for p in players%}
+												{%for p in players%}
                                                 <option value="{{p._id}}" name="{{p.name}}">
-                                                    {{p.name}}
+                                                    {{p.name +' '+ p.surname}}
                                                 </option>
-                                                {%endfor%}
-                                            </select>
+												{%endfor%}
+										</select>
+                                        {%elif var=='season_year'%}
+                                        <select id="season" name="{{var}}" class="form-control">
+												{%for s in seasons%}
+                                                <option value="{{s._id}}" name="{{s.name}}">
+                                                    {{s.year}}
+                                                </option>
+												{%endfor%}
+										</select>
                                         {%else%}
                                         <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control" required auto-focus>
                                         {%endif%}
@@ -356,6 +365,8 @@
                                 <th></th>
                                 {%for var in awardtable[1:]%}
                                     {%if var=='player_id'%}
+                                    {%elif var=='season_id'%}
+                                    {%elif var=='player_surname'%}
                                     {%elif sortby['attr']==var%}
                                     <th><a role="button" id="table-sort-icon" class="table-sort-header" name="{{var}}" data-sort-prop="{{sortby['property']}}" selected="selected">{{var}}<i class="fa fa-sort-{{sortby['property']}}"></i></a></th>
                                     {%else%}
@@ -410,12 +421,22 @@
                                     {%for var in awardtable[1:] %}
                                     <td>
                                         {% if var=='player_id'%}
-                                        {% elif var=='player_name'%}
+                                        {%elif var=='season_id'%}
+										{%elif var=='player_surname'%}
+                                        {%elif var=='player_name'%}
                                         <select id="country" name="{{var}}" class="form-control">
                                                 {%for p in players%}
                                                 <option value="{{p._id}}" name="{{p.name}}">{{p.name}}</option>
                                                 {%endfor%}
-                                            </select>
+                                        </select>
+                                        {%elif var=='season_year'%}
+                                        <select id="season" name="{{var}}" class="form-control">
+												{%for s in seasons%}
+                                                <option value="{{s._id}}" name="{{s.name}}">
+                                                    {{s.year}}
+                                                </option>
+												{%endfor%}
+										</select>
                                         {%else%}
                                         <input type="text" class="form-control" name="{{var}}" placeholder="{{var}}">
                                         {%endif%}

@@ -39,13 +39,14 @@ def award_page():
         # handle POST request
         print('ADD award')
         name = request.form['name']
-        player_id = request.form['player_id']
-        season_id = request.form['season_id']
+        player_id = request.form['player_name']
+        season_id = request.form['season_year']
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
         order = request.form['sortby'] if 'sortby' in request.form else 'name'
         order = request.form['order'] if 'order' in request.form else 'asc'
+        print(name, player_id, season_id)
         award_obj = award.Award(name, player_id, season_id)
         awards.add_award(award_obj)
         
@@ -97,8 +98,8 @@ def award_from_id(award_id):
         print("POST METHOD REQUEST")
         award_id = request.form['id']
         name = request.form['name']
-        player_id = request.form['player_id']
-        season_id = request.form['season_id']
+        player_id = request.form['player_name']
+        season_id = request.form['season_year']
         # limit: number of result showing each page
         # offset: selectedpage x limit
         limit = int(request.form['limit']) if 'limit' in request.form else 10
@@ -133,8 +134,7 @@ def search_award(key):
     
     offset = page*limit
 
-    result,total = awards.get_awards_search_by('name', key,  limit, offset)
-    award_list, total = awards.get_awards(limit, offset)
+    award_list, total = awards.get_awards_search_by('name', key,  limit, offset)
     player_list,tp = players.get_players(100,0) # get list object
     season_list = seasons.get_seasons() # get list object
     sortby={'attr':'name', 'property':'asc'}
