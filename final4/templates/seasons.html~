@@ -92,7 +92,7 @@
                             $('#season_item_update input[name=year]').val(season['year']);
                             $('#season_item_update input[name=id]').val(season['id']);
                             
-                            var newurl = $('#update_form').attr('action') +'/g/' +season['id'];
+                            var newurl = $('#update_form').attr('action') +'/' +season['id'];
                             $('#update_form').attr('action', newurl);
                         }
                         

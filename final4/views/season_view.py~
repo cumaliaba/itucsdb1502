@@ -75,6 +75,6 @@ def search_season(key):
     conn, cur = getDb()
     seasons = season.Seasons(conn, cur)
     result = seasons.get_seasons_by(key, 'name')
-    return render_template('seasons.html', seasontable=season.seasontable, seasons=result)
+    return render_template('seasons.html', seasonstable=season.seasontable, seasons=result)
 
 

@@ -71,5 +71,5 @@ class Seasons:
         for c in seasons:
             cd = dict(zip(seasontable, c))
             season = Season(cd['year'], cd['id'])
-            seasonlist.append(season)
+            seasonlist.append(country)
         return seasonlist

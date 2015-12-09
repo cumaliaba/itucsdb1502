@@ -31,7 +31,7 @@ from final4.views import teamroster_view
 
 from final4.views import season_view
 from final4.views import standing_view
-
+#from final4.views import schedule_view
 def get_elephantsql_dsn(vcap_services):
     """Returns the data source name for ElephantSQL."""
     parsed = json.loads(vcap_services)
@@ -117,16 +117,10 @@ def initialize_database():
         #seasons table
 
         query="""CREATE TABLE SEASONS ( id serial PRIMARY KEY, 
-					year INTEGER);"""
+					year varchar(9));"""
         cur.execute(query)
         
-        # standings table
-        query="""CREATE TABLE standings ( id serial PRIMARY KEY, 
-			      	season_id integer references seasons(id)
-			      	league_id integer, 
-				team_id integer);"""
 
-        cur.execute(query)
 
 
         # coaches table
@@ -151,6 +145,20 @@ def initialize_database():
 
 
         conn.commit() # commit changes
+        
+        # standings table
+        query="""CREATE TABLE standings ( id serial PRIMARY KEY, 
+			      	season_id integer REFERENCES seasons(id),
+			      	league_id integer REFERENCES leagues(id), 
+				team_id integer REFERENCES teams(id));"""
+
+        cur.execute(query)
+        
+        # schedules table
+        # query=CREATE TABLE schedules (id serial PRIMARY KEY,
+        #                      team1 integer REFERENCES teams(id),
+        #                     team2 integer REFERENCES teams(id),
+        #                   date varchar(65));"""
     
     except:
         print(sys.exc_info())
@@ -176,6 +184,9 @@ def drop_tables():
     cur.execute(query)
 
     query="DROP TABLE IF EXISTS seasons;"
+    cur.execute(query)
+    
+    query="DROP TABLE IF EXISTS schedules;"
     cur.execute(query)
 
     query = "DROP TABLE IF EXISTS awards;"
