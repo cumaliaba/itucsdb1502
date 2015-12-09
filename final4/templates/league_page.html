@@ -1,0 +1,57 @@
+{%extends "layout.html"%}
+
+{%block title%}{{league.name|capitalize}}{%endblock%}
+
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div class="col-md-12" style="padding-bottom:15px;">
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">League Info</div>
+                    <div class="panel-body">
+                            <table class="table table-bordered">
+                                <!--
+                                <tr>
+                                    <td colspan=2 align=center>
+                                        <img src="" width=120px>
+                                    </td>
+                                </tr>-->
+                                <tr>
+                                    <td><b>League name</b></td>
+                                    <td>{{league.name}}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Country</b></td>
+                                    <td>{{league.country}}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Number of Teams</b></td>
+                                    <td>{{team_dict['total']}}</td>
+                                </tr>
+                            </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        Teams
+                    </div>
+                    <div class="panel-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Team name</td>
+                                </tr>
+                                {%for team in team_dict['teams']%}
+                                <tr>
+                                    <td>{{team.name}}</td>
+                                </tr>
+                                {%endfor%}
+                            </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+{%endblock%}

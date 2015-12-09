@@ -4,34 +4,51 @@ import json
 from final4.config import app
 from final4.db_helper import getDb
 from final4.models import player
+from final4.models import country
 
 from flask import render_template
 from flask import request
 
-# player views
-@app.route('/players', methods=['DEL','GET', 'POST', 'PUT'])
+@app.route('/players', methods=['DEL','GET', 'POST'])
 def player_page():
     conn, cur = getDb()
     players = player.Players(conn, cur)
+    countries = country.Countries(conn, cur)
     print('PLAYERS PAGE')
     if request.method == 'GET':
-        p = players.get_players()
-        return render_template('players.html', playertable=player.playertable, players=p)
+        print ('GET REQUEST', request.args)
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        orderby = request.args['orderby'] if 'orderby' in request.args else 'asc'
+        p, total = players.get_players(limit, offset)
+        c = countries.get_countries()
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
+                                limit=limit, page=page)
     elif request.method == 'POST':
+        print('ADD PLAYER')
         name = request.form['name']
-        country = request.form['country']
+        surname = request.form['surname']
         age = request.form['age']
-        playing_position = request.form['playing_position']
-        pl = player.Player(name, country,age,playing_position)
+        pp = request.form['pp']
+        country_id = request.form['country']
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        orderby = request.form['orderby'] if 'orderby' in request.form else 'asc'
+        pl = player.Player(name,surname,age,pp,country_id)
         players.add_player(pl)
         
-        p = players.get_player()
-        return render_template('players.html', playertable=player.playertable, platers=p)
+        p, total = players.get_players(limit, offset)
+        c = countries.get_countries()
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
+                                limit=limit, page=page)
 
     elif request.method == 'DEL':
         print ('DELETE REQUEST:PLAYERS PAGE')
         print (request.form)
-        # concat json var with '[]' for calling array getted with request
         idlist = request.form.getlist('ids[]')
         print ('IDS: ', idlist)
         if idlist == []:
@@ -47,44 +64,52 @@ def player_page():
             print (_id)
             players.delete_player(_id)
         return json.dumps({'status':'OK', 'idlist':idlist})
-        '''
-        try:
-            for _id in idlist:
-                print (_id)
-                leagues.delete_league(_id)
-            return json.dumps({'status':'OK', 'idlist':idlist})
-        except:
-            error = sys.exc_info()[0]
-            return json.dumps({'status':'FAILED', 'error':error})
-        '''
-        #return render_template('players.html', playertable=player.playertable, players=p)
 
-
-
-
-@app.route('/players/<pid>', methods=['GET','POST'])
+@app.route('/players/g/<pid>', methods=['GET','POST'])
 def player_from_id(pid):
     conn, cur = getDb()
     players = player.Players(conn, cur)
+    countries = country.Countries(conn, cur)
     
     if request.method == 'GET':
-        p = players.get_player(pid)
+        p= players.get_player(pid)
         if p:
             return json.dumps({'status':'OK', 'player':p.getAttrs()})
         else:
             return json.dumps({'status':'FAILED'})
     elif request.method == 'POST':
-        print("PUT METHOD REQUEST")
+        print("POST METHOD REQUEST")
         pid = request.form['id']
         name = request.form['name']
-        country = request.form['country']
+        surname = request.form['surname']
         age = request.form['age']
-        playing_position = request.form['playing_position']
-        print(pid, name, country)
-        pl = player.Player(name, country,age,playing_position)
+        pp = request.form['pp']  
+        country_id = request.form['country']
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        orderby = request.form['orderby'] if 'orderby' in request.form else 'asc'
+        pl = player.Player(age,pp,country_id)
         players.update_player(pid, pl)
+        
+        p, total = players.get_players(limit, offset)
+        c = countries.get_countries()
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
+                                limit=limit, page=page)
 
-        p = players.get_players()
-        return render_template('players.html', playertable=player.playertable, players=p)
 
+@app.route('/players/s/<key>', methods=['GET','POST'])
+def search_player(key):
+    conn, cur = getDb()
+    players = player.Players(conn, cur)
+    countries = country.Countries(conn, cur)
 
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    
+    offset = page*limit
+
+    result,total = players.get_players_by(key, 'name', limit, offset)
+    c = countries.get_countries()
+    return render_template('players.html', playertable=player.playertable, players=result, countries=c, total=total, 
+                            limit=limit, page=page)

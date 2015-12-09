@@ -30,6 +30,7 @@ class Players:
 
     def delete_player(self, _id):
         query = """DELETE FROM players WHERE id=%s"""
+        # variables should be in tuple object
         self.cur.execute(query, (_id,))
         self.conn.commit()
 

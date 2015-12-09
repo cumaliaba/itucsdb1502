@@ -13,7 +13,7 @@ class Country:
         self._id = _id
         self.name = name
         self.code = code
-        self.flagpath = url_for('static', filename='data/flags/'+code.lower()+'.png')
+        self.flagpath = url_for('static', filename='data/flags/'+name.lower()+'.png')
 
     def getAttrs(self):
         return (dict(zip(countrytable, (self._id, self.name, self.code))))

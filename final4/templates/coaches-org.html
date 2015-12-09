@@ -1,4 +1,4 @@
-{%extends "table_template.html"%}
+{%extends "layout.html"%}
 
 {%block title%}Coaches{%endblock%}
 
@@ -81,13 +81,13 @@
                     success: function(response) {
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
-                            $('#update_item_div').removeClass('hidden');
+                            $('#coach_item_update').removeClass('hidden');
                                                         
                             coach=data['coach'];
-                            $('#update_item_div input[name=name]').val(coach['name']);
-                            $('#update_item_div input[name=surname]').val(coach['surname']);
-                            $('#update_item_div select[name=country]').val(coach['country_id']);
-                            $('#update_item_div input[name=id]').val(coach['id']);
+                            $('#coach_item_update input[name=name]').val(coach['name']);
+                            $('#coach_item_update input[name=surname]').val(coach['surname']);
+                            $('#coach_item_update select[name=country]').val(coach['country_id']);
+                            $('#coach_item_update input[name=id]').val(coach['id']);
                             var base_url = window.location.origin;
                             var newurl = base_url + "/coaches/g/" + coach['id']; 
                             $('#update_form').attr('action', newurl);
@@ -112,100 +112,94 @@
     </script>
 {%endblock%}
 
-{%block search_reset_link%}
-<a href="{{url_for('coach_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
-{%endblock%}
-
-{%block add_item_panel_heading%}Add Coach{%endblock%}
-
-{%block add_item_form%}
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div id="search">
+            <input id="searchBox" type="text" name="search" placeholder="Enter search key">
+            <button id="searchBtn">Search</button>
+        </div>
+        {%if coaches|length==0%}
+        <p id="no_result"class="notice">No result found for selected criterias</p>
+        {%else%}
+        <table id="table">
+            <tr>
+                <th></th>
+                {%for var in coachtable[1:]%}
+                    <th>{{var}}</th>
+                {%endfor%}
+            </tr>
+            {%for c in coaches%}
+            <tr name="{{c._id}}">
+                <td><input type="checkbox" name="{{c._id}}" ></td>
+                <td><img src="{{c.img_path()}}" width="50px"></td>
+                <td>{{c.name}}</td>
+                <td>{{c.surname}}</td>
+                <td>{{c.country}}</td>
+                <td><button name="{{c._id}}" class="delete_itemBtn">Delete</button></td>
+                <td><button name="{{c._id}}" class="update_itemBtn">Update</button></td>
+            </tr>
+            {%endfor%}
+        </table>
+        {%endif%}
+        <div id="coach_item_input" class="coach_item_input">
             <form action="{{url_for('coach_page')}}" method="post" enctype="multipart/form-data">
             <table id="add_item_table">
+                <tr id="add_item_table_tr">
                     {%for var in coachtable[1:] %}
-                    <tr>
                     <td>
                         {%if var=='country_id'%}
                         {%elif var=='country'%}
-                        <select id="country" name="{{var}}" class="form-control">
+                        <select id="country" name="{{var}}">
                                 {%for c in countries%}
                                 <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
                                 {%endfor%}
                             </select>
                         {%else%}
-                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control">
+                        <input type="text" name="{{var}}" placeholder="{{var}}">
                         {%endif%}
                     </td> 
-                    </tr>
                     {%endfor%}
+                    <td><input type="submit" name="Add" id="add_itemBtn" value="Add"></td>
+                </tr>
                 <tr>
-                    <td>Select image file<input type="file" name="file"></td>
-                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i> Add</button></td>
+                    <td>Select a file<input type="file" name="file"></td>
                 </tr>
             </table>
             </form>
+        </div>
 
-
-{%endblock%}
- 
-{%block item_table_panel_heading%}Coach Table{%endblock%}
-
-{%block item_table_panel_table%}
-<table id="table" class="table table-hover">
-    <tr>
-        <th></th>
-        <th>image</th>
-        {%for var in coachtable[1:]%}
-            {%if var=='country_id'%}
-            {%else%}
-            <th>{{var}}</th>
-            {%endif%}
-        {%endfor%}
-    </tr>
-    {%for c in coaches%}
-    <tr name="{{c._id}}">
-        <td><input type="checkbox" name="{{c._id}}" ></td>
-        <td><img src="{{c.img_path()}}" width="50px"></td>
-        <td>{{c.name}}</td>
-        <td>{{c.surname}}</td>
-        <td>{{c.country}}</td>
-        <td><button name="{{c._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
-            <button name="{{c._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
-            <button name="{{c._id}}" id="{{c._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
-    </tr>
-    {%endfor%}
-</table>
-
-{%endblock%}
-
-{%block update_item_form%}
-<form id="update_form" action="{{url_for('coach_page')}}" method="POST" enctype="multipart/form-data">
-<table id="update_item_table">
-        {%for var in coachtable[1:] %}
-    <tr id="update_item_table_tr">
-        <td>
-            {% if var=='country_id'%}
-            {% elif var=='country'%}
-            <select id="country" name="{{var}}" class="form-control">
-                    {%for c in countries%}
-                    <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+        <div id="coach_item_update" class="hidden">
+            <form id="update_form" action="{{url_for('coach_page')}}" method="POST" enctype="multipart/form-data">
+            <table id="update_item_table">
+                <tr id="update_item_table_tr">
+                    {%for var in coachtable[1:] %}
+                    <td>
+                        {% if var=='country_id'%}
+                        {% elif var=='country'%}
+                        <select id="country" name="{{var}}">
+                                {%for c in countries%}
+                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                {%endfor%}
+                            </select>
+                        {%else%}
+                        <input type="text" name="{{var}}" placeholder="{{var}}">
+                        {%endif%}
+                    </td> 
                     {%endfor%}
-                </select>
-            {%else%}
-            <input type="text" class="form-control" name="{{var}}" placeholder="{{var}}">
-            {%endif%}
-        </td> 
-    </tr>
-        {%endfor%}
-    <tr>
-        <td>Select a file<input type="file" name="file"></td>
-    </tr>
-    <tr>
-            <td><input type="text" name="id" class="hidden"></td>
-            <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">
-            <button type="button" id="cancel_updateBtn" class="btn btn-danger cancel_updateBtn"><i class="fa fa-times fa-md"></i> Cancel</button></td>
-    </tr>
-</table>
-</form>
- 
+                        <td><input type="text" name="id" class="hidden"></td>
+                        <td><input type="submit" name="Update" id="update" value="Update"></td>
+                </tr>
+                <tr>
+                    <td>Select a file<input type="file" name="file"></td>
+                </tr>
+            </table>
+            </form>
+        </div>
+
+
+        {%if coaches|length>=1 %} 
+            <button type="button" id="delete_selectedBtn">Delete Selections</button>
+        {%endif%}
 {%endblock%}
+
 

@@ -1,0 +1,104 @@
+{%extends "layout.html"%}
+
+{%block title%}{{country.name|capitalize}}{%endblock%}
+
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div class="col-md-12" style="padding-bottom:15px;">
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">Country Info</div>
+                    <div class="panel-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <td colspan=2 align=center>
+                                        <img src="{{country.flagpath}}" width=120px>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><b>Country name</b></td>
+                                    <td>{{country.name}}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>ISO code - 2 digit</b></td>
+                                    <td>{{country.code}}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Registered Leagues</b></td>
+                                    <td>{{league_dict['total']}}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Registered Players</b></td>
+                                    <td>{{player_dict['total']}}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Registered Coaches</b></td>
+                                    <td>{{coach_dict['total']}}</td>
+                                </tr>
+                            </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        Leagues
+                    </div>
+                    <div class="panel-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>League</td>
+                                </tr>
+                                {%for league in league_dict['leagues']%}
+                                <tr>
+                                    <td>{{league.name}}</td>
+                                </tr>
+                                {%endfor%}
+                            </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">Players</div>
+                    <div class="panel-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Name</td>
+                                    <th>Surname</td>
+                                </tr>
+                                {%for player in player_dict['players']%}
+                                <tr>
+                                    <td>{{player.name}}</td>
+                                    <td>{{player.surname}}</td>
+                                </tr>
+                                {%endfor%}
+                            </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">Coaches</div>
+                    <div class="panel-body">
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Name</td>
+                                    <th>Surname</td>
+                                </tr>
+                                {%for coach in coach_dict['coaches']%}
+                                <tr>
+                                    <td>{{coach.name}}</td>
+                                    <td>{{coach.surname}}</td>
+                                </tr>
+                                {%endfor%}
+                            </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+{%endblock%}

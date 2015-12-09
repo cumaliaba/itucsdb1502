@@ -4,6 +4,8 @@ import json
 from final4.config import app
 from final4.db_helper import getDb
 from final4.models import country
+from final4.models import league
+from final4.models import coach
 
 from flask import render_template
 from flask import request
@@ -75,3 +77,36 @@ def search_country(key):
     countries = country.Countries(conn, cur)
     result = countries.get_countries_by(key, 'name')
     return render_template('countries.html', countrytable=country.countrytable, countries=result)
+
+@app.route('/countries/country/<country_name>')
+def view_country(country_name):
+    '''
+    country_arg (string): <country_name>
+
+    This view presents the general information and 
+    related table statistics for given country.
+    '''
+    conn, cur = getDb()
+    countries = country.Countries(conn, cur)
+
+    c = countries.get_country_name(country_name)
+    if c is None:
+        # return not found error 
+        return render_template('error.html', err_code=404)
+
+    # else render country page with required args
+    leagues = league.Leagues(conn, cur)
+
+    league_list, total = leagues.get_leagues_by('country_id', c._id)
+    league_dict = {'leagues':league_list,
+                    'total': total
+                    }
+
+    coaches = coach.Coaches(conn, cur)
+    coach_list, total = coaches.get_coaches_by('country_id', c._id)
+    coaches_dict = {'coaches':coach_list,
+                    'total': total
+                    }
+
+    return render_template('country_page.html', country=c, 
+            league_dict=league_dict, player_dict=None, coach_dict=coaches_dict)
