@@ -106,21 +106,18 @@ def initialize_database():
         """
         cur.execute(query)
 
+        #seasons table
+
+        query="""CREATE TABLE seasons ( id serial PRIMARY KEY, 
+					year varchar(9));"""
+        cur.execute(query)
     
         # awards table
         query = """CREATE TABLE awards (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
-                               playerid integer, seasonid integer);
+                               player_id integer references players(id), season_id integer references seasons(id));
         """
         cur.execute(query)
-
-        #seasons table
-
-        query="""CREATE TABLE SEASONS ( id serial PRIMARY KEY, 
-					year varchar(9));"""
-        cur.execute(query)
-        
-
 
 
         # coaches table
@@ -137,14 +134,14 @@ def initialize_database():
                                country_id integer references countries(id) );
         """
         cur.execute(query)
-	# teamrosters table
+	    # teamrosters table
         query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
                                team_id integer REFERENCES teams(id),
                                player_id integer REFERENCES players(id));
 "        """
 
 
-        conn.commit() # commit changes
+
         
         # standings table
         query="""CREATE TABLE standings ( id serial PRIMARY KEY, 
@@ -159,7 +156,9 @@ def initialize_database():
         #                      team1 integer REFERENCES teams(id),
         #                     team2 integer REFERENCES teams(id),
         #                   date varchar(65));"""
-    
+        
+        # DO NOT ADD ANYTHING AFTER THIS LINE
+        conn.commit() # commit changes
     except:
         print(sys.exc_info())
         conn.rollback()
@@ -170,6 +169,11 @@ def initialize_database():
 def drop_tables():
     conn, cur = db.getDb()
     
+    query = "DROP TABLE IF EXISTS standings;"
+    cur.execute(query)   
+    
+    query = "DROP TABLE IF EXISTS awards;"
+    cur.execute(query)
     
     query = "DROP TABLE IF EXISTS teamrosters;"
     cur.execute(query)
@@ -180,17 +184,11 @@ def drop_tables():
     query = "DROP TABLE IF EXISTS coaches;"
     cur.execute(query)
 
-    query = "DROP TABLE IF EXISTS standings;"
-    cur.execute(query)
-
     query="DROP TABLE IF EXISTS seasons;"
     cur.execute(query)
     
-    query="DROP TABLE IF EXISTS schedules;"
-    cur.execute(query)
-
-    query = "DROP TABLE IF EXISTS awards;"
-    cur.execute(query)
+    #query="DROP TABLE IF EXISTS schedules;"
+    #cur.execute(query)
 
     query = "DROP TABLE IF EXISTS players;"
     cur.execute(query)

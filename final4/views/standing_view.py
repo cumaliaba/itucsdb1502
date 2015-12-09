@@ -5,6 +5,8 @@ from final4.config import app
 from final4.db_helper import getDb
 from final4.models import standing
 from final4.models import season
+from final4.models import league
+from final4.models import team
 
 from flask import render_template
 from flask import request
@@ -14,25 +16,51 @@ from flask import request
 def standing_page():
     conn, cur = getDb()
     standings = standing.Standings(conn, cur)
-    season = season.Seasons(conn, cur)
+    seasons = season.Seasons(conn, cur)
+    leagues = league.Leagues(conn, cur)
+    teams = team.Teams(conn, cur)
     print('STANDINGS PAGE')
     if request.method == 'GET':
-        l, total = standings.get_standings(5,0)
-        c = seasons.get_seasons()
-        return render_template('standings.html', standingtable=standing.standingtable, standings=l, seasons=c, total=total)
+        # handle GET request
+        print ('GET REQUEST', request.args)
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        
+ 
+        standing_list, total = standings.get_standings(limit, offset)
+        season_list = seasons.get_seasons()
+        league_list,tk = leagues.get_leagues(100,0) # get list object
+        team_list,tp = teams.get_teams(100,0)
+        
+        return render_template('standings.html', standingtable=standing.standingtable, 
+			standings=standing_list, seasons=season_list, leagues=league_list, teams=team_list, 
+			total=total, limit=limit, page=page)
     elif request.method == 'POST':
         print('ADD STANDING')
-        season_id = request.form['season']
-        league_id=request.form['league_id']
-        team_id = request.form['team_id']
-        lg = standing.Standing(season_id,league_id,team_id)
-        standings.add_standing(lg)
+        season_id = request.form['season_year']
+        league_id= request.form['league_name']
+        team_id = request.form['team_name']
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
         
-        l, total = standings.get_standings(5,0)
-        c = seasons.get_seasons()
-        return render_template('standings.html', standingtable=standing.standingtable, standings=l, seasons=c, total=total)
+        standing_obj = standing.Standing(season_id, league_id, team_id)
+        standings.add_standing(standing_obj)
+        
+        standing_list, total= standings.get_standings(limit,offset)
+        season_list = seasons.get_seasons()
+        league_list,tk = leagues.get_leagues(100,0)
+        team_list,tp = teams.get_teams(100,0)
+        
+        return render_template('standings.html', standingtable=standing.standingtable, 
+			standings=standing_list, seasons=season_list, leagues=league_list, teams=team_list, 
+			total=total, limit=limit, page=page)
 
     elif request.method == 'DEL':
+        # handle DEL request
         print ('DELETE REQUEST:STANDINGS PAGE')
         print (request.form)
         # concat json var with '[]' for calling array getted with request
@@ -49,31 +77,21 @@ def standing_page():
         print(json.dumps({'status':'OK', 'idlist':idlist}))
         for _id in idlist:
             print (_id)
-            standings.delete_standing(_id)
+            standings.delete_standing(_id) # delete object
         return json.dumps({'status':'OK', 'idlist':idlist})
-        '''
-        try:
-            for _id in idlist:
-                print (_id)
-                standings.delete_standing(_id)
-            return json.dumps({'status':'OK', 'idlist':idlist})
-        except:
-            error = sys.exc_info()[0]
-            return json.dumps({'status':'FAILED', 'error':error})
-        '''
-        #return render_template('standing.html', standingtable=standing.standingtable, standings=l)
+ 
 
 
-
-
-@app.route('/standings/g/<lid>', methods=['GET','POST'])
-def standing_from_id(lid):
+@app.route('/standings/g/<standing_id>', methods=['GET','POST'])
+def standing_from_id(standing_id):
     conn, cur = getDb()
     standings = standing.Standings(conn, cur)
-    seasons=seasons.Seasons(conn,cur)
+    seasons=season.Seasons(conn,cur)
+    leagues=league.Leagues(conn,cur)
+    teams=team.Teams(conn,cur)
     
     if request.method == 'GET':
-        l = standings.get_standing(lid)
+        l = standings.get_standing(standing_id)
         if l:
             return json.dumps({'status':'OK', 'standing':l.getAttrs()})
         else:
@@ -81,23 +99,46 @@ def standing_from_id(lid):
     elif request.method == 'POST':
         print("POST METHOD REQUEST")
         lid = request.form['id']
-        season_id = request.form['season']
-        league_id=request.form['league_id']
-        team_id = request.form['team_id']
-        lg = standing.Standing(season_id,league_id,team_id)
-        standings.update_standing(lid, lg)
-
-        l, total = standings.get_standings(5,0)
-        c = seasons.get_seasons()
-        l = standings.get_standings()
-        return render_template('standings.html', standingtable=standing.standingtable, standings=l, seasons=c, total=total)
+        season_id = request.form['season_year']
+        league_id= request.form['league_name']
+        team_id = request.form['team_name']
+        
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        
+        standing_obj = standing.Standing(season_id,league_id,team_id)
+       
+        standings.update_standing(lid,standing_obj)
+        
+        standing_list, total= standings.get_standings(limit,offset)
+        season_list = seasons.get_seasons()
+        league_list,tk = leagues.get_leagues(100,0)
+        team_list,tp = teams.get_teams(100,0)
+        
+        return render_template('standings.html', standingtable=standing.standingtable, 
+			standings=standing_list, seasons=season_list, leagues=league_list, teams=team_list, 
+			total=total, limit=limit, page=page)
 
 @app.route('/standings/s/<key>', methods=['GET','POST'])
 def search_standing(key):
     conn, cur = getDb()
     standings = standing.Standings(conn, cur)
-    seasons = season.Seasons(conn, cur)
+    seasons=season.Seasons(conn,cur)
+    leagues=league.Leagues(conn,cur)
+    teams=team.Teams(conn,cur)
 
-    result = standings.get_standings_by(key, 'league_id')
-    c = seasons.get_seasons()
-    return render_template('standings.html', standingtable=standing.standingtable, standings=l, seasons=c, total=total)
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    
+    offset = page*limit
+    
+    standing_list,total = standings.get_standings_search_by('name', key,  limit, offset)
+    season_list = seasons.get_seasons()
+    league_list,tk = leagues.get_leagues(100,0)
+    team_list,tp = teams.get_teams(100,0)
+    
+    return render_template('standings.html', standingtable=standing.standingtable, 
+			standings=standing_list, seasons=season_list, leagues=league_list, teams=team_list, 
+			total=total, limit=limit, page=page)
+		
