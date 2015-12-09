@@ -1,18 +1,27 @@
 from flask import url_for
-playertable = ['id', 'name','surname','age','pp','country_id', 'country']
+
+playertable = ['id', 'name', 'surname','age','pp','country_id', 'country']
 
 class Player:
-    def __init__(self, name,surname,age,pp, country_id, country=None, _id=None):
+    def __init__(self, name, surname,age,pp,country_id, country=None, _id=None):
         self._id = _id
         self.name = name
-        self.surname=surname
+        self.surname = surname
         self.age=age
         self.pp=pp
         self.country_id = country_id
         self.country = country
-        self.photo = url_for('static', filename='data/players/'+name.lower()+surname.lower()+'.png')
+    
+    def img_path(self, _id=None):
+        if _id==None and self._id==None:
+            return url_for('static',filename='.') + 'data/img/players/not_available.png'
+        if _id:
+            return url_for('static',filename='.') + 'data/img/players/' + str(_id) + '.png'
+        else:
+            return url_for('static',filename='.') +'data/img/players/' + str(self._id) + '.png'
+
     def getAttrs(self):
-        return (dict(zip(playertable, (self._id, self.name,self.surname,self.age,self.pp, self.country_id, self.country))))
+        return (dict(zip(playertable, (self._id, self.name, self.surname,self.age,self.pp,self.country_id, self.country))))
 
 class Players:
     def __init__(self, conn, cur):
@@ -22,29 +31,33 @@ class Players:
 
     def add_player(self, player):
         print("addplayer ", player)
-        query = """INSERT INTO players (name,surname,age,pp, country_id) 
-                                    values (%s,%s,%s,%s,%s)""" 
+        query = """INSERT INTO players (name, surname,age,pp, country_id) 
+                                    values (%s,%s,%s,%s,%s) RETURNING id""" 
 
-        self.cur.execute(query, (player.name,player.surname,player.age,player.pp,player.country_id))
+        self.cur.execute(query, (player.name, player.surname,player.age,player.pp, player.country_id))
+        insert_id = self.cur.fetchone()[0]
         self.conn.commit()
+        return insert_id
 
     def delete_player(self, _id):
         query = """DELETE FROM players WHERE id=%s"""
+        # variables should be in tuple object
         self.cur.execute(query, (_id,))
         self.conn.commit()
 
     def update_player(self, _id, new):
         '''
-        new : player object
+        pars:
+            new : Player object
         '''
         print('update_player')
-        query = """UPDATE players SET name=%s,surname=%s,age=%s,pp=%s, country_id=%s,
+        query = """UPDATE players SET name=%s, surname=%s,age=%s,pp=%s,country_id=%s
                     WHERE id=%s"""
-        self.cur.execute(query, (new.name,new.surname,new.age,new.pp, new.country_id, _id))
+        self.cur.execute(query, (new.name, new.surname,new.age,new.pp, new.country_id, _id))
         self.conn.commit()
 
     def get_player(self,_id):
-        query = """SELECT players.id, players.name,players.surname,players.age,players.pp,countries.id, countries.name
+        query = """SELECT players.id, players.name, players.surname,players.age,players.pp,countries.id, countries.name
                         FROM players,countries
                         WHERE players.id=%s AND countries.id=players.country_id
                         ORDER BY players.name
@@ -53,20 +66,19 @@ class Players:
         p = self.cur.fetchone()
         if p:
             pd = dict(zip(playertable, p[:len(playertable)]))
-            player = Player(pd['name'],pd['surname'],pd['age'],pd['pp'], pd['country_id'], pd['country'], pd['id'])
+            player = Player(pd['name'], pd['surname'],pd['age'],pd['pp'],pd['country_id'], pd['country'], pd['id'])
             return player
         else:
             return None
 
-    def get_players(self, limit, offset):
-
+    def get_players(self, limit=100, offset=0):
         query = """SELECT count(players.id)
                         FROM players,countries WHERE countries.id=players.country_id
                           """
         self.cur.execute(query)
         total = self.cur.fetchone()[0]
 
-        query = """SELECT players.id, players.name, players.surname, players.age,players.pp, countries.id, countries.name 
+        query = """SELECT players.id, players.name, players.surname,players.age,players.pp, countries.id, countries.name 
                         FROM players,countries WHERE countries.id=players.country_id
                           ORDER BY players.name LIMIT %s OFFSET %s"""
         self.cur.execute(query, (limit, offset))
@@ -74,30 +86,53 @@ class Players:
         playerlist = []
         for p in players:
             pd = dict(zip(playertable, p))
-            player = Player(pd['name'],pd['surname'],pd['age'],pd['pp'], pd['country_id'], pd['country'],pd['id'])
+            player = Player(pd['name'], pd['surname'],pd['age'],pd['pp'], pd['country_id'], pd['country'],pd['id'])
             playerlist.append(player)
         return playerlist, total
 
-    def get_players_by(self, key, var, limit, offset):
-        skey = str(key) + '%'
-
+    def get_players_by(self, attrib, search_key, limit=100, offset=0):
+        skey = str(search_key)
+        
         query = """SELECT count(players.id)
-                        FROM players,countries WHERE players.name LIKE %s AND 
-                            countries.id=players.country_id"""
+                        FROM players,countries WHERE players.{attrib}=%s AND 
+                            countries.id=players.country_id""".format(attrib=attrib)
         self.cur.execute(query, (skey,))
         total = self.cur.fetchone()[0]
-
-        query = """SELECT players.id, players.name,players.surname,players.age,players.pp, players.country_id,countries.name
-                        FROM players,countries WHERE players.name LIKE %s AND 
-                            countries.id=players.country_id ORDER BY players.name
-                            LIMIT %s OFFSET %s"""
-        self.cur.execute(query, (skey,limit, offset))
+        
+        query = """SELECT players.id, players.name, players.surname,players.age,players.pp, players.country_id, countries.name
+                        FROM players,countries WHERE players.{attrib}=%s AND 
+                            countries.id=players.country_id ORDER BY players.name 
+                            LIMIT %s OFFSET %s""".format(attrib=attrib)
+        self.cur.execute(query, (skey, limit, offset))
         players = self.cur.fetchall()
         print('players:', players)
         playerlist = []
         for p in players:
             pd = dict(zip(playertable, p))
-            player = Player(pd['name'],pd['surname'],pd['age'],pd['pp'], pd['country_id'],pd['country'],pd['id'])
+            player = Player(pd['name'], pd['surname'],pd['age'],pd['pp'], pd['country_id'], pd['country'],pd['id'])
+            playerlist.append(player)
+        return playerlist, total
+
+    def get_players_search_by(self, attrib, search_key, limit=100, offset=0):
+        skey = str(search_key) + '%'
+        
+        query = """SELECT count(players.id)
+                        FROM players,countries WHERE players.{attrib} LIKE %s AND 
+                            countries.id=players.country_id""".format(attrib=attrib)
+        self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+        
+        query = """SELECT players.id, players.name, players.surname,players.age,players.pp,players.country_id, countries.name
+                        FROM players,countries WHERE players.{attrib} LIKE %s AND 
+                            countries.id=players.country_id ORDER BY players.name 
+                            LIMIT %s OFFSET %s""".format(attrib=attrib)
+        self.cur.execute(query, (skey, limit, offset))
+        players = self.cur.fetchall()
+        print('players:', players)
+        playerlist = []
+        for p in players:
+            pd = dict(zip(playertable, p))
+            player = Player(pd['name'], pd['surname'],pd['age'],pd['pp'], pd['country_id'], pd['country'],pd['id'])
             playerlist.append(player)
         return playerlist, total
 

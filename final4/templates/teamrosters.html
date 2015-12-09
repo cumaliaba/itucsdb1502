@@ -1,13 +1,16 @@
 {%extends "layout.html"%}
 
-{%block title%}Teams{%endblock%}
+{%block title%}Teamrosters{%endblock%}
 
 {%block script%}
     <script>
         $(document).ready(function(){
+        
+            $('[data-toggle="tooltip"]').tooltip();
+            
             $('#delete_selectedBtn').click(function(){
                 var ids=[];
-
+                
                 $('#table input:checked').each(function(){
                     ids.push(this.name);
                 });
@@ -68,7 +71,7 @@
                 });
 
             });
-           
+            
             $('.update_itemBtn').click(function() {
                 console.log("updateItem");
                 console.log(this.name);
@@ -82,23 +85,19 @@
                     success: function(response) {
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
-                            // show update item form
+                          
                             $('#teamroster_item_update').removeClass('hidden');
                             
-                            // scroll page to update element
+                           
                             $('html, body').animate({
                                         scrollTop: $("#teamroster_item_update").offset().top
                                                 }, 1000);
                             
-                            // show cancel button for editable item
-                            //$('#cancel_updateBtn').removeClass('hidden');
-                            
-                            // get selected item data from server response 
-                            teamroster=data['teamroster'];
-                            $('#teamroster_item_update input[name=name]').val(teamroster['name']);
-                            $('#teamroster_item_update select[name=coach]').val(teamroster['coach_id']);
+                            teamroster=data['teamroster'];                            
                             $('#teamroster_item_update input[name=id]').val(teamroster['id']);
-                            var base_url = window.location.origin;
+                            $('#teamroster_item_update input[name=player_id]').val(teamroster['player_id']);
+                            $('#teamroster_item_update input[name=team_id]').val(teamroster['team_id']);
+                            var base_url = window.location.origin;1
                             var newurl = base_url + "/teamrosters/g/" + teamroster['id']; 
                             $('#update_form').attr('action', newurl);
                         }
@@ -113,7 +112,6 @@
 
             $('#cancel_updateBtn').click(function(){
                 $('#teamroster_item_update').addClass('hidden');
-                //$('#cancel_updateBtn').addClass('hidden');
             });
 
             $('#searchBox').change(function(){
@@ -124,27 +122,20 @@
                 window.location.replace(search_url); 
             });
 
-
-            /*
-             Add click listener to pagination
-             */
             $('.pagination li a').click(function(){
-                var that = $(this).parent(); // li
-                var active = that.parent().find('li.active'); // active li element
-                active.removeClass('active'); // deactivete element
+                var that = $(this).parent(); 
+                var active = that.parent().find('li.active');
+                active.removeClass('active'); 
                 var num = parseInt(active.text()) - 1;
                 console.log('old-active:'+active.text());
-                // show pages between start end end
-                var start = 0; // ilk ayarlar deneme
-                var end = $('#pagination').attr('data-end')-1; // ilk ayarlar
-                var total = 5; // total pages
+                var start = 0; 
+                var end = $('#pagination').attr('data-end')-1;
+                var total = 5; 
                 var selected_page = 0;
 
                 if ($(this).attr('name')=='prev') {
                     console.log('prev button');
-                    // previous page button
                     if (num==start) {
-                        // first page; no previous page
                         active.addClass('active');
                         return;
                     }
@@ -164,7 +155,6 @@
                     selected_page=num; 
 
                 } else if ($(this).attr('name')=='next') {
-                    // next page button
                     console.log('next button');
                     if (num==end) {
                         active.addClass('active');
@@ -222,28 +212,25 @@
                 }
             });
             
-            /*
-             Add listener to result limit selector
-             */
             var limit=10;
             $('#result_limit').change(function(){
                 console.log($(this).val());
                 limit = $(this).val();
-                window.location.search='limit='+limit;
+                if (window.location.pathname.startsWith('/teamrosters/g/')) {
+                    window.location.replace(window.location.origin + '/teamrosters?' + 'limit='+limit);
+                } else {
+                    window.location.search = 'limit='+limit;
+                }
             });
 
-        });
         
-        /*
-         prevent click event for disabled elements
-         */
+        });
         $(document).on("click", ".disabled", function(e){
             e.preventDefault();
         });
-
     </script>
 {%endblock%}
-
+        
 {%block content%}
     {%if error%}<p>{{error}}</p>{%endif%}
         <div class="col-md-12" style="padding-bottom:15px;">
@@ -262,7 +249,7 @@
             <div class="col-md-6">
 
                 <div class="panel panel-success">
-                    <div class="panel-heading">Add Team</div>
+                    <div class="panel-heading">Add Teamroster</div>
                     <div class="panel-body">
                         <div id="teamroster_item_input" class="teamroster_item_input">
                             <form action="{{url_for('teamroster_page')}}" method="post">
@@ -270,13 +257,19 @@
                                 <tr id="add_item_table_tr">
                                     {%for var in teamrostertable[1:] %}
                                     <td>
-                                        {%if var=='coach_id'%}
-                                        {%elif var=='coach'%}
-                                        <select id="coach" name="{{var}}" class="form-control">
-                                                {%for c in coaches%}
+                                        {%if var=='player_id'%}
+                                        {%elif var=='team_id'%}
+                                        {%elif var=='play'%}
+                                        <select id="player" name="{{var}}" class="form-control">
+                                                {%for c in players%}
                                                 <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
                                                 {%endfor%}
-                                            </select>
+                                        {%elif var=='team'%}
+                                        <select id="team" name="{{var}}" class="form-control">
+                                                {%for c in teams%}
+                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                                {%endfor%}
+                                            </select>                                            
                                         {%else%}
                                         <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control" required auto-focus>
                                         {%endif%}
@@ -291,15 +284,13 @@
                 </div>
             </div>
 
-            <!-- Show teamrosters table -->
             <div class="col-md-8">
-            {%if teamrosters|length==0%}
+            {%if total==0%}
             <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
             {%else%}
             
-                <!-- Team table panel -->
                 <div class="panel panel-default">
-                    <div class="panel-heading">Team Table</div>
+                    <div class="panel-heading">Teamroster Table</div>
                     <div class="panel-body">
                                 <form class="form-inline">
                                     <div class="form-group">
@@ -310,20 +301,21 @@
                                             {% for i in [10,25,50,75,100] %}
                                             <option {%if limit==i%}selected="selected"{%endif%} value={{i}}>{{i}}</option>
                                             {%endfor%}
-                                </select>
+                                        </select>
                                     </div>
                                     <div class="form-group">
                                         results for each page.
                                     </div>
                                 </form>
                         <span class="label label-success">
-                            <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span> result found.
+                            <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span>result found.
                         </span>
                         <table id="table" class="table table-hover">
                             <tr>
                                 <th></th>
                                 {%for var in teamrostertable[1:]%}
-                                    {%if var=='coach_id'%}
+                                    {%if var=='player_id'%}
+                                    {%elif var=='team_id'%}
                                     {%else%}
                                     <th>{{var}}</th>
                                     {%endif%}
@@ -333,8 +325,9 @@
                             {%for l in teamrosters%}
                             <tr name="{{l._id}}">
                                 <td><input type="checkbox" name="{{l._id}}" ></td>
-                                <td>{{l.name}}</td>
-                                <td>{{l.coach}}</td>
+                                <td>{{l.player}}</td>
+                                <td>{{l.team}}</td>
+                                
                                 <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn"><i class="fa fa-trash fa-md"></i></button>
                                     <button name="{{l._id}}" class="btn btn-warning update_itemBtn"><i class="fa fa-pencil fa-md"></i></button>
                                     <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
@@ -344,41 +337,44 @@
                         {%endif%}
 
                         <nav>
-                            <ul class="pagination pagination-sm" id="pagination" data-end="{{((total/limit)+0.5)|round|int}}"name="aaa">
-                            <li {%if page==0 %}class="disabled"{%endif%}>
-                                <a aria-label="Previous" name="prev">
+                        <ul class="pagination pagination-sm" id="pagination" name="aaa">
+                            <li class="disabled">
+                                <a href="#" aria-label="Previous" name="prev">
                                 <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
-                            {%for i in range(((total/limit)+0.5)|round|int)%}
-                                {%if i==page %}
-                                <li class=active><a name="{{i}}">{{i+1}}</a></li>
+                            {%for i in [1,2,3]%}
+                                {%if i==1 %}
+                                <li class=active><a name="{{i}}">{{i}}</a></li>
                                 {%else%}
                                 <li><a name="{{i}}">{{i+1}}</a></li>
                                 {%endif%}
-                            {%endfor%}
-                            <li {%if page==((total/limit))|round(1,'floor')|int %}class="disabled"{%endif%}>
-                                <a aria-label="Next" name="next">
+                            {%endfor%}      
+                            <li>
+                                <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
                         </ul>
                         </nav>
 
-                        <!-- Update item form. 
-                            * Primarily hidden. 
-                            * This form will be visible when edit button clicked 
-                        -->
                         <div id="teamroster_item_update" class="hidden">
                             <form id="update_form" action="{{url_for('teamroster_page')}}" method="POST">
                             <table id="update_item_table" class="table">
                                 <tr id="update_item_table_tr">
                                     {%for var in teamrostertable[1:] %}
                                     <td>
-                                        {% if var=='coach_id'%}
-                                        {% elif var=='coach'%}
-                                        <select id="coach" name="{{var}}" class="form-control">
-                                                {%for c in coaches%}
+                                        {%if var=='player_id'%}
+                                        {%elif var=='team_id'%}
+                                        {%elif var=='player'%}
+                                        <select id="season" name="{{var}}" class="form-control">
+                                                {%for c in players%}
+                                                <option value="{{c._id}}" name="{{c.year}}">{{c.name}}</option>
+                                                {%endfor%}
+                                            </select>
+                                        {%elif var=='team'%}
+                                        <select id="team" name="{{var}}" class="form-control">
+                                                {%for c in teams%}
                                                 <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
                                                 {%endfor%}
                                             </select>
@@ -398,9 +394,9 @@
                     </div>
                 </div>
 
-                {%if teamrosters|length>=1 %} 
+                {%if total>=1 %} 
                     <button type="button" id="delete_selectedBtn" class="btn btn-danger">Delete Selections</button>
                 {%endif%}
             </div>
         </div>
-{%endblock%}
+{%endblock%}            

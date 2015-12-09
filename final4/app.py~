@@ -25,10 +25,8 @@ from final4.views import award_view
 from final4.views import stat_view
 from final4.views import country_view
 from final4.views import coach_view
-
 from final4.views import team_view
 from final4.views import teamroster_view
-
 from final4.views import season_view
 from final4.views import standing_view
 #from final4.views import schedule_view
@@ -137,13 +135,16 @@ def initialize_database():
         cur.execute(query)
 	    # teamrosters table
         query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
-                               team_id integer REFERENCES teams(id),
-                               player_id integer REFERENCES players(id));
-"        """
+                               player_id integer REFERENCES teams(id),
+                               team_id integer REFERENCES players(id));
+        """
 
+        cur.execute(query)
+        query = """INSERT INTO teamrosters 
+                    (id,player_id,team_id)
+                    values ('1','1','1','%s','%s','%s');"""
+        cur.execute(query)
 
-
-        
         # standings table
         query="""CREATE TABLE standings ( id serial PRIMARY KEY, 
 			      	season_id integer REFERENCES seasons(id),
