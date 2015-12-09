@@ -40,7 +40,7 @@ class Awards:
         query = """UPDATE awards SET name=%s, 
                     player_id=%s, season_id=%s WHERE id=%s"""
 
-        self.cur.execute(query, (new.name, new.player_id, new.season_id))
+        self.cur.execute(query, (new.name, new.player_id, new.season_id, _id))
         self.conn.commit()
 
         
@@ -79,7 +79,7 @@ class Awards:
         awards = self.cur.fetchall()
         awardlist = []
         for l in awards:
-            ld = dict(zip(awardtable, a))
+            ld = dict(zip(awardtable, l))
             award = Award(ld['name'], ld['player_id'], ld['season_id'],
 			    _id=ld['id'], player_name=ld['player_name'],
 			    player_surname=ld['player_surname'], season_year=ld['season_year'])
@@ -119,7 +119,7 @@ class Awards:
         # convert search key to special sql search syntax that means
         # all matches that starts with search_key
         skey = str(search_key) + '%'
-
+        print('CCCCCCCCCCCC', skey)
         # WARNING !!! SQL INJECTION?
         query = """SELECT count(awards.id)
                         FROM awards, players, seasons WHERE awards.{attrib} LIKE %s AND awards.player_id=players.id
@@ -139,7 +139,7 @@ class Awards:
         print('awards:', awards)
         awardlist = []
         for l in awards:
-            ld = dict(zip(awardtable, a))
+            ld = dict(zip(awardtable, l))
             award = Award(ld['name'], ld['player_id'], ld['season_id'],
 			    _id=ld['id'], player_name=ld['player_name'],
 			    player_surname=ld['player_surname'], season_year=ld['season_year'])
