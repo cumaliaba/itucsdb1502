@@ -104,19 +104,20 @@ def initialize_database():
         """
         cur.execute(query)
 
-    
-        # awards table
-        query = """CREATE TABLE awards (id serial PRIMARY KEY, 
-                               name varchar(32) NOT NULL,
-                               playerid integer, seasonid integer);
-        """
-        cur.execute(query)
-
         #seasons table
 
         query="""CREATE TABLE SEASONS ( id serial PRIMARY KEY, 
 					year INTEGER);"""
         cur.execute(query)
+    
+        # awards table
+        query = """CREATE TABLE awards (id serial PRIMARY KEY, 
+                               name varchar(32) NOT NULL,
+                               player_id integer references players(id), season_id integer references seasons(id));
+        """
+        cur.execute(query)
+
+
         
         # standings table
         query="""CREATE TABLE standings (winning varchar(80), 
