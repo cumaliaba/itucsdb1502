@@ -1,22 +1,461 @@
 {%extends "layout.html"%}
 
 {%block title%}Awards{%endblock%}
+
+{%block script%}
+    <script>
+        $(document).ready(function(){
+            //initialize tooltip
+            $('[data-toggle="tooltip"]').tooltip();
+
+            $('#delete_selectedBtn').click(function(){
+                var ids=[];
+
+                $('#table input:checked').each(function(){
+                    ids.push(this.name);
+                });
+                console.log(ids);
+                
+                $.ajax({
+                    url: '/awards',
+                    data: {'ids': ids,
+                    },
+                    type: 'DEL',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            
+                            console.log('DELETED');
+                            console.log(data['idlist']);
+                            console.log(data.idlist.length);
+                            for(var i=0; i<data.idlist.length; i++) {
+                                var domname = "tr[name="+data.idlist[i]+"]";
+                                console.log(domname);
+                                $(domname).hide()
+                            }
+                        }
+                        ids=[];
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        ids=[];
+                    }
+                });
+            });
+
+            $('.delete_itemBtn').click(function() {
+                console.log("deleteItem");
+                console.log(this.name);
+                $.ajax({
+                    url: '/awards',
+                    data: {'id': this.name,
+                    },
+                    type: 'DEL',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            
+                            console.log('DELETED');
+                            console.log(data['idlist']);
+                            console.log(data.idlist.length);
+                            for(var i=0; i<data.idlist.length; i++) {
+                                var domname = "tr[name="+data.idlist[i]+"]";
+                                console.log(domname);
+                                $(domname).hide()
+                            }
+                        }
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+
+            });
+           
+            $('.update_itemBtn').click(function() {
+                console.log("updateItem");
+                console.log(this.name);
+                console.log(this);
+                var name=this.name;
+                $.ajax({
+                    url: '/awards/g/'+this.name,
+                    data: {'id': this.name,
+                    },
+                    type: 'GET',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            // show update item form
+                            $('#award_item_update').removeClass('hidden');
+                            
+                            // scroll page to update element
+                            $('html, body').animate({
+                                        scrollTop: $("#award_item_update").offset().top
+                                                }, 1000);
+                            
+                            // show cancel button for editable item
+                            //$('#cancel_updateBtn').removeClass('hidden');
+                            
+                            // get selected item data from server response 
+                            award=data['award'];
+                            $('#award_item_update input[name=name]').val(award['name']);
+                            $('#award_item_update select[name=player]').val(award['player_id']);
+                            $('#award_item_update select[name=season]').val(award['season_id']);
+                            $('#award_item_update input[name=id]').val(award['id']);
+                            var base_url = window.location.origin;
+                            var newurl = base_url + "/awards/g/" + award['id']; 
+                            $('#update_form').attr('action', newurl);
+                        }
+                        
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+
+
+            $('#cancel_updateBtn').click(function(){
+                $('#award_item_update').addClass('hidden');
+                //$('#cancel_updateBtn').addClass('hidden');
+            });
+
+            $('#searchBox').change(function(){
+                var key=$('#searchBox').val();
+
+                var base_url = window.location.origin;
+                var search_url = base_url + "/awards/s/" + key
+                window.location.replace(search_url); 
+            });
+
+
+            /*
+             Add click listener to pagination
+             */
+            $('.pagination li a').click(function(){
+                var that = $(this).parent(); // li
+                var active = that.parent().find('li.active'); // active li element
+                active.removeClass('active'); // deactivete element
+                var num = parseInt(active.text()) - 1;
+                console.log('old-active:'+active.text());
+                // show pages between start end end
+                var start = 0; // ilk ayarlar deneme
+                var end = $('#pagination').attr('data-end')-1; // ilk ayarlar
+                var total = 5; // total pages
+                var selected_page = 0;
+
+                if ($(this).attr('name')=='prev') {
+                    console.log('prev button');
+                    // previous page button
+                    if (num==start) {
+                        // first page; no previous page
+                        active.addClass('active');
+                        return;
+                    }
+                    
+                    if ((num-1) == start) {
+                        console.log('num-1==start'+(num-1));
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    
+                    num = num - 1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+
+                    if (start!=end) {
+                        that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                    }
+                    selected_page=num; 
+
+                } else if ($(this).attr('name')=='next') {
+                    // next page button
+                    console.log('next button');
+                    if (num==end) {
+                        active.addClass('active');
+                        return;
+                    } 
+                    
+                    if ((num+1) == end) {
+                        console.log('num+1==start'+(num+1));
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+
+                    }
+
+                    num = num+1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+                    if (start!=end) {
+                        that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                    }
+                    selected_page=num; 
+                }
+                else {
+                    that.addClass('active');
+                    console.log($(this).text());
+                    console.log(num);
+                    
+                    var num2 = parseInt($(this).attr('name'));
+                    selected_page=num2; 
+                    
+                    if (num2 > start) {
+                        console.log('num>start'+ num2);
+                        that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                    } 
+                    else if (num2 == start) {
+                        console.log('num==start'+ num2);
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    if (num2 < end) {
+                        console.log('num<end'+ num2);
+                        that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                    }
+                    else if (num2==end) {
+                        console.log('num==end'+ num2);
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+                    }
+                    
+                }
+
+                console.log('selected:'+selected_page);
+                var limit = $('#result_limit').attr('data-limit');
+                if (!limit) limit = 10;
+                if (window.location.pathname.startsWith('/awards/g/')) {
+                    window.location.replace(window.location.origin + '/awards?' + 'limit='+limit+'&page='+selected_page);
+                } else {
+                    window.location.search = 'limit='+limit+'&page='+selected_page;
+                }
+            });
+            
+            /*
+             Add listener to result limit selector
+             */
+            var limit=10;
+            $('#result_limit').change(function(){
+                console.log($(this).val());
+                limit = $(this).val();
+                if (window.location.pathname.startsWith('/awards/g/')) {
+                    window.location.replace(window.location.origin + '/awards?' + 'limit='+limit);
+                } else {
+                    window.location.search = 'limit='+limit;
+                }
+            });
+            
+            /*
+             sort by selected table header settings
+             */
+            $('.table-sort-header').click(function(){
+                console.log($(this).attr('name'));
+                console.log($(this).attr('data-sort-prop'));
+                if (!$(this).attr('data-sort-prop')){
+                    // if data-sort-prop not defined
+                    $(this).attr('data-sort-prop', 'asc');
+                    $(this).find('i').removeClass('fa fa-sort-desc').addClass('fa fa-sort-asc')
+                } else if ($(this).attr('data-sort-prop') == 'asc') {
+                    $(this).attr('data-sort-prop', 'desc');
+                    $(this).find('i').removeClass('fa fa-sort-asc').addClass('fa fa-sort-desc')
+                    console.log('desc');
+                } else if ($(this).attr('data-sort-prop') == 'desc') {
+                    $(this).attr('data-sort-prop', 'asc');
+                    $(this).find('i').removeClass('fa fa-sort-desc').addClass('fa fa-sort-asc')
+                    console.log('asc');
+                }             
+            });
+
+        });
+        
+        /*
+         prevent click event for disabled elements
+         */
+        $(document).on("click", ".disabled", function(e){
+            e.preventDefault();
+        });
+
+    </script>
+{%endblock%}
+
 {%block content%}
-         <table>
-            <tr>
-                {%for var in awardtable%}
-                    <th>{{var}}</th>
-                {%endfor%}
-            </tr>
-            {%for award in awards%}
-            <tr>
-                <td>{{award.id}}</td>
-                <td>{{award.name}}</td>
-                <td>{{award.playerID}}</td>
-                <td>{{award.seasonID}}</td>
-            </tr>
-            {%endfor%}
-        </table>      
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div class="col-md-12" style="padding-bottom:15px;">
+            <div class="row" style="margin-bottom:15px;">
+                <div class="col-md-6">
+                    <div id="search">
+                        <div class="col-md-6">
+                            <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
+                        </div>
+                        <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
+                        <a href="{{url_for('award_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                    </div>
+                </div>
+            </div>
 
+            <div class="col-md-6">
 
+                <div class="panel panel-success">
+                    <div class="panel-heading">Add Award</div>
+                    <div class="panel-body">
+                        <div id="award_item_input" class="award_item_input">
+                            <form action="{{url_for('award_page')}}" method="post">
+                            <table id="add_item_table" class="table">
+                                <tr id="add_item_table_tr">
+                                    {%for var in awardtable[1:] %}
+                                    <td>
+                                        {%if var=='player_id'%}
+                                        {%elif var=='season_id'%}
+										{%elif var=='player_surname'%}
+                                        {%elif var=='player_name'%}
+                                        <select id="player" name="{{var}}" class="form-control">
+												{%for p in players%}
+                                                <option value="{{p._id}}" name="{{p.name}}">
+                                                    {{p.name +' '+ p.surname}}
+                                                </option>
+												{%endfor%}
+										</select>
+                                        {%elif var=='season_year'%}
+                                        <select id="season" name="{{var}}" class="form-control">
+												{%for s in seasons%}
+                                                <option value="{{s._id}}" name="{{s.name}}">
+                                                    {{s.year}}
+                                                </option>
+												{%endfor%}
+										</select>
+                                        {%else%}
+                                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control" required auto-focus>
+                                        {%endif%}
+                                    </td> 
+                                    {%endfor%}
+                                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i></button></td>
+                                </tr>
+                            </table>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Show awards table -->
+            <div class="col-md-8">
+            {%if total==0%}
+            <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
+            {%else%}
+            
+                <!-- Award table panel -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">Award Table</div>
+                    <div class="panel-body">
+                                <form class="form-inline">
+                                    <div class="form-group">
+                                        Show
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="result_limit" data-limit={{limit}}>
+                                            {% for i in [10,25,50,75,100] %}
+                                            <option {%if limit==i%}selected="selected"{%endif%} value={{i}}>{{i}}</option>
+                                            {%endfor%}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        results for each page.
+                                    </div>
+                                </form>
+                        <span class="label label-success">
+                            <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span> result found.
+                        </span>
+                        <table id="table" class="table table-hover">
+                            <tr>
+                                <th></th>
+                                {%for var in awardtable[1:]%}
+                                    {%if var=='player_id'%}
+                                    {%elif var=='season_id'%}
+                                    {%elif var=='player_surname'%}
+                                    {%elif sortby['attr']==var%}
+                                    <th><a role="button" id="table-sort-icon" class="table-sort-header" name="{{var}}" data-sort-prop="{{sortby['property']}}" selected="selected">{{var}}<i class="fa fa-sort-{{sortby['property']}}"></i></a></th>
+                                    {%else%}
+                                    <th><a role="button" id="table-sort-icon" class="table-sort-header" name="{{var}}" >{{var}}<i></i></a></th>
+                                    {%endif%}
+                                {%endfor%}
+                                    <th></th>
+                            </tr>
+                            {%for l in awards%}
+                            <tr name="{{l._id}}">
+                                <td><input type="checkbox" name="{{l._id}}" ></td>
+                                <td>{{l.name}}</td>
+                                <td><a href="">{{l.player_name + ' ' +l.player_surname}}</a></td>
+                                <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
+                                    <button name="{{l._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
+                                    <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
+                            </tr>
+                            {%endfor%}
+                        </table>
+                        {%endif%}
+
+                        <nav>
+                            <ul class="pagination pagination-sm" id="pagination" name="aaa">
+                            <liclass="disabled">
+                                <a href="#" aria-label="Previous" name="prev">
+                                <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {%for i in [1,2,3]%}
+                                {%if i==1 %}
+                                <li class=active><a name="{{i}}">{{i+1}}</a></li>
+                                {%else%}
+                                <li><a name="{{i}}">{{i+1}}</a></li>
+                                {%endif%}
+                            {%endfor%}
+                            <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
+                                <a aria-label="Next" name="next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                        </nav>
+
+                        <!-- Update item form. 
+                            * Primarily hidden. 
+                            * This form will be visible when edit button clicked 
+                        -->
+                        <div id="award_item_update" class="hidden">
+                            <form id="update_form" action="{{url_for('award_page')}}" method="POST">
+                            <table id="update_item_table" class="table">
+                                <tr id="update_item_table_tr">
+                                    {%for var in awardtable[1:] %}
+                                    <td>
+                                        {% if var=='player_id'%}
+                                        {%elif var=='season_id'%}
+										{%elif var=='player_surname'%}
+                                        {%elif var=='player_name'%}
+                                        <select id="country" name="{{var}}" class="form-control">
+                                                {%for p in players%}
+                                                <option value="{{p._id}}" name="{{p.name}}">{{p.name}}</option>
+                                                {%endfor%}
+                                        </select>
+                                        {%elif var=='season_year'%}
+                                        <select id="season" name="{{var}}" class="form-control">
+												{%for s in seasons%}
+                                                <option value="{{s._id}}" name="{{s.name}}">
+                                                    {{s.year}}
+                                                </option>
+												{%endfor%}
+										</select>
+                                        {%else%}
+                                        <input type="text" class="form-control" name="{{var}}" placeholder="{{var}}">
+                                        {%endif%}
+                                    </td> 
+                                    {%endfor%}
+                                        <td><input type="text" name="id" class="hidden"></td>
+                                        <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">
+                                    <button type="button" id="cancel_updateBtn" class="btn btn-danger cancel_updateBtn"><i class="fa fa-times fa-md"></i> Cancel</button></td>
+                                </tr>
+                            </table>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+
+                {%if total>=1 %} 
+                    <button type="button" id="delete_selectedBtn" class="btn btn-danger">Delete Selections</button>
+                {%endif%}
+            </div>
+        </div>
 {%endblock%}

@@ -133,7 +133,7 @@ def search_standing(key):
     
     offset = page*limit
     
-    standing_list,total = standings.get_standings_search_by('name', key,  limit, offset)
+    standinglist,total = standings.get_standings_search_by('name', key,  limit, offset)
     season_list = seasons.get_seasons()
     league_list,tk = leagues.get_leagues(100,0)
     team_list,tp = teams.get_teams(100,0)

@@ -40,6 +40,7 @@ class Standings:
         '''
         #print('update_league')
         query = """UPDATE standings SET season_id=%s,league_id=%s,team_id=%s WHERE id=%s"""
+        print(type(new.season_id))
         self.cur.execute(query, (new.season_id,new.league_id,new.team_id, _id))
         self.conn.commit()
 

@@ -25,11 +25,13 @@ from final4.views import award_view
 from final4.views import stat_view
 from final4.views import country_view
 from final4.views import coach_view
+
 from final4.views import team_view
 from final4.views import teamroster_view
+
 from final4.views import season_view
 from final4.views import standing_view
-
+#from final4.views import schedule_view
 def get_elephantsql_dsn(vcap_services):
     """Returns the data source name for ElephantSQL."""
     parsed = json.loads(vcap_services)
@@ -104,26 +106,18 @@ def initialize_database():
         """
         cur.execute(query)
 
+        #seasons table
+
+        query="""CREATE TABLE seasons ( id serial PRIMARY KEY, 
+					year varchar(9));"""
+        cur.execute(query)
     
         # awards table
         query = """CREATE TABLE awards (id serial PRIMARY KEY, 
                                name varchar(32) NOT NULL,
-                               playerid integer, seasonid integer);
+                               player_id integer references players(id), 
+                               season_id integer references seasons(id));
         """
-        cur.execute(query)
-
-        #seasons table
-
-        query="""CREATE TABLE SEASONS ( id serial PRIMARY KEY, 
-					year INTEGER);"""
-        cur.execute(query)
-        
-        # standings table
-        query="""CREATE TABLE standings (winning varchar(80), 
-				season_id integer, 
-			      	league_id integer, 
-				team_id integer);"""
-
         cur.execute(query)
 
 
@@ -138,18 +132,34 @@ def initialize_database():
         # teams table
         query = """CREATE TABLE teams (id serial PRIMARY KEY, 
                                name varchar(255) NOT NULL,
-                               coach_id integer references coaches(id) );
+                               country_id integer references countries(id) );
         """
         cur.execute(query)
-	# teamrosters table
+	    # teamrosters table
         query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
                                team_id integer REFERENCES teams(id),
                                player_id integer REFERENCES players(id));
 "        """
 
 
+
+        
+        # standings table
+        query="""CREATE TABLE standings ( id serial PRIMARY KEY, 
+			      	season_id integer REFERENCES seasons(id),
+			      	league_id integer REFERENCES leagues(id), 
+				team_id integer REFERENCES teams(id));"""
+
+        cur.execute(query)
+        
+        # schedules table
+        # query=CREATE TABLE schedules (id serial PRIMARY KEY,
+        #                      team1 integer REFERENCES teams(id),
+        #                     team2 integer REFERENCES teams(id),
+        #                   date varchar(65));"""
+        
+        # DO NOT ADD ANYTHING AFTER THIS LINE
         conn.commit() # commit changes
-    
     except:
         print(sys.exc_info())
         conn.rollback()
@@ -160,6 +170,14 @@ def initialize_database():
 def drop_tables():
     conn, cur = db.getDb()
     
+    #query="DROP TABLE IF EXISTS schedules;"
+    #cur.execute(query)
+    
+    query = "DROP TABLE IF EXISTS standings;"
+    cur.execute(query)   
+    
+    query = "DROP TABLE IF EXISTS awards;"
+    cur.execute(query)
     
     query = "DROP TABLE IF EXISTS teamrosters;"
     cur.execute(query)
@@ -170,18 +188,12 @@ def drop_tables():
     query = "DROP TABLE IF EXISTS coaches;"
     cur.execute(query)
 
-    query = "DROP TABLE IF EXISTS standings;"
-    cur.execute(query)
-
     query="DROP TABLE IF EXISTS seasons;"
     cur.execute(query)
-
-    query = "DROP TABLE IF EXISTS awards;"
-    cur.execute(query)
-
+    
     query = "DROP TABLE IF EXISTS players;"
     cur.execute(query)
-
+    
     query = "DROP TABLE IF EXISTS leagues;"
     cur.execute(query)
 

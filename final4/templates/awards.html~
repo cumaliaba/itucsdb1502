@@ -1,23 +1,23 @@
 {%extends "layout.html"%}
 
-{%block title%}Standings{%endblock%}
+{%block title%}Awards{%endblock%}
 
 {%block script%}
     <script>
         $(document).ready(function(){
-        
+            //initialize tooltip
             $('[data-toggle="tooltip"]').tooltip();
-            
+
             $('#delete_selectedBtn').click(function(){
                 var ids=[];
-                
+
                 $('#table input:checked').each(function(){
                     ids.push(this.name);
                 });
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/standings',
+                    url: '/awards',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/standings',
+                    url: '/awards',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -71,14 +71,14 @@
                 });
 
             });
-            
+           
             $('.update_itemBtn').click(function() {
                 console.log("updateItem");
                 console.log(this.name);
                 console.log(this);
                 var name=this.name;
                 $.ajax({
-                    url: '/standings/g/'+this.name,
+                    url: '/awards/g/'+this.name,
                     data: {'id': this.name,
                     },
                     type: 'GET',
@@ -86,24 +86,24 @@
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
                             // show update item form
-                            $('#standing_item_update').removeClass('hidden');
+                            $('#award_item_update').removeClass('hidden');
                             
                             // scroll page to update element
                             $('html, body').animate({
-                                        scrollTop: $("#standing_item_update").offset().top
+                                        scrollTop: $("#award_item_update").offset().top
                                                 }, 1000);
                             
                             // show cancel button for editable item
                             //$('#cancel_updateBtn').removeClass('hidden');
                             
                             // get selected item data from server response 
-                            standing=data['standing'];                            
-                            $('#standing_item_update input[name=id]').val(standing['id']);
-                            $('#standing_item_update input[name=season_id]').val(standing['season_id']);
-                            $('#standing_item_update select[name=league_id]').val(standing['league_id']);
-                            $('#standing_item_update input[name=team_id]').val(standing['team_id']);
-                            var base_url = window.location.origin;1
-                            var newurl = base_url + "/standings/g/" + standing['id']; 
+                            award=data['award'];
+                            $('#award_item_update input[name=name]').val(award['name']);
+                            $('#award_item_update select[name=player]').val(award['player_id']);
+                            $('#award_item_update select[name=season]').val(award['season_id']);
+                            $('#award_item_update input[name=id]').val(award['id']);
+                            var base_url = window.location.origin;
+                            var newurl = base_url + "/awards/g/" + award['id']; 
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -116,7 +116,7 @@
 
 
             $('#cancel_updateBtn').click(function(){
-                $('#standing_item_update').addClass('hidden');
+                $('#award_item_update').addClass('hidden');
                 //$('#cancel_updateBtn').addClass('hidden');
             });
 
@@ -124,10 +124,14 @@
                 var key=$('#searchBox').val();
 
                 var base_url = window.location.origin;
-                var search_url = base_url + "/standings/s/" + key
+                var search_url = base_url + "/awards/s/" + key
                 window.location.replace(search_url); 
             });
 
+
+            /*
+             Add click listener to pagination
+             */
             $('.pagination li a').click(function(){
                 var that = $(this).parent(); // li
                 var active = that.parent().find('li.active'); // active li element
@@ -215,8 +219,8 @@
                 console.log('selected:'+selected_page);
                 var limit = $('#result_limit').attr('data-limit');
                 if (!limit) limit = 10;
-                if (window.location.pathname.startsWith('/standings/g/')) {
-                    window.location.replace(window.location.origin + '/standings?' + 'limit='+limit+'&page='+selected_page);
+                if (window.location.pathname.startsWith('/awards/g/')) {
+                    window.location.replace(window.location.origin + '/awards?' + 'limit='+limit+'&page='+selected_page);
                 } else {
                     window.location.search = 'limit='+limit+'&page='+selected_page;
                 }
@@ -229,21 +233,46 @@
             $('#result_limit').change(function(){
                 console.log($(this).val());
                 limit = $(this).val();
-                if (window.location.pathname.startsWith('/standings/g/')) {
-                    window.location.replace(window.location.origin + '/standings?' + 'limit='+limit);
+                if (window.location.pathname.startsWith('/awards/g/')) {
+                    window.location.replace(window.location.origin + '/awards?' + 'limit='+limit);
                 } else {
                     window.location.search = 'limit='+limit;
                 }
             });
+            
+            /*
+             sort by selected table header settings
+             */
+            $('.table-sort-header').click(function(){
+                console.log($(this).attr('name'));
+                console.log($(this).attr('data-sort-prop'));
+                if (!$(this).attr('data-sort-prop')){
+                    // if data-sort-prop not defined
+                    $(this).attr('data-sort-prop', 'asc');
+                    $(this).find('i').removeClass('fa fa-sort-desc').addClass('fa fa-sort-asc')
+                } else if ($(this).attr('data-sort-prop') == 'asc') {
+                    $(this).attr('data-sort-prop', 'desc');
+                    $(this).find('i').removeClass('fa fa-sort-asc').addClass('fa fa-sort-desc')
+                    console.log('desc');
+                } else if ($(this).attr('data-sort-prop') == 'desc') {
+                    $(this).attr('data-sort-prop', 'asc');
+                    $(this).find('i').removeClass('fa fa-sort-desc').addClass('fa fa-sort-asc')
+                    console.log('asc');
+                }             
+            });
 
-        
         });
+        
+        /*
+         prevent click event for disabled elements
+         */
         $(document).on("click", ".disabled", function(e){
             e.preventDefault();
         });
+
     </script>
 {%endblock%}
-        
+
 {%block content%}
     {%if error%}<p>{{error}}</p>{%endif%}
         <div class="col-md-12" style="padding-bottom:15px;">
@@ -254,7 +283,7 @@
                             <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
                         </div>
                         <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
-                        <a href="{{url_for('standing_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                        <a href="{{url_for('award_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
                     </div>
                 </div>
             </div>
@@ -262,41 +291,30 @@
             <div class="col-md-6">
 
                 <div class="panel panel-success">
-                    <div class="panel-heading">Add Standing</div>
+                    <div class="panel-heading">Add Award</div>
                     <div class="panel-body">
-                        <div id="standing_item_input" class="standing_item_input">
-                            <form action="{{url_for('standing_page')}}" method="post">
+                        <div id="award_item_input" class="award_item_input">
+                            <form action="{{url_for('award_page')}}" method="post">
                             <table id="add_item_table" class="table">
                                 <tr id="add_item_table_tr">
-                                    {%for var in standingtable[1:] %}
+                                    {%for var in awardtable[1:] %}
                                     <td>
+                                        {%if var=='player_id'%}
                                         {%if var=='season_id'%}
-                                        {%elif var=='league_id'%}
-                                        {%elif var=='team_id'%}
-                                        {%elif var=='season_year'%}
-                                        <select id="season" name="{{var}}" class="form-control">
-                                                {%for c in seasons%}
-                                                <option value="{{c._id}}" name="{{c.year}}">{{c.year}}</option>
+                                        {%if var=='player_name'%}
+                                        <select id="player" name="{{var}}" class="form-control">
+                                                {%for p in players%}
+                                                <option value="{{p._id}}" name="{{p.name}}">
+                                                    {{p.name}}
+                                                </option>
                                                 {%endfor%}
                                             </select>
-                                        {%elif var=='league_name'%}
-                                        <select id="league" name="{{var}}" class="form-control">
-                                                {%for c in leagues%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
-                                                {%endfor%}
-                                            </select>
-                                        {%elif var=='team_name'%}
-                                        <select id="team" name="{{var}}" class="form-control">
-                                                {%for c in teams%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
-                                                {%endfor%}
-                                            </select>                                            
                                         {%else%}
                                         <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control" required auto-focus>
                                         {%endif%}
                                     </td> 
                                     {%endfor%}
-                                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success"><i class="fa fa-plus fa-md"></i></button></td>
+                                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i></button></td>
                                 </tr>
                             </table>
                             </form>
@@ -305,15 +323,15 @@
                 </div>
             </div>
 
-            <!-- Show standings table -->
+            <!-- Show awards table -->
             <div class="col-md-8">
             {%if total==0%}
             <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
             {%else%}
             
-                <!-- Standing table panel -->
+                <!-- Award table panel -->
                 <div class="panel panel-default">
-                    <div class="panel-heading">Standing Table</div>
+                    <div class="panel-heading">Award Table</div>
                     <div class="panel-body">
                                 <form class="form-inline">
                                     <div class="form-group">
@@ -331,30 +349,28 @@
                                     </div>
                                 </form>
                         <span class="label label-success">
-                            <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span>result found.
+                            <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span> result found.
                         </span>
                         <table id="table" class="table table-hover">
                             <tr>
                                 <th></th>
-                                {%for var in standingtable[1:]%}
-                                    {%if var=='season_id'%}
-                                    {%elif var=='league_id'%}
-                                    {%elif var=='team_id'%}
+                                {%for var in awardtable[1:]%}
+                                    {%if var=='player_id'%}
+                                    {%elif sortby['attr']==var%}
+                                    <th><a role="button" id="table-sort-icon" class="table-sort-header" name="{{var}}" data-sort-prop="{{sortby['property']}}" selected="selected">{{var}}<i class="fa fa-sort-{{sortby['property']}}"></i></a></th>
                                     {%else%}
-                                    <th>{{var}}</th>
+                                    <th><a role="button" id="table-sort-icon" class="table-sort-header" name="{{var}}" >{{var}}<i></i></a></th>
                                     {%endif%}
                                 {%endfor%}
                                     <th></th>
                             </tr>
-                            {%for l in standings%}
+                            {%for l in awards%}
                             <tr name="{{l._id}}">
                                 <td><input type="checkbox" name="{{l._id}}" ></td>
-                                <td>{{l.season_year}}</td>
-                                <td>{{l.league_name}}</td>
-                                <td>{{l.team_name}}</td>
-                                
-                                <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn"><i class="fa fa-trash fa-md"></i></button>
-                                    <button name="{{l._id}}" class="btn btn-warning update_itemBtn"><i class="fa fa-pencil fa-md"></i></button>
+                                <td>{{l.name}}</td>
+                                <td><a href="">{{l.player_name + ' ' +l.player_surname}}</a></td>
+                                <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
+                                    <button name="{{l._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
                                     <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
                             </tr>
                             {%endfor%}
@@ -362,21 +378,21 @@
                         {%endif%}
 
                         <nav>
-                        <ul class="pagination pagination-sm" id="pagination" name="aaa">
-                            <li class="disabled">
-                                <a href="#" aria-label="Previous" name="prev">
+                            <ul class="pagination pagination-sm" id="pagination" data-end="{{((total/limit)+0.5)|round|int}}"name="aaa">
+                            <li {%if page==0 %}class="disabled"{%endif%}>
+                                <a aria-label="Previous" name="prev">
                                 <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
-                            {%for i in [1,2,3]%}
-                                {%if i==1 %}
-                                <li class=active><a name="{{i}}">{{i}}</a></li>
+                            {%for i in range((total/limit)|round(0,'ceil')|int)%}
+                                {%if i==page %}
+                                <li class=active><a name="{{i}}">{{i+1}}</a></li>
                                 {%else%}
                                 <li><a name="{{i}}">{{i+1}}</a></li>
                                 {%endif%}
-                            {%endfor%}      
-                            <li>
-                                <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
+                            {%endfor%}
+                            <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
+                                <a aria-label="Next" name="next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
@@ -387,31 +403,17 @@
                             * Primarily hidden. 
                             * This form will be visible when edit button clicked 
                         -->
-                        <div id="standing_item_update" class="hidden">
-                            <form id="update_form" action="{{url_for('standing_page')}}" method="POST">
+                        <div id="award_item_update" class="hidden">
+                            <form id="update_form" action="{{url_for('award_page')}}" method="POST">
                             <table id="update_item_table" class="table">
                                 <tr id="update_item_table_tr">
-                                    {%for var in standingtable[1:] %}
+                                    {%for var in awardtable[1:] %}
                                     <td>
-                                        {%if var=='season_id'%}
-                                        {%elif var=='league_id'%}
-                                        {%elif var=='team_id'%}
-                                        {%elif var=='season_year'%}
-                                        <select id="season" name="{{var}}" class="form-control">
-                                                {%for c in seasons%}
-                                                <option value="{{c._id}}" name="{{c.year}}">{{c.year}}</option>
-                                                {%endfor%}
-                                            </select>
-                                        {%elif var=='league_name'%}
-                                        <select id="league" name="{{var}}" class="form-control">
-                                                {%for c in leagues%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
-                                                {%endfor%}
-                                            </select>
-                                        {%elif var=='team_name'%}
-                                        <select id="team" name="{{var}}" class="form-control">
-                                                {%for c in teams%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                        {% if var=='player_id'%}
+                                        {% elif var=='player_name'%}
+                                        <select id="country" name="{{var}}" class="form-control">
+                                                {%for p in players%}
+                                                <option value="{{p._id}}" name="{{p.name}}">{{p.name}}</option>
                                                 {%endfor%}
                                             </select>
                                         {%else%}
@@ -435,34 +437,4 @@
                 {%endif%}
             </div>
         </div>
-{%endblock%}            
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-                                        
-            
+{%endblock%}
