@@ -26,7 +26,6 @@ from final4.views import stat_view
 from final4.views import team_view
 from final4.views import country_view
 from final4.views import coach_view
-
 from final4.views import season_view
 from final4.views import standing_view
 
@@ -116,9 +115,8 @@ def initialize_database():
         cur.execute(query)
         
         # standings table
-        query="""CREATE TABLE standings ( id serial PRIMARY KEY,
-                                winning varchar(80), 
-				season_id integer, 
+        query="""CREATE TABLE standings ( id serial PRIMARY KEY, 
+			      	season_id integer references seasons(id)
 			      	league_id integer, 
 				team_id integer);"""
 

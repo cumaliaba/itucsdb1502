@@ -5,9 +5,11 @@ import psycopg2
 import re
 import sys
 
+from flask import g
 from flask import redirect
 from flask import render_template
 from flask.helpers import url_for
+from flask import send_from_directory
 
 
 from final4.config import app
@@ -21,6 +23,10 @@ from final4.views import league_view
 from final4.views import player_view
 from final4.views import award_view
 from final4.views import stat_view
+from final4.views import team_view
+from final4.views import country_view
+from final4.views import coach_view
+
 from final4.views import season_view
 from final4.views import standing_view
 
@@ -41,6 +47,10 @@ def home():
     conn, cur = db.getDb()
     now = datetime.datetime.now()
     return render_template('home.html', current_time=now.ctime())
+
+@app.route('/data/flags/<path:fn>')
+def flag_folder(fn):
+    return send_from_directory('static', fn)
 
 @app.route('/initdb')
 def initialize_database():
@@ -68,10 +78,19 @@ def initialize_database():
                     values ('admin', '1234', 'admin@test.com', 'admin','%s', '%s', FALSE );""" % (now, now)
         cur.execute(query)
 
+
+        # countries table
+        query = """CREATE TABLE countries (id serial PRIMARY KEY, 
+                               name varchar(65) NOT NULL,
+                               code varchar(2) NOT NULL);
+        """
+        cur.execute(query)
+
+
         # leagues table
         query = """CREATE TABLE leagues (id serial PRIMARY KEY, 
-                               name varchar(32) NOT NULL,
-                               country varchar(32));
+                               name varchar(255) NOT NULL,
+                               country_id integer references countries(id) );
         """
         cur.execute(query)
 
@@ -97,8 +116,8 @@ def initialize_database():
         cur.execute(query)
         
         # standings table
-        query="""CREATE TABLE standings (winning varchar(80), 
-				season_id integer, 
+        query="""CREATE TABLE standings ( id serial PRIMARY KEY, 
+			      	season_id integer references seasons(id)
 			      	league_id integer, 
 				team_id integer);"""
 
@@ -107,9 +126,9 @@ def initialize_database():
 
         # coaches table
         query = """CREATE TABLE coaches (id serial PRIMARY KEY, 
-                               name varchar(32) NOT NULL, surname varchar(32) NOT NULL,
-                               nationality varchar(32), 
-                               playerid integer, seasonid integer);
+                               name varchar(32) NOT NULL, 
+                               surname varchar(32) NOT NULL,
+                               country_id integer REFERENCES countries(id));
         """
         cur.execute(query)
 
@@ -163,6 +182,9 @@ def drop_tables():
     cur.execute(query)
 
     query = "DROP TABLE IF EXISTS leagues;"
+    cur.execute(query)
+
+    query = "DROP TABLE IF EXISTS countries;"
     cur.execute(query)
 
     query = "DROP TABLE IF EXISTS users;"

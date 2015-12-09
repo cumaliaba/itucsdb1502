@@ -1,12 +1,13 @@
 {%extends "layout.html"%}
 
 {%block title%}Standings{%endblock%}
-{%block content%}
-    {%if error%}<p>{{error}}</p>{%endif%}
+
+{%block script%}
     <script>
         $(document).ready(function(){
             $('#delete_selectedBtn').click(function(){
                 var ids=[];
+                
                 $('#table input:checked').each(function(){
                     ids.push(this.name);
                 });
@@ -37,10 +38,6 @@
                         ids=[];
                     }
                 });
-
-            
-
-
             });
 
             $('.delete_itemBtn').click(function() {
@@ -85,15 +82,24 @@
                     success: function(response) {
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
-                            $('#standing_item_update').show();
-                                                        
-                            standing=data['standing'];
-                            $('#standing_item_update input[name=winning]').val(standing['winning']);
-                            $('#standing_item_update input[name=season_id').val(standing['season_id']);
-                            $('#standing_item_update input[name=league_id]').val(standing['league_id']);
+                            // show update item form
+                            $('#standing_item_update').removeClass('hidden');
+                            
+                            // scroll page to update element
+                            $('html, body').animate({
+                                        scrollTop: $("#standing_item_update").offset().top
+                                                }, 1000);
+                            
+                            // show cancel button for editable item
+                            //$('#cancel_updateBtn').removeClass('hidden');
+                            
+                            // get selected item data from server response 
+                            league=data['standing'];
+                            $('#standing_item_update input[name=season_id]').val(standing['season_id']);
+                            $('#standing_item_update select[name=league_id]').val(standing['league_id']);
                             $('#standing_item_update input[name=team_id]').val(standing['team_id']);
-                            $('#standing_item_update input[name=id]').val(standing['id']);
-                            var newurl = $('#update_form').attr('action') +'/' +standing['id'];
+                            var base_url = window.location.origin;1
+                            var newurl = base_url + "/standings/g/" + league['id']; 
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -104,58 +110,177 @@
                 });
             });
 
+
+            $('#cancel_updateBtn').click(function(){
+                $('#league_item_update').addClass('hidden');
+                //$('#cancel_updateBtn').addClass('hidden');
+            });
+
+            $('#searchBox').change(function(){
+                var key=$('#searchBox').val();
+
+                var base_url = window.location.origin;
+                var search_url = base_url + "/standings/s/" + key
+                window.location.replace(search_url); 
+            });
+
+            $('.pagination li a').click(function(){
+                var that = $(this).parent(); // li
+                var active = that.parent().find('li.active'); // active li element
+                active.removeClass('active'); // deactivete element
+
+                var num = parseInt(active.text());
+                // show pages between start end end
+                var start = 1; // ilk ayarlar deneme
+                var end = 3; // ilk ayarlar
+                var total = 5; // total pages
+
+
+                if ($(this).attr('name')=='prev') {
+                    console.log('prev button');
+                    // previous page button
+                    if (num==start) {
+                        // first page, no previous page
+                        active.addClass('active');
+                        return;
+                    } 
+                    
+                    if (num-1 == start) {
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    
+                    num = num - 1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+
+                } else if ($(this).attr('name')=='next') {
+                    // next page button
+                    console.log('next button');
+                    if (num==end) {
+                        active.addClass('active');
+                        return;
+                    } 
+                    
+                    if (num+1 == end) {
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+                    }
+
+                    num = num+1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+                }
+                else {
+                    that.addClass('active');
+                    console.log($(this).text());
+                    console.log(num);
+                }
+
+
+                if (num > start) {
+                    console.log('num>start'+ num);
+                    that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                } 
+                else if (num == start) {
+                    that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                }
+                else if (num < end) {
+                    that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                }
+                else if (num ==end) {
+                    that.parent().find('li a[name="next"]').parent().addClass('disabled');
+                }
+
+            });
+
         });
     </script>
-
-        
-        <table id="table">
-            <tr>
-                <th></th>
-                {%for var in standingtable[1:]%}
-                    <th>{{var}}</th>
-                {%endfor%}
-            </tr>
-            {%for l in standings%}
-            <tr name="{{l._id}}">
-                <td><input type="checkbox" name="{{l._id}}" ></td>
-                <td>{{l.winning}}</td>
-                <td>{{l.season_id}}</td>
-                <td>{{l.league_id}}</td>
-                <td>{{l.team_id}}</td>
-                <td><button name="{{l._id}}" class="delete_itemBtn">Delete</button></td>
-                <td><button name="{{l._id}}" class="update_itemBtn">Update</button></td>
-            </tr>
-            {%endfor%}
-        </table>
-        <div id="standing_item_input" class="standing_item_input">
-            <form action="{{url_for('standing_page')}}" method="post">
-            <table id="add_item_table">
-                <tr id="add_item_table_tr">
-                    {%for var in standingtable[1:] %}
-                        <td><input type="text" name="{{var}}" placeholder="{{var}}"></td> 
-                    {%endfor%}
-                        <td><input type="submit" name="Add" id="add_itemBtn" value="Add"></td>
-                </tr>
-            </table>
-            </form>
-        </div>
-
-        <div id="standing_item_update" class="hidden">
-            <form id="update_form" action="{{url_for('standing_page')}}" method="POST">
-            <table id="update_item_table">
-                <tr id="update_item_table_tr">
-                    {%for var in standingtable[1:] %}
-                        <td><input type="text" name="{{var}}" placeholder="{{var}}"></td> 
-                    {%endfor%}
-                        <td><input type="text" name="id" class="hidden"></td>
-                        <td><input type="submit" name="Update" id="update" value="Update"></td>
-                </tr>
-            </table>
-            </form>
-        </div>
-
-
-        {%if standings|length>=1 %} 
-            <button type="button" id="delete_selectedBtn">Delete Selections</button>
-        {%endif%}
 {%endblock%}
+        
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div class="col-md-12" style="padding-bottom:15px;">
+            <div class="row" style="margin-bottom:15px;">
+                <div class="col-md-6">
+                    <div id="search">
+                        <div class="col-md-6">
+                            <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
+                        </div>
+                        <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
+                        <a href="{{url_for('league_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="panel panel-success">
+                    <div class="panel-heading">Add Standing</div>
+                    <div class="panel-body">
+                        <div id="league_item_input" class="league_item_input">
+                            <form action="{{url_for('league_page')}}" method="post">
+                            <table id="add_item_table" class="table">
+                                <tr id="add_item_table_tr">
+                                    {%for var in standingtable[1:] %}
+                                    <td>
+                                        {%if var=='season_id'%}
+                                        {%elif var=='season'%}
+                                        <select id="season" name="{{var}}" class="form-control">
+                                                {%for c in countries%}
+                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                                {%endfor%}
+                                            </select>
+                                        {%else%}
+                                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control" required auto-focus>
+                                        {%endif%}
+                                    </td> 
+                                    {%endfor%}
+                                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success"><i class="fa fa-plus fa-md"></i></button></td>
+                                </tr>
+                            </table>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Show leagues table -->
+            <div class="col-md-8">
+            {%if leagues|length==0%}
+            <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
+            {%else%}
+            
+                <!-- League table panel -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">League Table</div>
+                    <div class="panel-body">
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+                                        
+            
