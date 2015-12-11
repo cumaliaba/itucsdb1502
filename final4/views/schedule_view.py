@@ -1,0 +1,182 @@
+import sys
+import json
+
+from final4.config import app
+from final4.db_helper import getDb
+from final4.models import schedule
+from final4.models import team
+from final4.models import season
+from final4.models import league
+
+from flask import render_template
+from flask import request
+
+# schedule views
+@app.route('/schedules', methods=['DEL','GET', 'POST'])
+def schedule_page():
+    conn, cur = getDb()
+    schedules = schedule.Schedules(conn, cur)
+    teams = team.Teams(conn, cur)
+    seasons = season.Seasons(conn, cur)
+    leagues = league.Leagues(conn, cur)
+    print('SCHEDULES PAGE')
+    if request.method == 'GET':
+        # handle GET request
+        print ('GET REQUEST', request.args)
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+        order = request.args['order'] if 'order' in request.args else 'asc'
+ 
+        schedule_list, total = schedules.get_schedules(limit, offset)
+        team_list,tp = teams.get_teams(100,0) # get list object
+        season_list = seasons.get_seasons() # get list object
+        league_list,tk = leagues.get_leagues(100,0)
+        return render_template('schedules.html', scheduletable=schedule.scheduletable, 
+			schedules=schedule_list, seasons=season_list, teams=team_list, leagues=league_list,
+			total=total, limit=limit, page=page, sortby=sortby)
+    elif request.method == 'POST':
+        # handle POST request
+        print('ADD schedule')
+        print (request.form)
+        date = request.form['date']
+        saloon = request.form['saloon']
+        score1 = request.form['score1']
+        score2 = request.form['score2']
+        state = request.form['state']
+        team1_id = request.form['team1_name']
+        team2_id = request.form['team2_name']
+        league_id = request.form['league_name']
+        season_id = request.form['season_year']
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        order = request.form['sortby'] if 'sortby' in request.form else 'name'
+        order = request.form['order'] if 'order' in request.form else 'asc'
+        print(team1_id, team2_id,league_id, season_id,date,saloon,score1,score2,state)
+        schedule_obj = schedule.Schedule(team1_id, team2_id,season_id, league_id,date,saloon,score1,score2,state)
+        schedules.add_schedule(schedule_obj)
+        
+        schedule_list, total = schedules.get_schedules(limit, offset)
+        team_list,tp = teams.get_teams(100,0) # get list object
+        season_list = seasons.get_seasons() # get list object
+        league_list,tk = leagues.get_leagues(100,0)
+        sortby={'attr':'name', 'property':'asc'}
+        return render_template('schedules.html', scheduletable=schedule.scheduletable, 
+			schedules=schedule_list, seasons=season_list, teams=team_list, leagues=league_list,
+			total=total, limit=limit, page=page, sortby=sortby)
+
+    elif request.method == 'DEL':
+        # handle DEL request
+        print ('DELETE REQUEST:SCHEDULES PAGE')
+        print (request.form)
+        # concat json var with '[]' for calling array getted with request
+        idlist = request.form.getlist('ids[]')
+        print ('IDS: ', idlist)
+        if idlist == []:
+            try:
+                idlist = [request.form['id']]
+                print ('IDS: ', idlist)
+            except:
+                return json.dumps({'status':'OK', 'idlist':idlist})
+
+        print ('IDS: ', idlist)
+        print(json.dumps({'status':'OK', 'idlist':idlist}))
+        for _id in idlist:
+            print (_id)
+            schedules.delete_schedule(_id) # delete object
+        return json.dumps({'status':'OK', 'idlist':idlist})
+
+@app.route('/schedules/g/<schedule_id>', methods=['GET','POST'])
+def schedule_from_id(schedule_id):
+    conn, cur = getDb()
+    schedules = schedule.Schedules(conn, cur)
+    teams = team.Teams(conn, cur)
+    seasons = season.Seasons(conn, cur)
+    leagues = league.Leagues(conn, cur)
+    
+    if request.method == 'GET':
+        # handle GET request
+        schedule_obj= schedules.get_schedule(schedule_id)
+        if schedule_obj:
+            return json.dumps({'status':'OK', 'schedule':schedule_obj.getAttrs()})
+        else:
+            return json.dumps({'status':'FAILED'})
+    elif request.method == 'POST':
+        # handle POST request
+        print("POST METHOD REQUEST")
+        schedule_id = request.form['id']
+        date = request.form['date']
+        saloon = request.form['saloon']
+        score1 = request.form['score1']
+        score2 = request.form['score2']
+        state = request.form['state']
+        team1_id = request.form['team1_name']
+        team2_id = request.form['team2_name']
+        league_id = request.form['league_name']
+        season_id = request.form['season_year']
+        # limit: number of result showing each page
+        # offset: selectedpage x limit
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        order = request.form['sortby'] if 'sortby' in request.form else 'name'
+        order = request.form['order'] if 'order' in request.form else 'asc'
+        schedule_obj = schedule.Schedule(team1_id, team2_id, season_id, league_id,date,saloon,score1,score2,state)
+        schedules.update_schedule(schedule_id, schedule_obj)
+        
+        schedule_list, total = schedules.get_schedules(limit, offset)
+        team_list,tp = teams.get_teams(100,0) # get list object
+        season_list = seasons.get_seasons() # get list object
+        league_list,tk = leagues.get_leagues(100,0)
+        sortby={'attr':'name', 'property':'asc'}
+        return render_template('schedules.html', scheduletable=schedule.scheduletable, 
+			schedules=schedule_list, seasons=season_list, teams=team_list, leagues=league_list,
+			total=total, limit=limit, page=page, sortby=sortby)
+
+
+@app.route('/schedules/s/<key>', methods=['GET','POST'])
+def search_schedule(key):
+    conn, cur = getDb()
+    schedules = schedule.Schedules(conn, cur)
+    teams = team.Teams(conn, cur)
+    seasons = season.Seasons(conn, cur)
+    leagues = league.Leagues(conn, cur)
+
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
+    
+    offset = page*limit
+
+    schedule_list, total = schedules.get_schedules_search_by('name', key,  limit, offset)
+    team_list,tp = teams.get_teams(100,0) # get list object
+    season_list = seasons.get_seasons() # get list object
+    league_list,tk = leagues.get_leagues(100,0)
+    sortby={'attr':'name', 'property':'asc'}
+    return render_template('schedules.html', scheduletable=schedule.scheduletable, 
+			schedules=schedule_list, seasons=season_list, teams=team_list, leagues=league_list,
+			total=total, limit=limit, page=page, sortby=sortby)
+
+@app.route('/schedules/schedule/<schedule_id>')
+def view_schedule(schedule_id):
+    conn, cur = getDb()
+    
+    schedules = schedule.Schedules(conn, cur)
+    teams = team.Teams(conn, cur)
+    seasons = season.Seasons(conn, cur)
+    leagues = league.Leagues(conn, cur)
+    
+    l = schedules.get_schedule(schedule_id)
+    if l is None:
+        # return not found error 
+        return render_template('error.html', err_code=404)
+
+    # else render country page with required args
+
+    return render_template('schedule_page.html', schedule=l)

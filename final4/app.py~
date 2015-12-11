@@ -140,11 +140,6 @@ def initialize_database():
         """
 
         cur.execute(query)
-        query = """INSERT INTO teamrosters 
-                    (id,player_id,team_id)
-                    values ('1','1','1','%s','%s','%s');"""
-        cur.execute(query)
-
         # standings table
         query="""CREATE TABLE standings ( id serial PRIMARY KEY, 
 			      	season_id integer REFERENCES seasons(id),
@@ -154,11 +149,19 @@ def initialize_database():
         cur.execute(query)
         
         # schedules table
-        # query=CREATE TABLE schedules (id serial PRIMARY KEY,
-        #                      team1 integer REFERENCES teams(id),
-        #                     team2 integer REFERENCES teams(id),
-        #                   date varchar(65));"""
+        query="""CREATE TABLE schedules (id serial PRIMARY KEY,
+                     team1_id integer REFERENCES teams(id),
+                     team2_id integer REFERENCES teams(id),
+                     season_id integer REFERENCES seasons(id),
+                     league_id integer REFERENCES leagues(id),
+                     date timestamp,
+                     saloon varchar(255),
+                     score1 integer,
+                     score2 integer,
+                     state boolean
+                     );"""
         
+        cur.execute(query)
         # DO NOT ADD ANYTHING AFTER THIS LINE
         conn.commit() # commit changes
     except:
@@ -171,8 +174,8 @@ def initialize_database():
 def drop_tables():
     conn, cur = db.getDb()
     
-    #query="DROP TABLE IF EXISTS schedules;"
-    #cur.execute(query)
+    query="DROP TABLE IF EXISTS schedules;"
+    cur.execute(query)
     
     query = "DROP TABLE IF EXISTS standings;"
     cur.execute(query)   

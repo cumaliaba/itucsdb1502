@@ -29,7 +29,8 @@ from final4.views import team_view
 from final4.views import teamroster_view
 from final4.views import season_view
 from final4.views import standing_view
-#from final4.views import schedule_view
+from final4.views import schedule_view
+
 def get_elephantsql_dsn(vcap_services):
     """Returns the data source name for ElephantSQL."""
     parsed = json.loads(vcap_services)
@@ -149,11 +150,19 @@ def initialize_database():
         cur.execute(query)
         
         # schedules table
-        # query=CREATE TABLE schedules (id serial PRIMARY KEY,
-        #                      team1 integer REFERENCES teams(id),
-        #                     team2 integer REFERENCES teams(id),
-        #                   date varchar(65));"""
+        query="""CREATE TABLE schedules (id serial PRIMARY KEY,
+                     team1_id integer REFERENCES teams(id),
+                     team2_id integer REFERENCES teams(id),
+                     season_id integer REFERENCES seasons(id),
+                     league_id integer REFERENCES leagues(id),
+                     date timestamp,
+                     saloon varchar(255),
+                     score1 integer,
+                     score2 integer,
+                     state boolean
+                     );"""
         
+        cur.execute(query)
         # DO NOT ADD ANYTHING AFTER THIS LINE
         conn.commit() # commit changes
     except:
@@ -166,8 +175,8 @@ def initialize_database():
 def drop_tables():
     conn, cur = db.getDb()
     
-    #query="DROP TABLE IF EXISTS schedules;"
-    #cur.execute(query)
+    query="DROP TABLE IF EXISTS schedules;"
+    cur.execute(query)
     
     query = "DROP TABLE IF EXISTS standings;"
     cur.execute(query)   
