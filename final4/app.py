@@ -22,6 +22,7 @@ from final4.views import login_view
 from final4.views import league_view
 from final4.views import player_view
 from final4.views import award_view
+from final4.views import award_stat_view
 from final4.views import stat_view
 from final4.views import country_view
 from final4.views import coach_view
@@ -30,6 +31,7 @@ from final4.views import teamroster_view
 from final4.views import season_view
 from final4.views import standing_view
 from final4.views import schedule_view
+from final4.views import match_view
 
 def get_elephantsql_dsn(vcap_services):
     """Returns the data source name for ElephantSQL."""
@@ -113,12 +115,17 @@ def initialize_database():
     
         # awards table
         query = """CREATE TABLE awards (id serial PRIMARY KEY, 
-                               name varchar(32) NOT NULL,
+                               name varchar(255) NOT NULL)
+        """
+        cur.execute(query)
+        
+        # award_stats table
+        query = """CREATE TABLE award_stats (id serial PRIMARY KEY, 
+                               award_id integer references awards(id),
                                player_id integer references players(id), 
                                season_id integer references seasons(id));
         """
         cur.execute(query)
-
 
         # coaches table
         query = """CREATE TABLE coaches (id serial PRIMARY KEY, 
@@ -163,6 +170,23 @@ def initialize_database():
                      );"""
         
         cur.execute(query)
+
+        # matches table
+        query = """CREATE TABLE matches (id serial PRIMARY KEY,
+					schedule_id integer REFERENCES schedules(id),			
+                               T1_3PT integer,
+                               T1_2PT integer,
+                               T1_block integer,
+                               T1_reb integer,
+                               T1_rate integer,
+                               T2_3PT integer,
+                               T2_2PT integer,
+                               T2_block integer,
+                               T2_reb integer,
+                               T2_rate integer );
+        """
+        cur.execute(query)
+
         # DO NOT ADD ANYTHING AFTER THIS LINE
         conn.commit() # commit changes
     except:
@@ -175,12 +199,18 @@ def initialize_database():
 def drop_tables():
     conn, cur = db.getDb()
     
+    query="DROP TABLE IF EXISTS matches;"
+    cur.execute(query)
+    
     query="DROP TABLE IF EXISTS schedules;"
     cur.execute(query)
     
     query = "DROP TABLE IF EXISTS standings;"
     cur.execute(query)   
     
+    query = "DROP TABLE IF EXISTS award_stats;"
+    cur.execute(query) 
+
     query = "DROP TABLE IF EXISTS awards;"
     cur.execute(query)
     

@@ -1,0 +1,225 @@
+{%extends "table_template.html"%}
+
+{%block title%}Matches{%endblock%}
+
+{%block script%}
+    <script>
+        $(document).ready(function(){
+            $('#delete_selectedBtn').click(function(){
+                var ids=[];
+                $('#table input:checked').each(function(){
+                    ids.push(this.name);
+                });
+                console.log(ids);
+                
+                $.ajax({
+                    url: '/matches',
+                    data: {'ids': ids,
+                    },
+                    type: 'DEL',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            
+                            console.log('DELETED');
+                            console.log(data['idlist']);
+                            console.log(data.idlist.length);
+                            for(var i=0; i<data.idlist.length; i++) {
+                                var domname = "tr[name="+data.idlist[i]+"]";
+                                console.log(domname);
+                                $(domname).hide()
+                            }
+                        }
+                        ids=[];
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        ids=[];
+                    }
+                });
+            });
+
+            $('.delete_itemBtn').click(function() {
+                console.log("deleteItem");
+                console.log(this.name);
+                $.ajax({
+                    url: '/matches',
+                    data: {'id': this.name,
+                    },
+                    type: 'DEL',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            
+                            console.log('DELETED');
+                            console.log(data['idlist']);
+                            console.log(data.idlist.length);
+                            for(var i=0; i<data.idlist.length; i++) {
+                                var domname = "tr[name="+data.idlist[i]+"]";
+                                console.log(domname);
+                                $(domname).hide()
+                            }
+                        }
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+
+            });
+            
+            $('.update_itemBtn').click(function() {
+                console.log("updateItem");
+                console.log(this.name);
+                console.log(this);
+                var name=this.name;
+                $.ajax({
+                    url: '/matches/g/'+this.name,
+                    data: {'id': this.name,
+                    },
+                    type: 'GET',
+                    success: function(response) {
+                        var data=JSON.parse(response);
+                        if (data.status == 'OK') {
+                            $('#update_item_div').removeClass('hidden');
+                             
+                            match=data['match'];
+                            $('#update_item_div input[name=schedule]').val(match['schedule']);
+                            $('#update_item_div input[name=T1_3PT]').val(match['T1_3PT']);
+                            $('#update_item_div input[name=T1_2PT]').val(match['T1_2PT']);
+                            $('#update_item_div input[name=T1_block]').val(match['T1_block']);
+                            $('#update_item_div input[name=T1_reb]').val(match['T1_reb']);
+                            $('#update_item_div input[name=T1_rate]').val(match['T1_rate']);
+                            $('#update_item_div input[name=T2_3PT]').val(match['T2_3PT']);
+                            $('#update_item_div input[name=T2_2PT]').val(match['T2_2PT']);
+                            $('#update_item_div input[name=T2_block]').val(match['T2_block']);
+                            $('#update_item_div input[name=T2_reb]').val(match['T2_reb']);
+                            $('#update_item_div input[name=T2_rate]').val(match['T2_rate']);
+                            $('#update_item_div input[name=id]').val(match['id']);
+                            var base_url = window.location.origin;
+                            var newurl = base_url + "/matches/g/" + match['id']; 
+                            $('#update_form').attr('action', newurl);
+                        }
+                        
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+
+            $('#searchBox').change(function(){
+                var key=$('#searchBox').val();
+
+                var base_url = window.location.origin;
+                var search_url = base_url + "/matches/s/" + key
+                window.location.replace(search_url); 
+            });
+
+        });
+    </script>
+{%endblock%}
+
+{%block search_reset_link%}
+<a href="{{url_for('match_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+{%endblock%}
+
+{%block add_item_panel_heading%}Add Match{%endblock%}
+
+{%block add_item_form%}
+            <form action="{{url_for('match_page')}}" method="post">
+            <table id="add_item_table">
+                    {%for var in matchtable[1:] %}
+                    <tr>
+                    <td>
+                        {%if var=='schedule_id'%}
+                        {%elif var=='T1_name'%}
+                        {%elif var=='T2_name'%}
+                        <select id="schedule" name="schedule" class="form-control">
+                                {%for s in schedules%}
+                                <option value="{{s._id}}" name="{{s.team2_name}}">{{s.date + ' ' + s.team1_name + '-' + s.team2_name}}</option>
+                                {%endfor%}
+                            </select>
+                        {%else%}
+                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control">
+                        {%endif%}
+                    </td> 
+                    </tr>
+		 <tr>
+                    {%endfor%}
+                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i> Add</button></td>
+                </tr>
+            </table>
+            </form>
+
+
+{%endblock%}
+ 
+{%block item_table_panel_heading%}Match Table{%endblock%}
+
+{%block item_table_panel_table%}
+<table id="table" class="table table-hover">
+    <tr>
+        <th></th>
+        {%for var in matchtable[1:]%}
+            {%if var=='match_id'%}
+            {%elif var=='schedule_id'%}
+            {%else%}
+            <th>{{var}}</th>
+            {%endif%}
+        {%endfor%}
+    </tr>
+    {%for c in matches%}
+    <tr name="{{c._id}}">
+        <td><input type="checkbox" name="{{c._id}}" ></td>
+        <td>{{c.T1_name}}</td>
+        <td>{{c.T2_name}}</td>
+        <td>{{c.T1_3PT}}</td>
+        <td>{{c.T1_2PT}}</td>
+        <td>{{c.T1_block}}</td>
+        <td>{{c.T1_reb}}</td>
+        <td>{{c.T1_rate}}</td>
+        <td>{{c.T2_3PT}}</td>
+        <td>{{c.T2_2PT}}</td>
+        <td>{{c.T2_block}}</td>
+        <td>{{c.T2_reb}}</td>
+        <td>{{c.T2_rate}}</td>
+        <td><button name="{{c._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
+            <button name="{{c._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
+            <button name="{{c._id}}" id="{{c._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
+    </tr>
+    {%endfor%}
+</table>
+
+{%endblock%}
+
+{%block update_item_form%}
+<form id="update_form" action="{{url_for('match_page')}}" method="POST">
+<table id="update_item_table">
+                    {%for var in matchtable[1:] %}
+                    <tr>
+                    <td>
+                        {%if var=='schedule_id'%}
+                        {%elif var=='T1_name'%}
+                        {%elif var=='T2_name'%}
+                        <select id="schedule" name="schedule" class="form-control">
+                                {%for s in schedules%}
+                                <option value="{{s._id}}" name="{{s.team2_name}}">{{s.date + ' ' + s.team1_name + '-' + s.team2_name}}</option>
+                                {%endfor%}
+                            </select>
+                        {%else%}
+                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control">
+                        {%endif%}
+                    </td> 
+                    </tr>
+                    {%endfor%}
+    <tr>
+            <td><input type="text" name="id" class="hidden"></td>
+            <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">
+            <button type="button" id="cancel_updateBtn" class="btn btn-danger cancel_updateBtn"><i class="fa fa-times fa-md"></i> Cancel</button></td>
+    </tr>
+</table>
+</form>
+ 
+{%endblock%}
+
