@@ -136,8 +136,8 @@ def initialize_database():
         cur.execute(query)
 	    # teamrosters table
         query = """CREATE TABLE teamrosters (id serial PRIMARY KEY, 
-                               player_id integer REFERENCES teams(id),
-                               team_id integer REFERENCES players(id));
+                               player_id integer REFERENCES players(id),
+                               team_id integer REFERENCES teams(id));
         """
 
         cur.execute(query)

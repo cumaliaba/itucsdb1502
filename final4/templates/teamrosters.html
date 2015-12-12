@@ -259,7 +259,7 @@
                                     <td>
                                         {%if var=='player_id'%}
                                         {%elif var=='team_id'%}
-                                        {%elif var=='play'%}
+                                        {%elif var=='player'%}
                                         <select id="player" name="{{var}}" class="form-control">
                                                 {%for c in players%}
                                                 <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
