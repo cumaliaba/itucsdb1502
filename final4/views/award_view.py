@@ -4,8 +4,6 @@ import json
 from final4.config import app
 from final4.db_helper import getDb
 from final4.models import award
-from final4.models import player
-from final4.models import season
 
 from flask import render_template
 from flask import request
@@ -15,8 +13,6 @@ from flask import request
 def award_page():
     conn, cur = getDb()
     awards = award.Awards(conn, cur)
-    players = player.Players(conn, cur)
-    seasons = season.Seasons(conn, cur)
     print('AWARDS PAGE')
     if request.method == 'GET':
         # handle GET request
@@ -30,32 +26,26 @@ def award_page():
         order = request.args['order'] if 'order' in request.args else 'asc'
  
         award_list, total = awards.get_awards(limit, offset)
-        player_list,tp = players.get_players(100,0) # get list object
-        season_list = seasons.get_seasons() # get list object
+        sortby={'attr':'name', 'property':'asc'}
         return render_template('awards.html', awardtable=award.awardtable, 
-			awards=award_list, seasons=season_list, players=player_list, 
+                        awards=award_list,
 			total=total, limit=limit, page=page, sortby=sortby)
     elif request.method == 'POST':
         # handle POST request
         print('ADD award')
         name = request.form['name']
-        player_id = request.form['player_name']
-        season_id = request.form['season_year']
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
         order = request.form['sortby'] if 'sortby' in request.form else 'name'
         order = request.form['order'] if 'order' in request.form else 'asc'
-        print(name, player_id, season_id)
-        award_obj = award.Award(name, player_id, season_id)
+        award_obj = award.Award(name)
         awards.add_award(award_obj)
         
         award_list, total = awards.get_awards(limit, offset)
-        player_list,tp = players.get_players(100,0) # get list object
-        season_list = seasons.get_seasons() # get list object
         sortby={'attr':'name', 'property':'asc'}
         return render_template('awards.html', awardtable=award.awardtable, 
-			awards=award_list, seasons=season_list, players=player_list, 
+                        awards=award_list,
 			total=total, limit=limit, page=page, sortby=sortby)
 
     elif request.method == 'DEL':
@@ -83,8 +73,6 @@ def award_page():
 def award_from_id(award_id):
     conn, cur = getDb()
     awards = award.Awards(conn, cur)
-    players = player.Players(conn, cur)
-    seasons = season.Seasons(conn, cur)
     
     if request.method == 'GET':
         # handle GET request
@@ -98,8 +86,6 @@ def award_from_id(award_id):
         print("POST METHOD REQUEST")
         award_id = request.form['id']
         name = request.form['name']
-        player_id = request.form['player_name']
-        season_id = request.form['season_year']
         # limit: number of result showing each page
         # offset: selectedpage x limit
         limit = int(request.form['limit']) if 'limit' in request.form else 10
@@ -107,15 +93,13 @@ def award_from_id(award_id):
         offset = page*limit
         order = request.form['sortby'] if 'sortby' in request.form else 'name'
         order = request.form['order'] if 'order' in request.form else 'asc'
-        award_obj = award.Award(name, player_id, season_id)
+        award_obj = award.Award(name)
         awards.update_award(award_id, award_obj)
         
         award_list, total = awards.get_awards(limit, offset)
-        player_list, tp = players.get_players(100,0) # get list object
-        season_list = seasons.get_seasons() # get list object
         sortby={'attr':'name', 'property':'asc'}
         return render_template('awards.html', awardtable=award.awardtable, 
-			awards=award_list, seasons=season_list, players=player_list, 
+			awards=award_list, 
 			total=total, limit=limit, page=page, sortby=sortby)
 
 
@@ -123,8 +107,6 @@ def award_from_id(award_id):
 def search_award(key):
     conn, cur = getDb()
     awards = award.Awards(conn, cur)
-    players = player.Players(conn, cur)
-    seasons = season.Seasons(conn, cur)
 
     limit = int(request.args['limit']) if 'limit' in request.args else 10
     page = int(request.args['page']) if 'page' in request.args else 0
@@ -135,11 +117,9 @@ def search_award(key):
     offset = page*limit
 
     award_list, total = awards.get_awards_search_by('name', key,  limit, offset)
-    player_list,tp = players.get_players(100,0) # get list object
-    season_list = seasons.get_seasons() # get list object
     sortby={'attr':'name', 'property':'asc'}
     return render_template('awards.html', awardtable=award.awardtable, 
-		awards=award_list, seasons=season_list, players=player_list, 
+		awards=award_list,
 		total=total, limit=limit, page=page, sortby=sortby)
 
 @app.route('/awards/award/<award_id>')
@@ -147,8 +127,6 @@ def view_award(award_id):
     conn, cur = getDb()
 
     awards = award.Awards(conn, cur)
-    #players = player.Players(conn, cur)
-    #seasons = season.Seasons(conn, cur)
 
     l = awards.get_award(award_id)
     if l is None:

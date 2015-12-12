@@ -1,0 +1,27 @@
+{%extends "layout.html"%}
+
+{%block title%}{{award.name|capitalize}}{%endblock%}
+
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div class="col-md-12" style="padding-bottom:15px;">
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">Award Info</div>
+                    <div class="panel-body">
+                            <table class="table table-bordered">
+                                <!--
+                                <tr>
+                                    <td colspan=2 align=center>
+                                        <img src="" width=120px>
+                                    </td>
+                                </tr>-->
+                                <tr>
+                                    <td><b>Award name</b></td>
+                                    <td>{{award.name}}</td>
+                                </tr>
+                            </table>
+                    </div>
+                </div>
+            </div>
+{%endblock%}
