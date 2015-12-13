@@ -1,0 +1,213 @@
+{%extends "layout.html"%}
+
+{%block title%}Teamrosters{%endblock%}
+
+{%block script%}
+    <script>
+        $(document).ready(function(){
+        
+            $('[data-toggle="tooltip"]').tooltip();
+
+            $('#searchBox').change(function(){
+                var key=$('#searchBox').val();
+
+                window.location.search = "team_name="+key; 
+            });
+
+            $('.pagination li a').click(function(){
+                var that = $(this).parent(); 
+                var active = that.parent().find('li.active');
+                active.removeClass('active'); 
+                var num = parseInt(active.text()) - 1;
+                console.log('old-active:'+active.text());
+                var start = 0; 
+                var end = $('#pagination').attr('data-end')-1;
+                var total = 5; 
+                var selected_page = 0;
+
+                if ($(this).attr('name')=='prev') {
+                    console.log('prev button');
+                    if (num==start) {
+                        active.addClass('active');
+                        return;
+                    }
+                    
+                    if ((num-1) == start) {
+                        console.log('num-1==start'+(num-1));
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    
+                    num = num - 1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+
+                    if (start!=end) {
+                        that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                    }
+                    selected_page=num; 
+
+                } else if ($(this).attr('name')=='next') {
+                    console.log('next button');
+                    if (num==end) {
+                        active.addClass('active');
+                        return;
+                    } 
+                    
+                    if ((num+1) == end) {
+                        console.log('num+1==start'+(num+1));
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+
+                    }
+
+                    num = num+1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+                    if (start!=end) {
+                        that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                    }
+                    selected_page=num; 
+                }
+                else {
+                    that.addClass('active');
+                    console.log($(this).text());
+                    console.log(num);
+                    
+                    var num2 = parseInt($(this).attr('name'));
+                    selected_page=num2; 
+                    
+                    if (num2 > start) {
+                        console.log('num>start'+ num2);
+                        that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                    } 
+                    else if (num2 == start) {
+                        console.log('num==start'+ num2);
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    if (num2 < end) {
+                        console.log('num<end'+ num2);
+                        that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                    }
+                    else if (num2==end) {
+                        console.log('num==end'+ num2);
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+                    }
+                    
+                }
+
+                console.log('selected:'+selected_page);
+                var limit = $('#result_limit').attr('data-limit');
+                if (!limit) limit = 10;
+                
+                window.location.search = 'limit='+limit+'&page='+selected_page;
+                
+            });
+            
+            var limit=10;
+            $('#result_limit').change(function(){
+                console.log($(this).val());
+                limit = $(this).val();
+                
+                window.location.search = 'limit='+limit;
+                
+            });
+
+        
+        });
+        $(document).on("click", ".disabled", function(e){
+            e.preventDefault();
+        });
+    </script>
+{%endblock%}
+        
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div class="col-md-12" style="padding-bottom:15px;">
+            <div class="row" style="margin-bottom:15px;">
+                <div class="col-md-6">
+                    <div id="search">
+                        <div class="col-md-6">
+                            <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
+                        </div>
+                        <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
+                        <a href="{{url_for('teamroster_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-8">
+            {%if total==0%}
+            <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
+            {%else%}
+            
+                <div class="panel panel-default">
+                    <div class="panel-heading">Teamroster Table</div>
+                    <div class="panel-body">
+                                <form class="form-inline">
+                                    <div class="form-group">
+                                        Show
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="result_limit" data-limit={{limit}}>
+                                            {% for i in [10,25,50,75,100] %}
+                                            <option {%if limit==i%}selected="selected"{%endif%} value={{i}}>{{i}}</option>
+                                            {%endfor%}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        results for each page.
+                                    </div>
+                                </form>
+                        <span class="label label-success">
+                            <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span>result found.
+                        </span>
+                        <table id="table" class="table table-hover">
+                            <tr>
+                                <th></th>
+                                {%for var in teamrostertable[1:]%}
+                                    {%if var=='player_id'%}
+                                    {%elif var=='team_id'%}
+                                    {%else%}
+                                    <th>{{var}}</th>
+                                    {%endif%}
+                                {%endfor%}
+                                    <th></th>
+                            </tr>
+                            {%for l in teamrosters%}
+                            <tr name="{{l._id}}">
+                                <td><input type="checkbox" name="{{l._id}}" ></td>
+                                <td>{{l.player}}</td>
+                                <td>{{l.team}}</td>
+                                
+                            </tr>
+                            {%endfor%}
+                        </table>
+                        {%endif%}
+
+                        <nav>
+                        <ul class="pagination pagination-sm" id="pagination" name="aaa">
+                            <li class="disabled">
+                                <a href="#" aria-label="Previous" name="prev">
+                                <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {%for i in [1,2,3]%}
+                                {%if i==1 %}
+                                <li class=active><a name="{{i}}">{{i}}</a></li>
+                                {%else%}
+                                <li><a name="{{i}}">{{i+1}}</a></li>
+                                {%endif%}
+                            {%endfor%}      
+                            <li>
+                                <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+{%endblock%}            
