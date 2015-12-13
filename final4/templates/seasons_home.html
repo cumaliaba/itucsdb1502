@@ -1,0 +1,51 @@
+{%extends "layout.html"%}
+
+{%block title%}Seasons{%endblock%}
+{%block script%}
+    
+    <script>
+        $(document).ready(function(){
+            
+            $('#searchBox').change(function(){
+                var key=$('#searchBox').val();
+                
+                window.location.search = 'name=' + key; 
+            });
+
+        });
+    </script>
+
+{%endblock%}      
+        
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div id="search">
+            <input id="searchBox" type="text" name="search" placeholder="Enter search key">
+            <button id="searchBtn">Search</button>
+            <a href="{{url_for('seasons_home')}}"><button></i> Reset filter</button></a>
+        </div>
+        {%if seasons|length==0%}
+        <p id="no_result"class="notice">No result found for selected criterias</p>
+        {%else%}
+        <table id="table">
+            <tr>
+                <th></th>
+                {%for var in seasontable[1:]%}
+                    <th>{{var}}</th>
+                {%endfor%}
+            </tr>
+            {%for l in seasons%}
+            <tr name="{{l._id}}">
+                 
+                
+                <td>{{l.year}}</td>
+                
+                
+            </tr>
+            {%endfor%}
+        </table>
+        {%endif%}
+        
+       
+
+{%endblock%}

@@ -17,7 +17,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/standings/table',
+                    url: '/standings',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/standings/table',
+                    url: '/standings',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -102,8 +102,8 @@
                             $('#standing_item_update input[name=season_id]').val(standing['season_id']);
                             $('#standing_item_update select[name=league_id]').val(standing['league_id']);
                             $('#standing_item_update input[name=team_id]').val(standing['team_id']);
-                            var base_url = window.location.origin;
-                            var newurl = base_url + "/standings/g/" + standing['id'];  
+                            var base_url = window.location.origin;1
+                            var newurl = base_url + "/standings/g/" + standing['id']; 
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -123,9 +123,8 @@
             $('#searchBox').change(function(){
                 var key=$('#searchBox').val();
 
-                var base_url = window.location.origin;
-                var search_url = base_url + "/standings/s/" + key
-                window.location.replace(search_url); 
+                window.location.search = 'name=' + key; 
+                window.location.replace(search_url);  
             });
 
             $('.pagination li a').click(function(){
@@ -254,63 +253,21 @@
                             <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
                         </div>
                         <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
-                        <a href="{{url_for('standing_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                        <a href="{{url_for('standings_home')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-6">
-                Searching is made according to name of league.
-                <div class="panel panel-success">
-                    <div class="panel-heading">Add Standing</div>
-                    <div class="panel-body">
-                        <div id="standing_item_input" class="standing_item_input">
-                            <form action="{{url_for('standing_page')}}" method="post">
-                            <table id="add_item_table" class="table">
-                                <tr id="add_item_table_tr">
-                                    {%for var in standingtable[1:] %}
-                                    <td>
-                                        {%if var=='season_id'%}
-                                        {%elif var=='league_id'%}
-                                        {%elif var=='team_id'%}
-                                        {%elif var=='season_year'%}
-                                        <select id="season" name="{{var}}" class="form-control">
-                                                {%for c in seasons%}
-                                                <option value="{{c._id}}" name="{{c.year}}">{{c.year}}</option>
-                                                {%endfor%}
-                                            </select>
-                                        {%elif var=='league_name'%}
-                                        <select id="league" name="{{var}}" class="form-control">
-                                                {%for c in leagues%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
-                                                {%endfor%}
-                                            </select>
-                                        {%elif var=='team_name'%}
-                                        <select id="team" name="{{var}}" class="form-control">
-                                                {%for c in teams%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
-                                                {%endfor%}
-                                            </select>                                            
-                                        {%else%}
-                                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control" required auto-focus>
-                                        {%endif%}
-                                    </td> 
-                                    {%endfor%}
-                                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success"><i class="fa fa-plus fa-md"></i></button></td>
-                                </tr>
-                            </table>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
+                
+            Searching is made according to name of league.
             <!-- Show standings table -->
-            <div class="col-md-8">
+            <div class="col-md-12">
             {%if total==0%}
             <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
             {%else%}
-            
+                
                 <!-- Standing table panel -->
                 <div class="panel panel-default">
                     <div class="panel-heading">Standing Table</div>
@@ -348,14 +305,12 @@
                             </tr>
                             {%for l in standings%}
                             <tr name="{{l._id}}">
-                                <td><input type="checkbox" name="{{l._id}}" ></td>
+                                <td></td>
                                 <td>{{l.season_year}}</td>
                                 <td>{{l.league_name}}</td>
                                 <td>{{l.team_name}}</td>
                                 
-                                <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn"><i class="fa fa-trash fa-md"></i></button>
-                                    <button name="{{l._id}}" class="btn btn-warning update_itemBtn"><i class="fa fa-pencil fa-md"></i></button>
-                                    <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
+                                
                             </tr>
                             {%endfor%}
                         </table>
@@ -387,52 +342,12 @@
                             * Primarily hidden. 
                             * This form will be visible when edit button clicked 
                         -->
-                        <div id="standing_item_update" class="hidden">
-                            <form id="update_form" action="{{url_for('standing_page')}}" method="POST">
-                            <table id="update_item_table" class="table">
-                                <tr id="update_item_table_tr">
-                                    {%for var in standingtable[1:] %}
-                                    <td>
-                                        {%if var=='season_id'%}
-                                        {%elif var=='league_id'%}
-                                        {%elif var=='team_id'%}
-                                        {%elif var=='season_year'%}
-                                        <select id="season" name="{{var}}" class="form-control">
-                                                {%for c in seasons%}
-                                                <option value="{{c._id}}" name="{{c.year}}">{{c.year}}</option>
-                                                {%endfor%}
-                                            </select>
-                                        {%elif var=='league_name'%}
-                                        <select id="league" name="{{var}}" class="form-control">
-                                                {%for c in leagues%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
-                                                {%endfor%}
-                                            </select>
-                                        {%elif var=='team_name'%}
-                                        <select id="team" name="{{var}}" class="form-control">
-                                                {%for c in teams%}
-                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
-                                                {%endfor%}
-                                            </select>
-                                        {%else%}
-                                        <input type="text" class="form-control" name="{{var}}" placeholder="{{var}}">
-                                        {%endif%}
-                                    </td> 
-                                    {%endfor%}
-                                        <td><input type="text" name="id" class="hidden"></td>
-                                        <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">
-                                    <button type="button" id="cancel_updateBtn" class="btn btn-danger cancel_updateBtn"><i class="fa fa-times fa-md"></i> Cancel</button></td>
-                                </tr>
-                            </table>
-                            </form>
-                        </div>
+                        
 
                     </div>
                 </div>
 
-                {%if total>=1 %} 
-                    <button type="button" id="delete_selectedBtn" class="btn btn-danger">Delete Selections</button>
-                {%endif%}
+                
             </div>
         </div>
 {%endblock%}            
