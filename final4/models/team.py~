@@ -1,13 +1,13 @@
 from flask import url_for
 
-teamtable = ['id', 'name','coach_id', 'coach']
+teamtable = ['id', 'name','country_id', 'country']
 
 class Team:
-    def __init__(self, name,coach_id, coach=None, _id=None):
+    def __init__(self, name,country_id, country=None, _id=None):
         self._id = _id
         self.name = name
-        self.coach_id = coach_id
-        self.coach = coach
+        self.country_id = country_id
+        self.country = country
     
     def img_path(self, _id=None):
         if _id==None and self._id==None:
@@ -18,7 +18,7 @@ class Team:
             return url_for('static',filename='.') +'data/img/teams/' + str(self._id) + '.png'
 
     def getAttrs(self):
-        return (dict(zip(teamtable, (self._id, self.name, self.coach_id, self.coach))))
+        return (dict(zip(teamtable, (self._id, self.name, self.country_id, self.country))))
 
 class Teams:
     def __init__(self, conn, cur):
@@ -28,10 +28,10 @@ class Teams:
 
     def add_team(self, team):
         print("addteam ", team)
-        query = """INSERT INTO teams (name,coach_id) 
+        query = """INSERT INTO teams (name,country_id) 
                                     values (%s,%s) RETURNING id""" 
 
-        self.cur.execute(query, (team.name, team.coach_id))
+        self.cur.execute(query, (team.name, team.country_id))
         insert_id = self.cur.fetchone()[0]
         self.conn.commit()
         return insert_id
@@ -43,42 +43,42 @@ class Teams:
 
     def update_team(self, _id, new):
         print('update_team')
-        query = """UPDATE teams SET name=%s, coach_id=%s
+        query = """UPDATE teams SET name=%s, country_id=%s
                     WHERE id=%s"""
-        self.cur.execute(query, (new.name, new.coach_id, _id))
+        self.cur.execute(query, (new.name, new.country_id, _id))
         self.conn.commit()
 
     def get_team(self,_id):
-        query = """SELECT teams.id, teams.name, coaches.id, coaches.name
-                        FROM teams,coaches
-                        WHERE teams.id=%s AND coaches.id=teams.coach_id
+        query = """SELECT teams.id, teams.name, countries.id, countries.name
+                        FROM teams,countries
+                        WHERE teams.id=%s AND countries.id=teams.country_id
                         ORDER BY teams.name
                         """
         self.cur.execute(query, (_id,))
         t = self.cur.fetchone()
         if t:
             td = dict(zip(teamtable, t[:len(teamtable)]))
-            team = Team(td['name'], td['coach_id'], td['coach'], td['id'])
+            team = Team(td['name'], td['country_id'], td['country'], td['id'])
             return team
         else:
             return None
 
     def get_teams(self, limit=100, offset=0):
         query = """SELECT count(teams.id)
-                        FROM teams,coaches WHERE coaches.id=teams.coach_id
+                        FROM teams,countries WHERE countries.id=teams.country_id
                           """
         self.cur.execute(query)
         total = self.cur.fetchone()[0]
 
-        query = """SELECT teams.id, teams.name, coaches.id, coaches.name 
-                        FROM teams,coaches WHERE coaches.id=teams.coach_id
+        query = """SELECT teams.id, teams.name, countries.id, countries.name 
+                        FROM teams,countries WHERE countries.id=teams.country_id
                           ORDER BY teams.name LIMIT %s OFFSET %s"""
         self.cur.execute(query, (limit, offset))
         teams = self.cur.fetchall()
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'], td['coach_id'], td['coach'],td['id'])
+            team = Team(td['name'], td['country_id'], td['country'],td['id'])
             teamlist.append(team)
         return teamlist, total
 
@@ -86,14 +86,14 @@ class Teams:
         skey = str(search_key)
         
         query = """SELECT count(teams.id)
-                        FROM teams,coaches WHERE teams.{attrib}=%s AND 
-                            coaches.id=teams.coach_id""".format(attrib=attrib)
+                        FROM teams,countries WHERE teams.{attrib}=%s AND 
+                            countries.id=teams.country_id""".format(attrib=attrib)
         self.cur.execute(query, (skey,))
         total = self.cur.fetchone()[0]
         
-        query = """SELECT teams.id, teams.name, teams.coach_id, coaches.name
-                        FROM teams,coaches WHERE teams.{attrib}=%s AND 
-                            coaches.id=teams.coach_id ORDER BY teams.name 
+        query = """SELECT teams.id, teams.name, teams.country_id, countries.name
+                        FROM teams,countries WHERE teams.{attrib}=%s AND 
+                            countries.id=teams.country_id ORDER BY teams.name 
                             LIMIT %s OFFSET %s""".format(attrib=attrib)
         self.cur.execute(query, (skey, limit, offset))
         teams = self.cur.fetchall()
@@ -101,7 +101,7 @@ class Teams:
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'],  td['coach_id'], td['coach'],td['id'])
+            team = Team(td['name'],  td['country_id'], td['country'],td['id'])
             teamlist.append(team)
         return teamlist, total
 
@@ -109,14 +109,14 @@ class Teams:
         skey = str(search_key) + '%'
         
         query = """SELECT count(teams.id)
-                        FROM teams,coaches WHERE teams.{attrib} LIKE %s AND 
-                            coaches.id=teams.coach_id""".format(attrib=attrib)
+                        FROM teams,countries WHERE teams.{attrib} LIKE %s AND 
+                            countries.id=teams.country_id""".format(attrib=attrib)
         self.cur.execute(query, (skey,))
         total = self.cur.fetchone()[0]
         
-        query = """SELECT teams.id, teams.name, teams.coach_id, coaches.name
-                        FROM teams,coaches WHERE teams.{attrib} LIKE %s AND 
-                            coaches.id=teams.coach_id ORDER BY teams.name 
+        query = """SELECT teams.id, teams.name, teams.country_id, countries.name
+                        FROM teams,countries WHERE teams.{attrib} LIKE %s AND 
+                            countries.id=teams.country_id ORDER BY teams.name 
                             LIMIT %s OFFSET %s""".format(attrib=attrib)
         self.cur.execute(query, (skey, limit, offset))
         teams = self.cur.fetchall()
@@ -124,7 +124,7 @@ class Teams:
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'], td['coach_id'], td['coach'],td['id'])
+            team = Team(td['name'], td['country_id'], td['country'],td['id'])
             teamlist.append(team)
         return teamlist, total
 

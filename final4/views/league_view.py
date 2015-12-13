@@ -8,10 +8,41 @@ from final4.models import country
 
 from flask import render_template
 from flask import request
+from flask import session
 
 # league views
-@app.route('/leagues', methods=['DEL','GET', 'POST'])
+
+@app.route('/leagues', methods=['GET'])
+def leagues_home():
+    ''' This view page list all leagues in leagues table.
+        This page doesn't allow editing.
+    '''
+    conn, cur = getDb()
+    leagues = league.Leagues(conn, cur)
+    countries = country.Countries(conn, cur)
+    
+    # limit, page and order args
+    # required for each table page
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    offset = page*limit
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
+   
+    # check search value
+    if 'name' in request.args:
+        search_name = request.args['name']
+        l, total = leagues.get_leagues_search_by('name', search_name, limit=limit, offset=offset)
+    else:
+        l, total = leagues.get_leagues(limit=limit, offset=offset)
+    return render_template('leagues_home.html', leaguetable=league.leaguetable, leagues=l, total=total, 
+                limit=limit, page=page, sortby=sortby)
+
+@app.route('/leagues/table', methods=['DEL','GET', 'POST'])
 def league_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+
     conn, cur = getDb()
     leagues = league.Leagues(conn, cur)
     countries = country.Countries(conn, cur)
@@ -74,6 +105,8 @@ def league_page():
 
 @app.route('/leagues/g/<lid>', methods=['GET','POST'])
 def league_from_id(lid):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
     conn, cur = getDb()
     leagues = league.Leagues(conn, cur)
     countries = country.Countries(conn, cur)
@@ -110,6 +143,8 @@ def league_from_id(lid):
 
 @app.route('/leagues/s/<key>', methods=['GET','POST'])
 def search_league(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
     conn, cur = getDb()
     leagues = league.Leagues(conn, cur)
     countries = country.Countries(conn, cur)

@@ -4,4 +4,8 @@
     {%if err_code == 404%}
         <h3>We have no page for this url!</h3>
     {%endif%}
+    {%if err_code == 401%}
+        <h3>You have no permission to see this page.</h3>
+        <h3>Please <a href="{{url_for('signin')}}">sign in</a></h3>
+    {%endif%}
 {%endblock%}

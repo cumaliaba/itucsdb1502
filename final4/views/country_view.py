@@ -11,7 +11,16 @@ from flask import render_template
 from flask import request
 
 # country views
-@app.route('/countries', methods=['DEL','GET', 'POST'])
+@app.route('/countries', methods=['GET'])
+def country_page():
+    conn, cur = getDb()
+    countries = country.Countries(conn, cur)
+    print('countries PAGE')
+    if request.method == 'GET':
+        c = countries.get_countries()
+        return render_template('countries.html', countrytable=country.countrytable, countries=c)
+
+@app.route('/countries/table', methods=['DEL','GET', 'POST'])
 def country_page():
     conn, cur = getDb()
     countries = country.Countries(conn, cur)

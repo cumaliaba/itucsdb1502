@@ -5,7 +5,7 @@ import sys
 from final4.config import app
 from final4.db_helper import getDb
 from final4.models import team
-from final4.models import country
+from final4.models import coach
 
 from flask import render_template
 from flask import request
@@ -13,7 +13,7 @@ from flask import request
 def team_page():
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    countries = country.Countries(conn, cur)
+    coaches = coach.Coaches(conn, cur)
     print('teams PAGE')
     if request.method == 'GET':
         # handle GET request
@@ -26,16 +26,16 @@ def team_page():
         order = request.args['order'] if 'order' in request.args else 'asc'
 
         t, total_teams = teams.get_teams()
-        c = countries.get_countries()
+        c = coaches.get_coaches()
 
         sortby={'attr':'name', 'property':'asc'}
 
-        return render_template('teams.html', teamtable=team.teamtable, teams=t, countries=c, total=total_teams,
+        return render_template('teams.html', teamtable=team.teamtable, teams=t, coaches=c, total=total_teams,
                 limit=limit, page=page)
     elif request.method == 'POST':
         print('ADD team')
         name = request.form['name']
-        country_id = request.form['country']
+        coach_id = request.form['coach']
         team_img = request.files['file']
 
         limit = int(request.form['limit']) if 'limit' in request.form else 10
@@ -45,18 +45,18 @@ def team_page():
         order = request.form['order'] if 'order' in request.form else 'asc'
 
         print(name,team_img)
-        tm = team.Team(name, country_id)
+        tm = team.Team(name, coach_id)
         insert_id = teams.add_team(tm)
         if team_img:
             save_path =tm.img_path(insert_id)
             team_img.save(app.config['APP_FOLDER']+save_path)
     
         t, total_teams = teams.get_teams()
-        c = countries.get_countries()
+        c = coaches.get_coaches()
 
         sortby={'attr':'name', 'property':'asc'}
 
-        return render_template('teams.html', teamtable=team.teamtable, teams=t, countries=c, total=total_teams,
+        return render_template('teams.html', teamtable=team.teamtable, teams=t, coaches=c, total=total_teams,
                 limit=limit, page=page)
 
     elif request.method == 'DEL':
@@ -82,7 +82,7 @@ def team_page():
 def team_from_id(lid):
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    countries = country.Countries(conn, cur)
+    coaches = coach.Coaches(conn, cur)
     
     if request.method == 'GET':
         t= teams.get_team(lid)
@@ -94,7 +94,7 @@ def team_from_id(lid):
         print("POST METHOD REQUEST")
         lid = request.form['id']
         name = request.form['name']
-        country_id = request.form['country']
+        coach_id = request.form['coach']
         team_img = request.files['file']
 
         limit = int(request.form['limit']) if 'limit' in request.form else 10
@@ -103,7 +103,7 @@ def team_from_id(lid):
         order = request.form['sortby'] if 'sortby' in request.form else 'name'
         order = request.form['order'] if 'order' in request.form else 'asc'
 
-        tm = team.Team(name,country_id)
+        tm = team.Team(name,coach_id)
         teams.update_team(lid, tm)
        
         if team_img:
@@ -111,11 +111,11 @@ def team_from_id(lid):
             team_img.save(app.config['APP_FOLDER']+save_path)
 
         t, total_teams = teams.get_teams()
-        c = countries.get_countries()
+        c = coaches.get_coaches()
 
         sortby={'attr':'name', 'property':'asc'}
 
-        return render_template('teams.html', teamtable=team.teamtable, teams=t, countries=c, total=total_teams,
+        return render_template('teams.html', teamtable=team.teamtable, teams=t, coaches=c, total=total_teams,
                 limit=limit, page=page)
 
 
@@ -123,10 +123,10 @@ def team_from_id(lid):
 def search_team(key):
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
-    countries = country.Countries(conn, cur)
+    coaches = coach.Coaches(conn, cur)
 
     t, total_teams = teams.get_teams_search_by('name', key)
-    c = countries.get_countries()
+    c = coaches.get_coaches()
     
     limit = int(request.args['limit']) if 'limit' in request.args else 10
     page = int(request.args['page']) if 'page' in request.args else 0
@@ -138,5 +138,5 @@ def search_team(key):
 
     sortby={'attr':'name', 'property':'asc'}
 
-    return render_template('teams.html', teamtable=team.teamtable, teams=t, countries=c, total=total_teams,
+    return render_template('teams.html', teamtable=team.teamtable, teams=t, coaches=c, total=total_teams,
             limit=limit, page=page)
