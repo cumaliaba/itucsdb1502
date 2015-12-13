@@ -1,3 +1,4 @@
+import datetime
 import json
 import sys
 
@@ -17,6 +18,7 @@ from final4.helper import login_success, getCurrTimeStr
 from final4.models import user
 
 from psycopg2 import IntegrityError
+
 
 @app.route('/signin')
 def signin():
@@ -51,8 +53,6 @@ def signin():
         g.lastlogin = lastlogin
     
     return render_template('signin.html')
-
-
 
 @app.route('/users')
 def users():

@@ -46,7 +46,6 @@ def get_elephantsql_dsn(vcap_services):
 
 @app.route('/')
 def home():
-    conn, cur = db.getDb()
     now = datetime.datetime.now()
     return render_template('home.html', current_time=now.ctime())
 
@@ -164,6 +163,19 @@ def initialize_database():
         print(sys.exc_info())
         conn.rollback()
         return 'create table error'
+
+    # populate db with sample data
+    try:
+        # populate countries data
+        cur.execute(open("sampledata/countries.sql","r").read())
+        # populate leagues data
+        cur.execute(open("sampledata/leagues.sql","r").read())
+
+
+        conn.commit() # commit changes
+    except:
+        print(sys.exc_info())
+        conn.rollback()
     return redirect(url_for('home'))
 
 
