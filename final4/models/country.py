@@ -73,9 +73,18 @@ class Countries:
         else:
             return None
 
-    def get_countries(self):
-        query = "SELECT * FROM countries ORDER BY name"
+    def get_countries(self, limit=100, offset=0):
+        query = """SELECT count(countries.id) 
+                    FROM countries 
+                    """
         self.cur.execute(query)
+        total = self.cur.fetchone()[0]
+
+        query = """SELECT * 
+                    FROM countries 
+                    ORDER BY name 
+                    LIMIT %s OFFSET %s"""
+        self.cur.execute(query, (limit, offset))
         countries = self.cur.fetchall()
         countrylist = []
         for c in countries:
@@ -83,15 +92,27 @@ class Countries:
             print (cd)
             country = Country(cd['name'], cd['code'], cd['id'])
             countrylist.append(country)
-        return countrylist
+        return countrylist, total
 
-    def get_countries_by(self, key, var):
+    def get_countries_by(self, attrib, key, limit=100, offset=0):
         '''
         get countries from DB which given 'var' attribute starts with given 'key' value
         '''
         skey = str(key) + '%'
-        query = "SELECT * FROM countries WHERE name LIKE %s ORDER BY name";
+        print(skey)
+        query = """SELECT count(countries.id) 
+                    FROM countries 
+                    WHERE name LIKE %s 
+                    """
         self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+        
+        query = """SELECT * 
+                    FROM countries 
+                    WHERE name LIKE %s 
+                    ORDER BY name
+                    LIMIT %s OFFSET %s"""
+        self.cur.execute(query, (skey, limit, offset))
         countries = self.cur.fetchall()
         print('countries:', countries)
         countrylist = []
@@ -99,5 +120,5 @@ class Countries:
             cd = dict(zip(countrytable, c))
             country = Country(cd['name'], cd['code'], cd['id'])
             countrylist.append(country)
-        return countrylist
+        return countrylist, total
 

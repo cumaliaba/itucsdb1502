@@ -1,4 +1,4 @@
-{%extends "admin_layout.html"%}
+{%extends "layout.html"%}
 
 {%block title%}Countries{%endblock%}
 {%block script%}
@@ -7,114 +7,9 @@
             //initialize tooltip
             $('[data-toggle="tooltip"]').tooltip();
             
-            $('#delete_selectedBtn').click(function(){
-                var ids=[];
-                $('#table input:checked').each(function(){
-                    ids.push(this.name);
-                });
-                console.log(ids);
-                
-                $.ajax({
-                    url: '/countries/table',
-                    data: {'ids': ids,
-                    },
-                    type: 'DEL',
-                    success: function(response) {
-                        var data=JSON.parse(response);
-                        if (data.status == 'OK') {
-                            
-                            console.log('DELETED');
-                            console.log(data['idlist']);
-                            console.log(data.idlist.length);
-                            for(var i=0; i<data.idlist.length; i++) {
-                                var domname = "tr[name="+data.idlist[i]+"]";
-                                console.log(domname);
-                                $(domname).hide()
-                            }
-                        }
-                        ids=[];
-                    },
-                    error: function(error) {
-                        console.log(error);
-                        ids=[];
-                    }
-                });
-            });
-
-            $('.delete_itemBtn').click(function() {
-                console.log("deleteItem");
-                console.log(this.name);
-                $.ajax({
-                    url: '/countries/table',
-                    data: {'id': this.name,
-                    },
-                    type: 'DEL',
-                    success: function(response) {
-                        var data=JSON.parse(response);
-                        if (data.status == 'OK') {
-                            
-                            console.log('DELETED');
-                            console.log(data['idlist']);
-                            console.log(data.idlist.length);
-                            for(var i=0; i<data.idlist.length; i++) {
-                                var domname = "tr[name="+data.idlist[i]+"]";
-                                console.log(domname);
-                                $(domname).hide()
-                            }
-                        }
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
-
-            });
-            
-            $('.update_itemBtn').click(function() {
-                console.log("updateItem");
-                console.log(this.name);
-                console.log(this);
-                var name=this.name;
-                $.ajax({
-                    url: '/countries/g/'+this.name,
-                    data: {'id': this.name,
-                    },
-                    type: 'GET',
-                    success: function(response) {
-                        var data=JSON.parse(response);
-                        if (data.status == 'OK') {
-                            $('#country_item_update').removeClass('hidden');
-                                                        
-                            country=data['country'];
-                            $('#country_item_update input[name=name]').val(country['name']);
-                            $('#country_item_update input[name=code]').val(country['code']);
-                            $('#country_item_update input[name=id]').val(country['id']);
-                            
-                            
-                            var base_url = window.location.origin;
-                            var new_url = base_url + "/countries/g/" + country['id'];
-                            
-                            $('#update_form').attr('action', new_url);
-                        }
-                        
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
-            });
-            
-            $('#cancel_updateBtn').click(function(){
-                $('#country_item_update').addClass('hidden');
-                //$('#cancel_updateBtn').addClass('hidden');
-            });
-
             $('#searchBox').change(function(){
                 var key=$('#searchBox').val();
-
-                var base_url = window.location.origin;
-                var search_url = base_url + "/countries/s/" + key
-                window.location.replace(search_url); 
+                window.location.search = 'name=' + key;
             });
 
             /*
@@ -271,33 +166,10 @@
                             <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
                         </div>
                         <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
-                        <a href="{{url_for('country_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                        <a href="{{url_for('countries_home')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
                     </div>
                 </div>
             </div>
-
-            <!-- Add Item Panel -->
-            <div class="col-md-6">
-
-                <div class="panel panel-success">
-                    <div class="panel-heading">Add Country</div>
-                    <div class="panel-body">
-                        <div id="country_item_input" class="country_item_input">
-                            <form action="{{url_for('country_page')}}" method="post">
-                            <table id="add_item_table" class="table">
-                                <tr id="add_item_table_tr">
-                                    {%for var in countrytable[1:] %}
-                                        <td><input type="text" name="{{var}}" placeholder="{{var}}" class="form-control"></td> 
-                                    {%endfor%}
-                                        <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i></button></td>
-                                </tr>
-                            </table>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
 
             <!-- Show countries table -->
             <div class="col-md-8">
@@ -343,9 +215,6 @@
                                 <td><img src={{l.flagpath}} width=32></td>
                                 <td>{{l.name}}</td>
                                 <td>{{l.code}}</td>
-                                <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
-                                    <button name="{{l._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
-                                    <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
                             </tr>
                             {%endfor%}
                         </table>
@@ -373,37 +242,9 @@
                         </ul>
                         </nav>
 
-                        <!-- Update item form. 
-                            * Primarily hidden. 
-                            * This form will be visible when edit button clicked 
-                        -->
-
-                        <div id="country_item_update" class="hidden">
-                            <form id="update_form" action="{{url_for('country_page')}}" method="POST">
-                            <table id="update_item_table" class="table">
-                                <tr id="update_item_table_tr">
-                                    {%for var in countrytable[1:] %}
-                                        <td><input type="text" name="{{var}}" placeholder="{{var}}" class="form-control"></td> 
-                                    {%endfor%}
-                                        <td><input type="text" name="id" class="hidden"></td>
-                                        <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">
-                                    <button type="button" id="cancel_updateBtn" class="btn btn-danger cancel_updateBtn"><i class="fa fa-times fa-md"></i> Cancel</button></td>
-
-                                </tr>
-                            </table>
-                            </form>
-                        </div>
-
                     </div>
                 </div>
-
-                {%if total>=1 %} 
-                    <button type="button" id="delete_selectedBtn" class="btn btn-danger">Delete Selections</button>
-                {%endif%}
             </div>
         </div>
-
-
-
 
 {%endblock%}

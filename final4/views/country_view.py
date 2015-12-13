@@ -9,33 +9,75 @@ from final4.models import coach
 
 from flask import render_template
 from flask import request
+from flask import session
 
 # country views
+
 @app.route('/countries', methods=['GET'])
 def countries_home():
     conn, cur = getDb()
     countries = country.Countries(conn, cur)
-    print('countries PAGE')
-    if request.method == 'GET':
-        c = countries.get_countries()
-        return render_template('countries.html', countrytable=country.countrytable, countries=c)
+    print('countries PAGE for normal user')
+        
+    # limit, page and order args
+    # required for each table page if pagination used !
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    offset = page*limit
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
+        
+    # check search value
+    if 'name' in request.args:
+        search_name = request.args['name']
+        c, total = countries.get_countries_by('name', search_name, limit=limit, offset=offset)
+    else:
+        c, total = countries.get_countries(limit=limit, offset=offset)
+    
+    return render_template('countries_home.html', countrytable=country.countrytable,
+            countries=c, total=total, limit=limit, page=page, sortby=sortby)
+
 
 @app.route('/countries/table', methods=['DEL','GET', 'POST'])
 def country_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    
     conn, cur = getDb()
     countries = country.Countries(conn, cur)
-    print('countries PAGE')
+    print('countries PAGE for admin')
     if request.method == 'GET':
-        c = countries.get_countries()
-        return render_template('countries.html', countrytable=country.countrytable, countries=c)
+        # handle GET request
+
+        # limit, page and order args
+        # required for each table page if pagination used !
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        offset = page*limit
+        sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+        order = request.args['order'] if 'order' in request.args else 'asc'
+
+        c, total = countries.get_countries(limit, offset)
+        return render_template('countries.html', countrytable=country.countrytable,
+            countries=c, total=total, limit=limit, page=page, sortby=sortby)
+
     elif request.method == 'POST':
+        # handle POST request
         name = request.form['name']
         code = request.form['code']
+        
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        sortby = request.form['sortby'] if 'sortby' in request.form else 'name'
+        order = request.form['order'] if 'order' in request.form else 'asc'
+        
         ct = country.Country(name, code)
         countries.add_country(ct)
         
-        c = countries.get_countries()
-        return render_template('countries.html', countrytable=country.countrytable, countries=c)
+        c, total = countries.get_countries(limit, offset)
+        return render_template('countries.html', countrytable=country.countrytable,
+            countries=c, total=total, limit=limit, page=page, sortby=sortby)
 
     elif request.method == 'DEL':
         print ('DELETE REQUEST:countries PAGE')
@@ -59,6 +101,9 @@ def country_page():
 
 @app.route('/countries/g/<cid>', methods=['GET','POST'])
 def country_from_id(cid):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    
     conn, cur = getDb()
     countries = country.Countries(conn, cur)
     
@@ -70,22 +115,43 @@ def country_from_id(cid):
             return json.dumps({'status':'FAILED'})
     elif request.method == 'POST':
         print("PUT METHOD REQUEST")
+        
+        # get new country args
         lid = request.form['id']
         name = request.form['name']
         code = request.form['code']
-        ct = country.Country(name, code)
-        countries.update_country(cid, ct)
+        ct = country.Country(name, code) # create country object with new values
+        countries.update_country(cid, ct) # update selected country
+       
+        # get pagination args
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        sortby = request.form['sortby'] if 'sortby' in request.form else 'name'
+        order = request.form['order'] if 'order' in request.form else 'asc'
 
-        c = countries.get_countries()
-        return render_template('countries.html', countrytable=country.countrytable, countries=c)
-
+        c, total = countries.get_countries(limit, offset)
+        return render_template('countries.html', countrytable=country.countrytable,
+            countries=c, total=total, limit=limit, page=page, sortby=sortby)
 
 @app.route('/countries/s/<key>', methods=['GET','POST'])
 def search_country(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    
     conn, cur = getDb()
     countries = country.Countries(conn, cur)
-    result = countries.get_countries_by(key, 'name')
-    return render_template('countries.html', countrytable=country.countrytable, countries=result)
+
+    # get pagination args
+    limit = int(request.form['limit']) if 'limit' in request.form else 10
+    page = int(request.form['page']) if 'page' in request.form else 0
+    offset = page*limit
+    sortby = request.form['sortby'] if 'sortby' in request.form else 'name'
+    order = request.form['order'] if 'order' in request.form else 'asc'
+
+    result = countries.get_countries_by(key, 'name', limit, offset)
+    return render_template('countries.html', countrytable=country.countrytable,
+        countries=c, total=total, limit=limit, page=page, sortby=sortby)
 
 @app.route('/countries/country/<country_name>')
 def view_country(country_name):
