@@ -1,6 +1,6 @@
-{%extends "layout.html"%}
+{%extends "admin_layout.html"%}
 
-{%block title%}Teamrosters{%endblock%}
+{%block title%}Teamrosters Edit Page{%endblock%}
 
 {%block script%}
     <script>
@@ -17,7 +17,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/teamrosters',
+                    url: '/teamrosters/table',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/teamrosters',
+                    url: '/teamrosters/table',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -206,7 +206,7 @@
                 var limit = $('#result_limit').attr('data-limit');
                 if (!limit) limit = 10;
                 if (window.location.pathname.startsWith('/teamrosters/g/')) {
-                    window.location.replace(window.location.origin + '/teamrosters?' + 'limit='+limit+'&page='+selected_page);
+                    window.location.replace(window.location.origin + '/teamrosters/table?' + 'limit='+limit+'&page='+selected_page);
                 } else {
                     window.location.search = 'limit='+limit+'&page='+selected_page;
                 }
@@ -217,7 +217,7 @@
                 console.log($(this).val());
                 limit = $(this).val();
                 if (window.location.pathname.startsWith('/teamrosters/g/')) {
-                    window.location.replace(window.location.origin + '/teamrosters?' + 'limit='+limit);
+                    window.location.replace(window.location.origin + '/teamrosters/table?' + 'limit='+limit);
                 } else {
                     window.location.search = 'limit='+limit;
                 }
@@ -259,7 +259,7 @@
                                     <td>
                                         {%if var=='player_id'%}
                                         {%elif var=='team_id'%}
-                                        {%elif var=='play'%}
+                                        {%elif var=='player'%}
                                         <select id="player" name="{{var}}" class="form-control">
                                                 {%for c in players%}
                                                 <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>

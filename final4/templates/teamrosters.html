@@ -1,6 +1,6 @@
-{%extends "layout.html"%}
+{%extends "admin_layout.html"%}
 
-{%block title%}Teamrosters{%endblock%}
+{%block title%}Teamrosters Edit Page{%endblock%}
 
 {%block script%}
     <script>
@@ -17,7 +17,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/teamrosters',
+                    url: '/teamrosters/table',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/teamrosters',
+                    url: '/teamrosters/table',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -206,7 +206,7 @@
                 var limit = $('#result_limit').attr('data-limit');
                 if (!limit) limit = 10;
                 if (window.location.pathname.startsWith('/teamrosters/g/')) {
-                    window.location.replace(window.location.origin + '/teamrosters?' + 'limit='+limit+'&page='+selected_page);
+                    window.location.replace(window.location.origin + '/teamrosters/table?' + 'limit='+limit+'&page='+selected_page);
                 } else {
                     window.location.search = 'limit='+limit+'&page='+selected_page;
                 }
@@ -217,7 +217,7 @@
                 console.log($(this).val());
                 limit = $(this).val();
                 if (window.location.pathname.startsWith('/teamrosters/g/')) {
-                    window.location.replace(window.location.origin + '/teamrosters?' + 'limit='+limit);
+                    window.location.replace(window.location.origin + '/teamrosters/table?' + 'limit='+limit);
                 } else {
                     window.location.search = 'limit='+limit;
                 }
@@ -337,21 +337,21 @@
                         {%endif%}
 
                         <nav>
-                        <ul class="pagination pagination-sm" id="pagination" name="aaa">
-                            <li class="disabled">
-                                <a href="#" aria-label="Previous" name="prev">
+                            <ul class="pagination pagination-sm" id="pagination" data-end="{{((total/limit)+0.5)|round|int}}"name="aaa">
+                            <li {%if page==0 %}class="disabled"{%endif%}>
+                                <a aria-label="Previous" name="prev">
                                 <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
-                            {%for i in [1,2,3]%}
-                                {%if i==1 %}
-                                <li class=active><a name="{{i}}">{{i}}</a></li>
+                            {%for i in range((total/limit)|round(0,'ceil')|int)%}
+                                {%if i==page %}
+                                <li class=active><a name="{{i}}">{{i+1}}</a></li>
                                 {%else%}
                                 <li><a name="{{i}}">{{i+1}}</a></li>
                                 {%endif%}
-                            {%endfor%}      
-                            <li>
-                                <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
+                            {%endfor%}
+                            <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
+                                <a aria-label="Next" name="next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>

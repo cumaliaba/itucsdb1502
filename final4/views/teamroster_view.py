@@ -9,9 +9,30 @@ from final4.models import team
 
 from flask import render_template
 from flask import request
+from flask import session
 
-@app.route('/teamrosters', methods=['DEL','GET', 'POST'])
+@app.route('/teamrosters', methods=['GET'])
+def teamrosters_home():
+    conn, cur = getDb()
+    teamrosters = teamroster.Teamrosters(conn, cur)
+    print('TEAMROSTERS PAGE')
+    if request.method == 'GET':
+        print ('GET REQUEST', request.args)
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        
+        teamroster_list, total = teamrosters.get_teamrosters(limit, offset)
+        
+        return render_template('teamrosters_home.html', teamrostertable=teamroster.teamrostertable, 
+			teamrosters=teamroster_list, 
+			total=total, limit=limit, page=page)
+
+@app.route('/teamrosters/table', methods=['DEL','GET', 'POST'])
 def teamroster_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
     conn, cur = getDb()
     teamrosters = teamroster.Teamrosters(conn, cur)
     players = player.Players(conn, cur)
@@ -74,6 +95,8 @@ def teamroster_page():
 
 @app.route('/teamrosters/g/<teamroster_id>', methods=['GET','POST'])
 def teamroster_from_id(teamroster_id):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
     conn, cur = getDb()
     teamrosters = teamroster.Teamrosters(conn, cur)
     players=player.Players(conn,cur)
@@ -109,6 +132,8 @@ def teamroster_from_id(teamroster_id):
 
 @app.route('/teamrosters/s/<key>', methods=['GET','POST'])
 def search_teamroster(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
     conn, cur = getDb()
     teamrosters = teamroster.Teamrosters(conn, cur)
     players=player.Players(conn,cur)
