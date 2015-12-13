@@ -9,10 +9,11 @@ from final4.models import country
 
 from flask import render_template
 from flask import request
+from flask import session
 
 # coach views
-@app.route('/coaches', methods=['DEL','GET', 'POST'])
-def coach_page():
+@app.route('/coaches', methods=['GET'])
+def coaches_home():
     conn, cur = getDb()
     coaches = coach.Coaches(conn, cur)
     countries = country.Countries(conn, cur)
@@ -28,7 +29,42 @@ def coach_page():
         order = request.args['order'] if 'order' in request.args else 'asc'
 
         l, total_coaches = coaches.get_coaches()
-        c = countries.get_countries()
+
+        sortby={'attr':'name', 'property':'asc'}
+
+        # check search value
+        if 'name' in request.args:
+            search_name = request.args['name']
+            l, total_coaches = coaches.get_coaches_search_by('name', search_name, limit, offset)
+        else:
+            l, total_coaches = coaches.get_coaches(limit, offset)
+        return render_template('coaches_home.html', coachtable=coach.coachtable, coaches=l, total=total_coaches,
+                limit=limit, page=page)
+
+
+
+
+@app.route('/coaches/table', methods=['DEL','GET', 'POST'])
+def coach_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    
+    conn, cur = getDb()
+    coaches = coach.Coaches(conn, cur)
+    countries = country.Countries(conn, cur)
+    print('coaches PAGE')
+    if request.method == 'GET':
+        # handle GET request
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+        order = request.args['order'] if 'order' in request.args else 'asc'
+
+        l, total_coaches = coaches.get_coaches()
+        c, total_countries = countries.get_countries()
 
         sortby={'attr':'name', 'property':'asc'}
 
@@ -63,7 +99,7 @@ def coach_page():
             coach_img.save(app.config['APP_FOLDER']+save_path)
     
         l, total_coaches = coaches.get_coaches()
-        c = countries.get_countries()
+        c, total_countries = countries.get_countries()
 
         sortby={'attr':'name', 'property':'asc'}
 
@@ -93,6 +129,9 @@ def coach_page():
 
 @app.route('/coaches/g/<lid>', methods=['GET','POST'])
 def coach_from_id(lid):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    
     conn, cur = getDb()
     coaches = coach.Coaches(conn, cur)
     countries = country.Countries(conn, cur)
@@ -134,7 +173,7 @@ def coach_from_id(lid):
             coach_img.save(app.config['APP_FOLDER']+save_path)
 
         l, total_coaches = coaches.get_coaches()
-        c = countries.get_countries()
+        c, total_countries  = countries.get_countries()
 
         sortby={'attr':'name', 'property':'asc'}
 
@@ -144,12 +183,13 @@ def coach_from_id(lid):
 
 @app.route('/coaches/s/<key>', methods=['GET','POST'])
 def search_coach(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    
     conn, cur = getDb()
     coaches = coach.Coaches(conn, cur)
     countries = country.Countries(conn, cur)
 
-    l, total_coaches = coaches.get_coaches_search_by('name', key)
-    c = countries.get_countries()
     
     limit = int(request.args['limit']) if 'limit' in request.args else 10
     page = int(request.args['page']) if 'page' in request.args else 0
@@ -158,6 +198,9 @@ def search_coach(key):
     print('page:',page,'limit',limit,'offset',offset)
     sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
     order = request.args['order'] if 'order' in request.args else 'asc'
+    
+    l, total_coaches = coaches.get_coaches_search_by('name', key, limit, offset)
+    c, total_countries = countries.get_countries()
 
     sortby={'attr':'name', 'property':'asc'}
 

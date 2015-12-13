@@ -1,14 +1,14 @@
 from flask import url_for
 
-teamtable = ['id', 'name','coach_id', 'coach']
+teamtable = ['id', 'name','coach_id', 'coach_name','coach_surname']
 
 class Team:
-    def __init__(self, name,coach_id, coach=None, _id=None):
+    def __init__(self, name,coach_id, coach_name=None,coach_surname=None, _id=None):
         self._id = _id
         self.name = name
         self.coach_id = coach_id
-        self.coach = coach
-    
+        self.coach_name = coach_name
+        self.coach_surname = coach_surname
     def img_path(self, _id=None):
         if _id==None and self._id==None:
             return url_for('static',filename='.') + 'data/img/teams/not_available.png'
@@ -18,7 +18,7 @@ class Team:
             return url_for('static',filename='.') +'data/img/teams/' + str(self._id) + '.png'
 
     def getAttrs(self):
-        return (dict(zip(teamtable, (self._id, self.name, self.coach_id, self.coach))))
+        return (dict(zip(teamtable, (self._id, self.name, self.coach_id, self.coach_name,self.coach_surname))))
 
 class Teams:
     def __init__(self, conn, cur):
@@ -49,7 +49,7 @@ class Teams:
         self.conn.commit()
 
     def get_team(self,_id):
-        query = """SELECT teams.id, teams.name, coaches.id, coaches.name
+        query = """SELECT teams.id, teams.name, coaches.id, coaches.name,coaches.surname
                         FROM teams,coaches
                         WHERE teams.id=%s AND coaches.id=teams.coach_id
                         ORDER BY teams.name
@@ -58,7 +58,7 @@ class Teams:
         t = self.cur.fetchone()
         if t:
             td = dict(zip(teamtable, t[:len(teamtable)]))
-            team = Team(td['name'], td['coach_id'], td['coach'], td['id'])
+            team = Team(td['name'], td['coach_id'], td['coach_name'], td['id'])
             return team
         else:
             return None
@@ -70,7 +70,7 @@ class Teams:
         self.cur.execute(query)
         total = self.cur.fetchone()[0]
 
-        query = """SELECT teams.id, teams.name, coaches.id, coaches.name 
+        query = """SELECT teams.id, teams.name, coaches.id, coaches.name,coaches.surname 
                         FROM teams,coaches WHERE coaches.id=teams.coach_id
                           ORDER BY teams.name LIMIT %s OFFSET %s"""
         self.cur.execute(query, (limit, offset))
@@ -78,7 +78,7 @@ class Teams:
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'], td['coach_id'], td['coach'],td['id'])
+            team = Team(td['name'], td['coach_id'], td['coach_name'],td['id'])
             teamlist.append(team)
         return teamlist, total
 
@@ -91,7 +91,7 @@ class Teams:
         self.cur.execute(query, (skey,))
         total = self.cur.fetchone()[0]
         
-        query = """SELECT teams.id, teams.name, teams.coach_id, coaches.name
+        query = """SELECT teams.id, teams.name, teams.coach_id, coaches.name,coaches.surname
                         FROM teams,coaches WHERE teams.{attrib}=%s AND 
                             coaches.id=teams.coach_id ORDER BY teams.name 
                             LIMIT %s OFFSET %s""".format(attrib=attrib)
@@ -101,7 +101,7 @@ class Teams:
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'],  td['coach_id'], td['coach'],td['id'])
+            team = Team(td['name'],  td['coach_id'], td['coach_name'],td['id'])
             teamlist.append(team)
         return teamlist, total
 
@@ -114,7 +114,7 @@ class Teams:
         self.cur.execute(query, (skey,))
         total = self.cur.fetchone()[0]
         
-        query = """SELECT teams.id, teams.name, teams.coach_id, coaches.name
+        query = """SELECT teams.id, teams.name, teams.coach_id, coaches.name,coaches.surname
                         FROM teams,coaches WHERE teams.{attrib} LIKE %s AND 
                             coaches.id=teams.coach_id ORDER BY teams.name 
                             LIMIT %s OFFSET %s""".format(attrib=attrib)
@@ -124,7 +124,7 @@ class Teams:
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'], td['coach_id'], td['coach'],td['id'])
+            team = Team(td['name'], td['coach_id'], td['coach_name'], td['coach_surname'],td['id'])
             teamlist.append(team)
         return teamlist, total
 

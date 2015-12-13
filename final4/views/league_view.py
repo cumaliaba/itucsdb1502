@@ -28,6 +28,8 @@ def leagues_home():
     offset = page*limit
     sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
     order = request.args['order'] if 'order' in request.args else 'asc'
+        
+    sortby={'attr':'name', 'property':'asc'}
    
     # check search value
     if 'name' in request.args:
@@ -71,7 +73,7 @@ def league_page():
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
-        order = request.form['sortby'] if 'sortby' in request.form else 'name'
+        sortby = request.form['sortby'] if 'sortby' in request.form else 'name'
         order = request.form['order'] if 'order' in request.form else 'asc'
         lg = league.League(name, country_id)
         leagues.add_league(lg)

@@ -44,6 +44,17 @@
         });
     </script>
     <div class="container">
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+      <ul class=flashes>
+          {% for message in messages %}
+          <li><span class="label label-danger">{{ message }}</span></li>
+          {% endfor %}
+      </ul>
+  {% endif %}
+{% endwith %}
+
+
 
         <form class="form-signin" action="{{url_for('admin')}}" method=post>
             <h2 class="form-signin-heading">Please sign in</h2>

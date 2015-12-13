@@ -3,6 +3,7 @@ import json
 import sys
 
 from flask import abort
+from flask import flash
 from flask import g
 from flask import redirect
 from flask import render_template
@@ -101,6 +102,7 @@ def updateUser():
 
 @app.route('/admin', methods=['POST', 'GET'])
 def admin():
+    
     conn, cur = getDb()
     error = None
     roles = None
@@ -111,26 +113,33 @@ def admin():
 
         if login_success(username, password):
             error = 'Logged in!'
-            cur.execute("SELECT role, lastlogin FROM users WHERE username='%s';"%username)
+            query = "SELECT role, lastlogin FROM users WHERE username=%s"
+            cur.execute(query, (username,))
             role,lastlogin = cur.fetchone()
             g.role = role
             g.lastlogin = lastlogin
             session['username'] = request.form['username']
             
             now = getCurrTimeStr()
-            cur.execute("UPDATE users SET lastlogin='%s' WHERE username='%s'"%(now, username))
-            cur.execute("UPDATE users SET online=TRUE WHERE username='%s'" % username)
+            query = "UPDATE users SET lastlogin=%s WHERE username=%s"
+            cur.execute(query, (now, username))
+            query = "UPDATE users SET online=TRUE WHERE username=%s" 
+            cur.execute(query, (username,))
             conn.commit()
         else:
             error = 'Invalid username or password!'
 
     if 'username' in session:
         username = session['username']
-        cur.execute("SELECT role, lastlogin FROM users WHERE username='%s';"%username)
+        query = "SELECT role, lastlogin FROM users WHERE username=%s"
+        cur.execute(query, (username,))
         role,lastlogin = cur.fetchone()
         g.role = role
         g.lastlogin = lastlogin
-    
+    else:
+        flash('Wrong username or password')
+        return render_template('signin.html')
+
     return render_template('adminpanel.html', error=error, roles=roles)
 
 @app.route('/signup', methods=['POST'])
@@ -163,13 +172,13 @@ def signup():
             roles=None
             return render_template('adminpanel.html', error=error, roles=roles)
 
-
 @app.route('/logout')
 def logout():
     conn, cur = getDb()
     if 'username' in session:
         username = session['username']
-        cur.execute("UPDATE users SET online=FALSE WHERE username='%s'" % username)
+        query = "UPDATE users SET online=FALSE WHERE username=%s"
+        cur.execute(query, (username,))
         conn.commit()
     g.role = 'guest'
     session.pop('username', None)

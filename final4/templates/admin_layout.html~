@@ -47,26 +47,23 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="{{url_for('home')}}">Final4</a>
+          <a class="navbar-brand" href="{{url_for('admin')}}">Final4</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li><a href="{{url_for('team_page')}}">Teams</a></li>
-            <li><a href="{{url_for('standing_home')}}">Standings</a></li>
-            <li><a href="{{url_for('seasons_home')}}">Seasons</a></li>
-            <li><a href="{{url_for('leagues_home')}}">Leagues</a></li>
+            <li><a href="{{url_for('standing_page')}}">Standings</a></li>
+            <li><a href="{{url_for('season_page')}}">Seasons</a></li>
+            <li><a href="{{url_for('league_page')}}">Leagues</a></li>
             <li><a href="{{url_for('player_page')}}">Players</a></li>
-            <li><a href="{{url_for('teamroster_page')}}">TeamRosters</a></li>
-            <li><a href="{{url_for('schedule_home')}}">Schedules</a></li>
-            <li><a href="{{url_for('match_page')}}">Matches</a></li>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Others<span class="caret"></span></a>
               <ul class="dropdown-menu">
-                  <li><a href="{{url_for('countries_home')}}">Countries</a></li>
+                  <li><a href="{{url_for('country_page')}}">Countries</a></li>
                 <li role="separator" class="divider"></li>
                 <li class="dropdown-header">Nav header</li>
-                <li><a href="{{url_for('coaches_home')}}">Coaches</a></li>
-                <li><a href="{{url_for('awards_home')}}">Awards</a></li>
+                <li><a href="{{url_for('coach_page')}}">Coaches</a></li>
+                <li><a href="{{url_for('award_page')}}">Awards</a></li>
               </ul>
             </li>
           </ul>
@@ -109,7 +106,7 @@
     -->
     <script src="{{url_for('static', filename='bootstrap.min.js')}}"></script>
     {%block script%}
-    {%endblock%}
+    {%endblock%} 
     </body>
 
 
