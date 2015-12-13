@@ -23,11 +23,25 @@ def teamrosters_home():
         
         offset = page*limit
         
-        teamroster_list, total = teamrosters.get_teamrosters(limit, offset)
         
-        return render_template('teamrosters_home.html', teamrostertable=teamroster.teamrostertable, 
+
+    # check search value
+    if 'team_name' in request.args:
+        search_name = request.args['team_name']
+        teamroster_list,total = teamrosters.get_teamrosters_search_by('name', search_name,  limit, offset)        
+        
+    else:
+
+        teamroster_list, total = teamrosters.get_teamrosters(limit, offset)
+    
+    return render_template('teamrosters_home.html', teamrostertable=teamroster.teamrostertable, 
 			teamrosters=teamroster_list, 
 			total=total, limit=limit, page=page)
+
+
+    return render_template('leagues_home.html', leaguetable=league.leaguetable, leagues=l, total=total, 
+                limit=limit, page=page, sortby=sortby)
+
 
 @app.route('/teamrosters/table', methods=['DEL','GET', 'POST'])
 def teamroster_page():

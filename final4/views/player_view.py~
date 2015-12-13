@@ -117,7 +117,7 @@ def player_from_id(pid):
             player_img.save(app.config['APP_FOLDER']+save_path)
 
         p, total_players = players.get_players()
-        c,total_countries = countries.get_countries()
+        c = countries.get_countries()
 
         sortby={'attr':'name', 'property':'asc'}
 
@@ -125,24 +125,24 @@ def player_from_id(pid):
                 limit=limit, page=page)
 
 
-    @app.route('/players/s/<key>', methods=['GET','POST'])
-    def search_player(key):
-        conn, cur = getDb()
-        players = player.Players(conn, cur)
-        countries = country.Countries(conn, cur)
+@app.route('/players/s/<key>', methods=['GET','POST'])
+def search_player(key):
+    conn, cur = getDb()
+    players = player.Players(conn, cur)
+    countries = country.Countries(conn, cur)
 
-        p, total_players = players.get_players_search_by('name', key)
-        c = countries.get_countries()
+    p, total_players = players.get_players_search_by('name', key)
+    c = countries.get_countries()
     
-        limit = int(request.args['limit']) if 'limit' in request.args else 10
-        page = int(request.args['page']) if 'page' in request.args else 0
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
     
-        offset = page*limit
-        print('page:',page,'limit',limit,'offset',offset)
-        sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
-        order = request.args['order'] if 'order' in request.args else 'asc'
+    offset = page*limit
+    print('page:',page,'limit',limit,'offset',offset)
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
 
-        sortby={'attr':'name', 'property':'asc'}
+    sortby={'attr':'name', 'property':'asc'}
 
-        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
-            limit=limit, page=page)
+    return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
+        limit=limit, page=page)
