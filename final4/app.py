@@ -199,6 +199,7 @@ def initialize_database():
         cur.execute(open("sampledata/countries.sql","r").read())
         # populate leagues data
         cur.execute(open("sampledata/seasons.sql","r").read())
+        cur.execute(open("sampledata/awards.sql","r").read())
         cur.execute(open("sampledata/leagues.sql","r").read())
         cur.execute(open("sampledata/players.sql","r").read())
         cur.execute(open("sampledata/coaches.sql","r").read())
