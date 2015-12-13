@@ -1,4 +1,4 @@
-{%extends "admin_layout.html"%}
+{%extends "layout.html"%}
 
 {%block title%}Schedules{%endblock%}
 
@@ -17,7 +17,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/schedules/table',
+                    url: '/schedules',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -43,84 +43,6 @@
                 });
             });
 
-            $('.delete_itemBtn').click(function() {
-                console.log("deleteItem");
-                console.log(this.name);
-                $.ajax({
-                    url: '/schedules/table',
-                    data: {'id': this.name,
-                    },
-                    type: 'DEL',
-                    success: function(response) {
-                        var data=JSON.parse(response);
-                        if (data.status == 'OK') {
-                            
-                            console.log('DELETED');
-                            console.log(data['idlist']);
-                            console.log(data.idlist.length);
-                            for(var i=0; i<data.idlist.length; i++) {
-                                var domname = "tr[name="+data.idlist[i]+"]";
-                                console.log(domname);
-                                $(domname).hide()
-                            }
-                        }
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
-
-            });
-           
-            $('.update_itemBtn').click(function() {
-                console.log("updateItem");
-                console.log(this.name);
-                console.log(this);
-                var name=this.name;
-                $.ajax({
-                    url: '/schedules/g/'+this.name,
-                    data: {'id': this.name,
-                    },
-                    type: 'GET',
-                    success: function(response) {
-                        var data=JSON.parse(response);
-                        if (data.status == 'OK') {
-                            // show update item form
-                            $('#schedule_item_update').removeClass('hidden');
-                            
-                            // scroll page to update element
-                            $('html, body').animate({
-                                        scrollTop: $("#schedule_item_update").offset().top
-                                                }, 1000);
-                            
-                            // show cancel button for editable item
-                            //$('#cancel_updateBtn').removeClass('hidden');
-                            
-                            // get selected item data from server response 
-                            schedule=data['schedule'];
-                            $('#schedule_item_update input[name=team1]').val(schedule['team1_name']);
-                            $('#schedule_item_update select[name=team2]').val(schedule['team2_name']);
-                            $('#schedule_item_update select[name=season]').val(schedule['season_year']);
-                            $('#schedule_item_update input[name=league]').val(schedule['league_name']);
-                            $('#schedule_item_update input[name=date]').val(schedule['date']);
-                            $('#schedule_item_update input[name=saloon]').val(schedule['saloon']);
-                            $('#schedule_item_update input[name=score1]').val(schedule['score1']);
-                            $('#schedule_item_update input[name=score2]').val(schedule['score2']);
-                            $('#schedule_item_update input[name=state]').val(schedule['state']);
-                            $('#schedule_item_update input[name=id]').val(schedule['id']);
-                            var base_url = window.location.origin;
-                            var newurl = base_url + "/schedules/g/" + schedule['id']; 
-                            $('#update_form').attr('action', newurl);
-                        }
-                        
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
-            });
-
-
             $('#cancel_updateBtn').click(function(){
                 $('#schedule_item_update').addClass('hidden');
                 //$('#cancel_updateBtn').addClass('hidden');
@@ -129,8 +51,7 @@
             $('#searchBox').change(function(){
                 var key=$('#searchBox').val();
 
-                var base_url = window.location.origin;
-                var search_url = base_url + "/schedules/s/" + key
+                window.location.search = 'name=' + key; 
                 window.location.replace(search_url); 
             });
 
@@ -293,76 +214,11 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-12">
+
+                
             Searching is made according to name of first team.
-            <div class="col-md-6">
-
-                <div class="panel panel-success">
-                    <div class="panel-heading">Add Schedule</div>
-                    <div class="panel-body">
-                        <div id="schedule_item_input" class="schedule_item_input">
-                            <form action="{{url_for('schedule_page')}}" method="post">
-                            <table id="add_item_table">
-                                {%for var in scheduletable[1:] %}
-                                <tr>									
-                                <td>
-
-                                        {%if var=='team1_id'%}
-                                        {%elif var=='team2_id'%}
-                                        {%elif var=='season_id'%}
-                                        {%elif var=='league_id'%}
-										{%elif var=='team1_name'%}
-                                        Team1
-                                        <select id="team1" name="{{var}}" class="form-control">
-												{%for p in teams%}
-                                                <option value="{{p._id}}" name="{{p.name}}">
-                                                    {{p.name }}
-                                                </option>
-												{%endfor%}
-										</select>										
-                                        {%elif var=='team2_name'%}
-                                        Team2
-                                        <select id="team2" name="{{var}}" class="form-control">
-												{%for p in teams%}
-                                                <option value="{{p._id}}" name="{{p.name}}">
-                                                    {{p.name }}
-                                                </option>
-												{%endfor%}
-										</select>
-                                        {%elif var=='season_year'%}
-                                        Season
-                                        <select id="season" name="{{var}}" class="form-control">
-												{%for s in seasons%}
-                                                <option value="{{s._id}}" name="{{s.name}}">
-                                                    {{s.year}}
-                                                </option>
-												{%endfor%}
-										</select>
-                                        {%elif var=='league_name'%}
-                                        League
-                                        <select id="league" name="{{var}}" class="form-control">
-												{%for s in leagues%}
-                                                <option value="{{s._id}}" name="{{s.name}}">
-                                                    {{s.name}}
-                                                </option>
-												{%endfor%}
-										</select>
-                                        {%else%}
-                                        {{var}}
-                                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control" required auto-focus>
-                                        {%endif%}
-                                    </td>
-                                    </tr> 
-                                    {%endfor%}
-                                <tr>
-                                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i> Add</button></td>
-                                </tr>
-                            </table>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Show schedules table -->
             <div class="col-md-12">
             {%if total==0%}
@@ -393,7 +249,7 @@
                         </span>
                         <table id="table" class="table table-hover">
                             <tr>
-                                <th></th>
+                                
                                 {%for var in scheduletable[1:]%}
                                     {%if var=='team1_id'%}
                                     {%elif var=='team2_id'%}
@@ -409,7 +265,7 @@
                             </tr>
                             {%for l in schedules%}
                             <tr name="{{l._id}}">
-                                <td><input type="checkbox" name="{{l._id}}" ></td>
+                                
                                 <td>{{l.team1_name}}</td>
                                 <td>{{l.team2_name}}</td>
                                 <td>{{l.season_year}}</td>
@@ -418,14 +274,8 @@
                                 <td>{{l.saloon}}</td>
                                 <td>{{l.score1}}</td>
                                 <td>{{l.score2}}</td>
-                                <td>{%if l.state==True%}
-                                    Played
-                                    {%else%}
-                                    Not played
-                                    {%endif%}
-                                </td>
-                                <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
-                                    <button name="{{l._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
+                                <td>{{l.state}}</td>
+                                
                                     <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
                             </tr>
                             {%endfor%}
@@ -458,75 +308,9 @@
                             * Primarily hidden. 
                             * This form will be visible when edit button clicked 
                         -->
-                        <div id="schedule_item_update" class="hidden">
-                            <form id="update_form" action="{{url_for('schedule_page')}}" method="POST">
-                            <table id="update_item_table">
-                                <tr id="update_item_table_tr">
-                                    {%for var in scheduletable[1:] %}
-                                <tr>									
-                                <td>
+                        
 
-                                        {%if var=='team1_id'%}
-                                        {%elif var=='team2_id'%}
-                                        {%elif var=='season_id'%}
-                                        {%elif var=='league_id'%}
-										{%elif var=='team1_name'%}
-                                        Team1
-                                        <select id="team1" name="{{var}}" class="form-control">
-												{%for p in teams%}
-                                                <option value="{{p._id}}" name="{{p.name}}">
-                                                    {{p.name }}
-                                                </option>
-												{%endfor%}
-										</select>										
-                                        {%elif var=='team2_name'%}
-                                        Team2
-                                        <select id="team2" name="{{var}}" class="form-control">
-												{%for p in teams%}
-                                                <option value="{{p._id}}" name="{{p.name}}">
-                                                    {{p.name }}
-                                                </option>
-												{%endfor%}
-										</select>
-                                        {%elif var=='season_year'%}
-                                        Season
-                                        <select id="season" name="{{var}}" class="form-control">
-												{%for s in seasons%}
-                                                <option value="{{s._id}}" name="{{s.name}}">
-                                                    {{s.year}}
-                                                </option>
-												{%endfor%}
-										</select>
-                                        {%elif var=='league_name'%}
-                                        League
-                                        <select id="league" name="{{var}}" class="form-control">
-												{%for s in leagues%}
-                                                <option value="{{s._id}}" name="{{s.name}}">
-                                                    {{s.name}}
-                                                </option>
-												{%endfor%}
-										</select>
-                                        {%else%}
-                                        {{var}}
-                                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control" required auto-focus>
-                                        {%endif%}
-                                    </td>
-                                    </tr> 
-                                    {%endfor%}
-                                        <td><input type="text" name="id" class="hidden"></td>
-                                        <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">
-                                    <button type="button" id="cancel_updateBtn" class="btn btn-danger cancel_updateBtn"><i class="fa fa-times fa-md"></i> Cancel</button></td>
-                                </tr>
-                            </table>
-                            </form>
-                        </div>
-
-                    </div>
-                </div>
-
-                {%if total>=1 %} 
-                    <button type="button" id="delete_selectedBtn" class="btn btn-danger">Delete Selections</button>
-                {%endif%}
+                
             </div>
         </div>
 {%endblock%}
