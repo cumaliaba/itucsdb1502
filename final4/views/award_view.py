@@ -7,10 +7,42 @@ from final4.models import award
 
 from flask import render_template
 from flask import request
+from flask import session
 
 # award views
-@app.route('/awards', methods=['DEL','GET', 'POST'])
+@app.route('/awards', methods=['GET'])
+def awards_home():
+    ''' This view page list all awards in awards table.
+        This page doesn't allow editing.
+    '''
+    conn, cur = getDb()
+    awards = award.Awards(conn, cur)
+    
+    # limit, page and order args
+    # required for each table page
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    offset = page*limit
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
+    
+    sortby={'attr':'name', 'property':'asc'}   
+    
+    # check search value
+    if 'name' in request.args:
+        search_name = request.args['name']
+        award_list, total = awards.get_awards_search_by('name', search_name, limit=limit, offset=offset)
+    else:
+        award_list, total = awards.get_awards(limit=limit, offset=offset)
+    return render_template('awards_home.html', awardtable=award.awardtable, 
+                        awards=award_list,
+			total=total, limit=limit, page=page, sortby=sortby)
+
+@app.route('/awards/table', methods=['DEL','GET', 'POST'])
 def award_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+            
     conn, cur = getDb()
     awards = award.Awards(conn, cur)
     print('AWARDS PAGE')
@@ -71,6 +103,9 @@ def award_page():
 
 @app.route('/awards/g/<award_id>', methods=['GET','POST'])
 def award_from_id(award_id):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+
     conn, cur = getDb()
     awards = award.Awards(conn, cur)
     
@@ -105,6 +140,9 @@ def award_from_id(award_id):
 
 @app.route('/awards/s/<key>', methods=['GET','POST'])
 def search_award(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)    
+    
     conn, cur = getDb()
     awards = award.Awards(conn, cur)
 

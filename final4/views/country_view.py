@@ -12,7 +12,7 @@ from flask import request
 
 # country views
 @app.route('/countries', methods=['GET'])
-def country_page():
+def countries_home():
     conn, cur = getDb()
     countries = country.Countries(conn, cur)
     print('countries PAGE')
