@@ -9,7 +9,33 @@ from final4.models import schedule
 from flask import render_template
 from flask import request
 
-@app.route('/matches', methods=['DEL','GET', 'POST'])
+@app.route('/matches', methods=['GET'])
+def matches_home():
+    ''' This view page list all matches in matches table.
+        This page doesn't allow editing.
+    '''
+    conn, cur = getDb()
+    matches = match.Matches(conn, cur)
+    shedules = shedule.Shedules(conn, cur)
+    
+    # limit, page and order args
+    # required for each table page
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    offset = page*limit
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
+   
+    # check search value
+    if 'name' in request.args:
+        search_name = request.args['name']
+        l, total = matches.get_matches_search_by('name', search_name, limit=limit, offset=offset)
+    else:
+        l, total = matches.get_matches(limit=limit, offset=offset)
+    return render_template('leagues_home.html', matchtable=match.matchtable, matches=l, total=total, 
+                limit=limit, page=page, sortby=sortby)
+
+@app.route('/matches/table', methods=['DEL','GET', 'POST'])
 def match_page():
     conn, cur = getDb()
     matches = match.Matches(conn, cur)
