@@ -3,6 +3,7 @@ import json
 import sys
 
 from flask import abort
+from flask import flash
 from flask import g
 from flask import redirect
 from flask import render_template
@@ -101,6 +102,7 @@ def updateUser():
 
 @app.route('/admin', methods=['POST', 'GET'])
 def admin():
+    
     conn, cur = getDb()
     error = None
     roles = None
@@ -134,7 +136,10 @@ def admin():
         role,lastlogin = cur.fetchone()
         g.role = role
         g.lastlogin = lastlogin
-    
+    else:
+        flash('Wrong username or password')
+        return render_template('signin.html')
+
     return render_template('adminpanel.html', error=error, roles=roles)
 
 @app.route('/signup', methods=['POST'])
