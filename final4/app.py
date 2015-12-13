@@ -137,7 +137,7 @@ def initialize_database():
         # teams table
         query = """CREATE TABLE teams (id serial PRIMARY KEY, 
                                name varchar(255) NOT NULL,
-                               country_id integer references countries(id) );
+                               coach_id integer references coaches(id) );
         """
         cur.execute(query)
 	    # teamrosters table
@@ -199,8 +199,10 @@ def initialize_database():
         cur.execute(open("sampledata/countries.sql","r").read())
         # populate leagues data
         cur.execute(open("sampledata/leagues.sql","r").read())
-
-
+        cur.execute(open("sampledata/players.sql","r").read())
+        cur.execute(open("sampledata/coaches.sql","r").read())
+        cur.execute(open("sampledata/teams.sql","r").read()) 
+        cur.execute(open("sampledata/teamrosters.sql","r").read()) 
         conn.commit() # commit changes
     except:
         print(sys.exc_info())

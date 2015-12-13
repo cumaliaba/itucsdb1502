@@ -85,7 +85,7 @@
                                                         
                             team=data['team'];
                             $('#update_item_div input[name=name]').val(team['name']);
-                            $('#update_item_div select[name=country]').val(team['country_id']);
+                            $('#update_item_div select[name=coach]').val(team['coach_id']);
                             $('#update_item_div input[name=id]').val(team['id']);
                             var base_url = window.location.origin;
                             var newurl = base_url + "/teams/g/" + team['id']; 
@@ -123,11 +123,12 @@
                     {%for var in teamtable[1:] %}
                     <tr>
                     <td>
-                        {%if var=='country_id'%}
-                        {%elif var=='country'%}
-                        <select id="country" name="{{var}}" class="form-control">
-                                {%for c in countries%}
-                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                        {%if var=='coach_id'%}
+                        {%elif var=='coach_name'%}
+                        {%elif var=='coach_surname'%}
+                        <select id="coach" name="coach" class="form-control">
+                                {%for c in coaches%}
+                                <option value="{{c._id}}" name="{{c.name+}}" >{{c.name + ' ' + c.surname}}</option>
                                 {%endfor%}
                             </select>
                         {%else%}
@@ -154,7 +155,8 @@
         <th></th>
         <th>image</th>
         {%for var in teamtable[1:]%}
-            {%if var=='country_id'%}
+            {%if var=='coach_id'%}
+            {%elif var=='coach_surname'%}
             {%else%}
             <th>{{var}}</th>
             {%endif%}
@@ -165,7 +167,7 @@
         <td><input type="checkbox" name="{{c._id}}" ></td>
         <td><img src="{{c.img_path()}}" width="50px"></td>
         <td>{{c.name}}</td>
-        <td>{{c.country}}</td>
+        <td>{{c.coach_name+' '+c.coach_surname}}</td>
         <td><button name="{{c._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
             <button name="{{c._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
             <button name="{{c._id}}" id="{{c._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
@@ -180,12 +182,14 @@
 <table id="update_item_table">
         {%for var in teamtable[1:] %}
     <tr id="update_item_table_tr">
+    
         <td>
-            {% if var=='country_id'%}
-            {% elif var=='country'%}
-            <select id="country" name="{{var}}" class="form-control">
-                    {%for c in countries%}
-                    <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+            {% if var=='coach_id'%}
+            {% elif var=='coach_name'%}
+            {% elif var=='coach_surname'%}
+            <select id="coach" name="coach" class="form-control">
+                    {%for c in coaches%}
+                    <option value="{{c._id}}" name="{{c.name}}">{{c.name+' '+c.surname}}</option>
                     {%endfor%}
                 </select>
             {%else%}
