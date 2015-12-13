@@ -1,6 +1,6 @@
 {%extends "table_template.html"%}
 
-{%block title%}Teams{%endblock%}
+{%block title%}Matches{%endblock%}
 
 {%block script%}
     <script>
@@ -13,7 +13,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/teams',
+                    url: '/matches',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -43,7 +43,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/teams',
+                    url: '/matches',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -74,7 +74,7 @@
                 console.log(this);
                 var name=this.name;
                 $.ajax({
-                    url: '/teams/g/'+this.name,
+                    url: '/matches/g/'+this.name,
                     data: {'id': this.name,
                     },
                     type: 'GET',
@@ -82,13 +82,22 @@
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
                             $('#update_item_div').removeClass('hidden');
-                                                        
-                            team=data['team'];
-                            $('#update_item_div input[name=name]').val(team['name']);
-                            $('#update_item_div select[name=country]').val(team['country_id']);
-                            $('#update_item_div input[name=id]').val(team['id']);
+                             
+                            match=data['match'];
+                            $('#update_item_div input[name=schedule]').val(match['schedule']);
+                            $('#update_item_div input[name=T1_3PT]').val(match['T1_3PT']);
+                            $('#update_item_div input[name=T1_2PT]').val(match['T1_2PT']);
+                            $('#update_item_div input[name=T1_block]').val(match['T1_block']);
+                            $('#update_item_div input[name=T1_reb]').val(match['T1_reb']);
+                            $('#update_item_div input[name=T1_rate]').val(match['T1_rate']);
+                            $('#update_item_div input[name=T2_3PT]').val(match['T2_3PT']);
+                            $('#update_item_div input[name=T2_2PT]').val(match['T2_2PT']);
+                            $('#update_item_div input[name=T2_block]').val(match['T2_block']);
+                            $('#update_item_div input[name=T2_reb]').val(match['T2_reb']);
+                            $('#update_item_div input[name=T2_rate]').val(match['T2_rate']);
+                            $('#update_item_div input[name=id]').val(match['id']);
                             var base_url = window.location.origin;
-                            var newurl = base_url + "/teams/g/" + team['id']; 
+                            var newurl = base_url + "/matches/g/" + match['id']; 
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -103,7 +112,7 @@
                 var key=$('#searchBox').val();
 
                 var base_url = window.location.origin;
-                var search_url = base_url + "/teams/s/" + key
+                var search_url = base_url + "/matches/s/" + key
                 window.location.replace(search_url); 
             });
 
@@ -112,22 +121,23 @@
 {%endblock%}
 
 {%block search_reset_link%}
-<a href="{{url_for('team_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+<a href="{{url_for('match_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
 {%endblock%}
 
-{%block add_item_panel_heading%}Add Team{%endblock%}
+{%block add_item_panel_heading%}Add Match{%endblock%}
 
 {%block add_item_form%}
-            <form action="{{url_for('team_page')}}" method="post" enctype="multipart/form-data">
+            <form action="{{url_for('match_page')}}" method="post">
             <table id="add_item_table">
-                    {%for var in teamtable[1:] %}
+                    {%for var in matchtable[1:] %}
                     <tr>
                     <td>
-                        {%if var=='country_id'%}
-                        {%elif var=='country'%}
-                        <select id="country" name="{{var}}" class="form-control">
-                                {%for c in countries%}
-                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                        {%if var=='schedule_id'%}
+                        {%elif var=='T1_name'%}
+                        {%elif var=='T2_name'%}
+                        <select id="schedule" name="schedule" class="form-control">
+                                {%for s in schedules%}
+                                <option value="{{s._id}}" name="{{s.team2_name}}">{{s.date + ' ' + s.team1_name + '-' + s.team2_name}}</option>
                                 {%endfor%}
                             </select>
                         {%else%}
@@ -135,9 +145,8 @@
                         {%endif%}
                     </td> 
                     </tr>
+		 <tr>
                     {%endfor%}
-                <tr>
-                    <td>Select image file<input type="file" name="file"></td>
                     <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i> Add</button></td>
                 </tr>
             </table>
@@ -146,26 +155,35 @@
 
 {%endblock%}
  
-{%block item_table_panel_heading%}Team Table{%endblock%}
+{%block item_table_panel_heading%}Match Table{%endblock%}
 
 {%block item_table_panel_table%}
 <table id="table" class="table table-hover">
     <tr>
         <th></th>
-        <th>image</th>
-        {%for var in teamtable[1:]%}
-            {%if var=='country_id'%}
+        {%for var in matchtable[1:]%}
+            {%if var=='match_id'%}
+            {%elif var=='schedule_id'%}
             {%else%}
             <th>{{var}}</th>
             {%endif%}
         {%endfor%}
     </tr>
-    {%for c in teams%}
+    {%for c in matches%}
     <tr name="{{c._id}}">
         <td><input type="checkbox" name="{{c._id}}" ></td>
-        <td><img src="{{c.img_path()}}" width="50px"></td>
-        <td>{{c.name}}</td>
-        <td>{{c.country}}</td>
+        <td>{{c.T1_name}}</td>
+        <td>{{c.T2_name}}</td>
+        <td>{{c.T1_3PT}}</td>
+        <td>{{c.T1_2PT}}</td>
+        <td>{{c.T1_block}}</td>
+        <td>{{c.T1_reb}}</td>
+        <td>{{c.T1_rate}}</td>
+        <td>{{c.T2_3PT}}</td>
+        <td>{{c.T2_2PT}}</td>
+        <td>{{c.T2_block}}</td>
+        <td>{{c.T2_reb}}</td>
+        <td>{{c.T2_rate}}</td>
         <td><button name="{{c._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
             <button name="{{c._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
             <button name="{{c._id}}" id="{{c._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
@@ -176,27 +194,25 @@
 {%endblock%}
 
 {%block update_item_form%}
-<form id="update_form" action="{{url_for('team_page')}}" method="POST" enctype="multipart/form-data">
+<form id="update_form" action="{{url_for('match_page')}}" method="POST">
 <table id="update_item_table">
-        {%for var in teamtable[1:] %}
-    <tr id="update_item_table_tr">
-        <td>
-            {% if var=='country_id'%}
-            {% elif var=='country'%}
-            <select id="country" name="{{var}}" class="form-control">
-                    {%for c in countries%}
-                    <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                    {%for var in matchtable[1:] %}
+                    <tr>
+                    <td>
+                        {%if var=='schedule_id'%}
+                        {%elif var=='T1_name'%}
+                        {%elif var=='T2_name'%}
+                        <select id="schedule" name="schedule" class="form-control">
+                                {%for s in schedules%}
+                                <option value="{{s._id}}" name="{{s.team2_name}}">{{s.date + ' ' + s.team1_name + '-' + s.team2_name}}</option>
+                                {%endfor%}
+                            </select>
+                        {%else%}
+                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control">
+                        {%endif%}
+                    </td> 
+                    </tr>
                     {%endfor%}
-                </select>
-            {%else%}
-            <input type="text" class="form-control" name="{{var}}" placeholder="{{var}}">
-            {%endif%}
-        </td> 
-    </tr>
-        {%endfor%}
-    <tr>
-        <td>Select a file<input type="file" name="file"></td>
-    </tr>
     <tr>
             <td><input type="text" name="id" class="hidden"></td>
             <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">

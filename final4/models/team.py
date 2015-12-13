@@ -1,13 +1,22 @@
 from flask import url_for
-teamtable = ['id', 'name', 'country_id', 'country']
+
+teamtable = ['id', 'name','country_id', 'country']
 
 class Team:
-    def __init__(self, name, country_id, country=None, _id=None):
+    def __init__(self, name,country_id, country=None, _id=None):
         self._id = _id
         self.name = name
         self.country_id = country_id
         self.country = country
-        self.photo = url_for('static', filename='data/teams/'+name.lower()+'.png')
+    
+    def img_path(self, _id=None):
+        if _id==None and self._id==None:
+            return url_for('static',filename='.') + 'data/img/teams/not_available.png'
+        if _id:
+            return url_for('static',filename='.') + 'data/img/teams/' + str(_id) + '.png'
+        else:
+            return url_for('static',filename='.') +'data/img/teams/' + str(self._id) + '.png'
+
     def getAttrs(self):
         return (dict(zip(teamtable, (self._id, self.name, self.country_id, self.country))))
 
@@ -19,11 +28,13 @@ class Teams:
 
     def add_team(self, team):
         print("addteam ", team)
-        query = """INSERT INTO teams (name, country_id) 
-                                    values (%s,%s)""" 
+        query = """INSERT INTO teams (name,country_id) 
+                                    values (%s,%s) RETURNING id""" 
 
         self.cur.execute(query, (team.name, team.country_id))
+        insert_id = self.cur.fetchone()[0]
         self.conn.commit()
+        return insert_id
 
     def delete_team(self, _id):
         query = """DELETE FROM teams WHERE id=%s"""
@@ -53,7 +64,6 @@ class Teams:
             return None
 
     def get_teams(self, limit=100, offset=0):
-
         query = """SELECT count(teams.id)
                         FROM teams,countries WHERE countries.id=teams.country_id
                           """
@@ -74,40 +84,41 @@ class Teams:
 
     def get_teams_by(self, attrib, search_key, limit=100, offset=0):
         skey = str(search_key)
-
+        
         query = """SELECT count(teams.id)
                         FROM teams,countries WHERE teams.{attrib}=%s AND 
                             countries.id=teams.country_id""".format(attrib=attrib)
         self.cur.execute(query, (skey,))
         total = self.cur.fetchone()[0]
-
+        
         query = """SELECT teams.id, teams.name, teams.country_id, countries.name
                         FROM teams,countries WHERE teams.{attrib}=%s AND 
-                            countries.id=teams.country_id ORDER BY teams.name
+                            countries.id=teams.country_id ORDER BY teams.name 
                             LIMIT %s OFFSET %s""".format(attrib=attrib)
-        self.cur.execute(query, (skey,limit, offset))
+        self.cur.execute(query, (skey, limit, offset))
         teams = self.cur.fetchall()
         print('teams:', teams)
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'], td['country_id'], td['country'],td['id'])
+            team = Team(td['name'],  td['country_id'], td['country'],td['id'])
             teamlist.append(team)
         return teamlist, total
 
     def get_teams_search_by(self, attrib, search_key, limit=100, offset=0):
         skey = str(search_key) + '%'
+        
         query = """SELECT count(teams.id)
                         FROM teams,countries WHERE teams.{attrib} LIKE %s AND 
                             countries.id=teams.country_id""".format(attrib=attrib)
         self.cur.execute(query, (skey,))
         total = self.cur.fetchone()[0]
-
+        
         query = """SELECT teams.id, teams.name, teams.country_id, countries.name
                         FROM teams,countries WHERE teams.{attrib} LIKE %s AND 
-                            countries.id=teams.country_id ORDER BY teams.name
+                            countries.id=teams.country_id ORDER BY teams.name 
                             LIMIT %s OFFSET %s""".format(attrib=attrib)
-        self.cur.execute(query, (skey,limit, offset))
+        self.cur.execute(query, (skey, limit, offset))
         teams = self.cur.fetchall()
         print('teams:', teams)
         teamlist = []

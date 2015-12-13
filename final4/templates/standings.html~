@@ -97,7 +97,8 @@
                             //$('#cancel_updateBtn').removeClass('hidden');
                             
                             // get selected item data from server response 
-                            standing=data['standing'];
+                            standing=data['standing'];                            
+                            $('#standing_item_update input[name=id]').val(standing['id']);
                             $('#standing_item_update input[name=season_id]').val(standing['season_id']);
                             $('#standing_item_update select[name=league_id]').val(standing['league_id']);
                             $('#standing_item_update input[name=team_id]').val(standing['team_id']);

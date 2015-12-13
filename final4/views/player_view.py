@@ -1,5 +1,6 @@
-import sys
+import os
 import json
+import sys
 
 from final4.config import app
 from final4.db_helper import getDb
@@ -14,40 +15,55 @@ def player_page():
     conn, cur = getDb()
     players = player.Players(conn, cur)
     countries = country.Countries(conn, cur)
-    print('PLAYERS PAGE')
+    print('players PAGE')
     if request.method == 'GET':
-        print ('GET REQUEST', request.args)
         limit = int(request.args['limit']) if 'limit' in request.args else 10
         page = int(request.args['page']) if 'page' in request.args else 0
         
         offset = page*limit
         print('page:',page,'limit',limit,'offset',offset)
-        orderby = request.args['orderby'] if 'orderby' in request.args else 'asc'
-        p, total = players.get_players(limit, offset)
+        sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+        order = request.args['order'] if 'order' in request.args else 'asc'
+
+        p, total_players = players.get_players()
         c = countries.get_countries()
-        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
-                                limit=limit, page=page)
+
+        sortby={'attr':'name', 'property':'asc'}
+
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
+                limit=limit, page=page)
     elif request.method == 'POST':
-        print('ADD PLAYER')
+        print('ADD player')
         name = request.form['name']
         surname = request.form['surname']
-        age = request.form['age']
-        pp = request.form['pp']
+        age=request.form['age']
+        pp=request.form['pp']
         country_id = request.form['country']
+        player_img = request.files['file']
+
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
-        orderby = request.form['orderby'] if 'orderby' in request.form else 'asc'
-        pl = player.Player(name,surname,age,pp,country_id)
-        players.add_player(pl)
-        
-        p, total = players.get_players(limit, offset)
+        order = request.form['sortby'] if 'sortby' in request.form else 'name'
+        order = request.form['order'] if 'order' in request.form else 'asc'
+
+        print(name, surname, player_img)
+        pl = player.Player(name, surname,age,pp,country_id)
+        insert_id = players.add_player(pl)
+        if player_img:
+            save_path = pl.img_path(insert_id)
+            player_img.save(app.config['APP_FOLDER']+save_path)
+    
+        p, total_players = players.get_players()
         c = countries.get_countries()
-        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
-                                limit=limit, page=page)
+
+        sortby={'attr':'name', 'property':'asc'}
+
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
+                limit=limit, page=page)
 
     elif request.method == 'DEL':
-        print ('DELETE REQUEST:PLAYERS PAGE')
+        print ('DELETE REQUEST:players PAGE')
         print (request.form)
         idlist = request.form.getlist('ids[]')
         print ('IDS: ', idlist)
@@ -82,20 +98,31 @@ def player_from_id(pid):
         pid = request.form['id']
         name = request.form['name']
         surname = request.form['surname']
-        age = request.form['age']
-        pp = request.form['pp']  
+        age=request.form['age']
+        pp=request.form['pp']
         country_id = request.form['country']
+        player_img = request.files['file']
+
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
-        orderby = request.form['orderby'] if 'orderby' in request.form else 'asc'
-        pl = player.Player(age,pp,country_id)
+        order = request.form['sortby'] if 'sortby' in request.form else 'name'
+        order = request.form['order'] if 'order' in request.form else 'asc'
+
+        pl = player.Player(name, surname,age,pp, country_id)
         players.update_player(pid, pl)
         
-        p, total = players.get_players(limit, offset)
+        if player_img:
+            save_path = pl.img_path(pid)
+            player_img.save(app.config['APP_FOLDER']+save_path)
+
+        p, total_players = players.get_players()
         c = countries.get_countries()
-        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total, 
-                                limit=limit, page=page)
+
+        sortby={'attr':'name', 'property':'asc'}
+
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
+                limit=limit, page=page)
 
 
 @app.route('/players/s/<key>', methods=['GET','POST'])
@@ -104,12 +131,18 @@ def search_player(key):
     players = player.Players(conn, cur)
     countries = country.Countries(conn, cur)
 
+    p, total_players = players.get_players_search_by('name', key)
+    c = countries.get_countries()
+    
     limit = int(request.args['limit']) if 'limit' in request.args else 10
     page = int(request.args['page']) if 'page' in request.args else 0
     
     offset = page*limit
+    print('page:',page,'limit',limit,'offset',offset)
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
 
-    result,total = players.get_players_by(key, 'name', limit, offset)
-    c = countries.get_countries()
-    return render_template('players.html', playertable=player.playertable, players=result, countries=c, total=total, 
-                            limit=limit, page=page)
+    sortby={'attr':'name', 'property':'asc'}
+
+    return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
+            limit=limit, page=page)
