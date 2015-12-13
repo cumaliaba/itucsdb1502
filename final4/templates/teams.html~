@@ -124,10 +124,11 @@
                     <tr>
                     <td>
                         {%if var=='coach_id'%}
-                        {%elif var=='coach'%}
-                        <select id="coach" name="{{var}}" class="form-control">
+                        {%elif var=='coach_name'%}
+                        {%elif var=='coach_surname'%}
+                        <select id="coach" name="coach" class="form-control">
                                 {%for c in coaches%}
-                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                <option value="{{c._id}}" name="{{c.name+}}" >{{c.name + ' ' + c.surname}}</option>
                                 {%endfor%}
                             </select>
                         {%else%}
@@ -155,6 +156,7 @@
         <th>image</th>
         {%for var in teamtable[1:]%}
             {%if var=='coach_id'%}
+            {%elif var=='coach_surname'%}
             {%else%}
             <th>{{var}}</th>
             {%endif%}
@@ -165,7 +167,7 @@
         <td><input type="checkbox" name="{{c._id}}" ></td>
         <td><img src="{{c.img_path()}}" width="50px"></td>
         <td>{{c.name}}</td>
-        <td>{{c.coach}}</td>
+        <td>{{c.coach_name+' '+c.coach_surname}}</td>
         <td><button name="{{c._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
             <button name="{{c._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
             <button name="{{c._id}}" id="{{c._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
@@ -180,12 +182,14 @@
 <table id="update_item_table">
         {%for var in teamtable[1:] %}
     <tr id="update_item_table_tr">
+    
         <td>
             {% if var=='coach_id'%}
-            {% elif var=='coach'%}
-            <select id="coach" name="{{var}}" class="form-control">
+            {% elif var=='coach_name'%}
+            {% elif var=='coach_surname'%}
+            <select id="coach" name="coach" class="form-control">
                     {%for c in coaches%}
-                    <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                    <option value="{{c._id}}" name="{{c.name}}">{{c.name+' '+c.surname}}</option>
                     {%endfor%}
                 </select>
             {%else%}

@@ -1,4 +1,4 @@
-{%extends "layout.html"%}
+{%extends "admin_layout.html"%}
 
 {%block title%}Schedules{%endblock%}
 
@@ -17,7 +17,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/schedules',
+                    url: '/schedules/table',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/schedules',
+                    url: '/schedules/table',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -293,7 +293,7 @@
                     </div>
                 </div>
             </div>
-
+            Searching is made according to name of first team.
             <div class="col-md-6">
 
                 <div class="panel panel-success">
@@ -362,7 +362,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Show schedules table -->
             <div class="col-md-12">
             {%if total==0%}
@@ -418,7 +418,12 @@
                                 <td>{{l.saloon}}</td>
                                 <td>{{l.score1}}</td>
                                 <td>{{l.score2}}</td>
-                                <td>{{l.state}}</td>
+                                <td>{%if l.state==True%}
+                                    Played
+                                    {%else%}
+                                    Not played
+                                    {%endif%}
+                                </td>
                                 <td><button name="{{l._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
                                     <button name="{{l._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
                                     <button name="{{l._id}}" id="{{l._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>

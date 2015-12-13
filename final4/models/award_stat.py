@@ -112,7 +112,7 @@ class AwardStats:
         query = """SELECT count(award_stats.id)
                         FROM award_stats, awards, players, seasons 
                         WHERE 
-                            award_stats.{attrib}=%s AND 
+                            awards.{attrib}=%s AND 
                             awards.id=award_stats.award_id AND
                             award_stats.player_id=players.id AND 
                             award_stats.season_id=seasons.id
@@ -127,7 +127,7 @@ class AwardStats:
                           seasons.id, seasons.year 
                         FROM award_stats, awards, players, seasons
                         WHERE 
-                            award_stats.{attrib}=%s AND 
+                            awards.{attrib}=%s AND 
                             awards.id=award_stats.award_id AND
                             players.id=award_stats.player_id AND
                             seasons.id=award_stats.season_id
@@ -135,14 +135,14 @@ class AwardStats:
                         """.format(attrib=attrib)
         self.cur.execute(query, (skey,limit, offset))
         award_stats = self.cur.fetchall()
-        award_statlist = []
+        award_statslist = []
         for l in award_stats:
             ld = dict(zip(award_stattable, a))
             award_stat = AwardStat(ld['award_id'], ld['player_id'], ld['season_id'],
 			    _id=ld['id'], award_name=ld['award_name'], player_name=ld['player_name'],
 			    player_surname=ld['player_surname'], season_year=ld['season_year'])
-            award_statlist.append(award_stat)
-        return award_statlist, total
+            award_statslist.append(award_stat)
+        return award_statslist, total
 
     def get_award_stats_search_by(self, attrib, search_key, limit=100, offset=0):
         # convert search key to special sql search syntax that means
@@ -152,7 +152,7 @@ class AwardStats:
         query = """SELECT count(award_stats.id)
                         FROM award_stats, awards, players, seasons 
                         WHERE 
-                            award_stats.{attrib} LIKE %s AND
+                            awards.{attrib} LIKE %s AND
                             awards.id=award_stats.award_id AND
                             players.id=award_stats.player_id AND
                             seasons.id=award_stats.season_id
@@ -167,7 +167,7 @@ class AwardStats:
                           seasons.id, seasons.year 
                         FROM award_stats, awards, players, seasons
                         WHERE 
-                            award_stats.{attrib} LIKE %s AND
+                            awards.{attrib} LIKE %s AND
                             awards.id=award_stats.award_id AND
                             players.id=award_stats.player_id AND 
                             seasons.id=award_stats.season_id
@@ -181,6 +181,6 @@ class AwardStats:
             award_stat = AwardStat(ld['award_id'], ld['player_id'], ld['season_id'],
 			    _id=ld['id'], award_name=ld['award_name'], player_name=ld['player_name'],
 			    player_surname=ld['player_surname'], season_year=ld['season_year'])
-            award_statlist.append(award_stat)
-        return award_statlist, total
+            award_statslist.append(award_stat)
+        return award_statslist, total
 

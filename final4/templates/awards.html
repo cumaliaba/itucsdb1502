@@ -17,7 +17,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/awards',
+                    url: '/awards/table',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/awards',
+                    url: '/awards/table',
                     data: {'id': this.name,
                     },
                     type: 'DEL',

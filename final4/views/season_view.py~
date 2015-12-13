@@ -7,10 +7,30 @@ from final4.models import season
 
 from flask import render_template
 from flask import request
+from flask import session
 
 # season views
 @app.route('/seasons', methods=['DEL','GET', 'POST', 'PUT'])
+def seasons_home():
+    conn, cur = getDb()
+    seasons = season.Seasons(conn, cur)
+    print('SEASONS PAGE')
+    if request.method == 'GET':
+        if 'name' in request.args:
+            search_name = request.args['name']
+            l = seasons.get_seasons_by(search_name, 'name')
+            #l = seasons.get_seasons_search_by('name', search_name)
+        else:
+            l = seasons.get_seasons()
+        
+        return render_template('seasons_home.html', seasontable=season.seasontable, seasons=l)
+        
+        
+@app.route('/seasons/table', methods=['DEL','GET', 'POST', 'PUT'])
 def season_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+        
     conn, cur = getDb()
     seasons = season.Seasons(conn, cur)
     print('SEASONS PAGE')
@@ -50,6 +70,9 @@ def season_page():
 
 @app.route('/seasons/g/<lid>', methods=['GET','POST'])
 def season_from_id(lid):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)    
+    
     conn, cur = getDb()
     seasons = season.Seasons(conn, cur)
     
@@ -72,9 +95,12 @@ def season_from_id(lid):
         
 @app.route('/seasons/s/<key>', methods=['GET','POST'])
 def search_season(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+        
     conn, cur = getDb()
     seasons = season.Seasons(conn, cur)
     result = seasons.get_seasons_by(key, 'name')
-    return render_template('seasons.html', seasonstable=season.seasontable, seasons=result)
+    return render_template('seasons.html', seasontable=season.seasontable, seasons=result)
 
 

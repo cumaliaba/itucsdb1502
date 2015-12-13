@@ -1,0 +1,257 @@
+{%extends "layout.html"%}
+
+{%block title%}Awards{%endblock%}
+
+{%block script%}
+    <script>
+        $(document).ready(function(){
+            //initialize tooltip
+            $('[data-toggle="tooltip"]').tooltip();
+
+            $('#searchBox').change(function(){
+                var key=$('#searchBox').val();
+
+                var base_url = window.location.origin;
+                var search_url = base_url + "/awards/s/" + key
+                window.location.replace(search_url); 
+            });
+
+
+            /*
+             Add click listener to pagination
+             */
+            $('.pagination li a').click(function(){
+                var that = $(this).parent(); // li
+                var active = that.parent().find('li.active'); // active li element
+                active.removeClass('active'); // deactivete element
+                var num = parseInt(active.text()) - 1;
+                console.log('old-active:'+active.text());
+                // show pages between start end end
+                var start = 0; // ilk ayarlar deneme
+                var end = $('#pagination').attr('data-end')-1; // ilk ayarlar
+                var total = 5; // total pages
+                var selected_page = 0;
+
+                if ($(this).attr('name')=='prev') {
+                    console.log('prev button');
+                    // previous page button
+                    if (num==start) {
+                        // first page; no previous page
+                        active.addClass('active');
+                        return;
+                    }
+                    
+                    if ((num-1) == start) {
+                        console.log('num-1==start'+(num-1));
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    
+                    num = num - 1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+
+                    if (start!=end) {
+                        that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                    }
+                    selected_page=num; 
+
+                } else if ($(this).attr('name')=='next') {
+                    // next page button
+                    console.log('next button');
+                    if (num==end) {
+                        active.addClass('active');
+                        return;
+                    } 
+                    
+                    if ((num+1) == end) {
+                        console.log('num+1==start'+(num+1));
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+
+                    }
+
+                    num = num+1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+                    if (start!=end) {
+                        that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                    }
+                    selected_page=num; 
+                }
+                else {
+                    that.addClass('active');
+                    console.log($(this).text());
+                    console.log(num);
+                    
+                    var num2 = parseInt($(this).attr('name'));
+                    selected_page=num2; 
+                    
+                    if (num2 > start) {
+                        console.log('num>start'+ num2);
+                        that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                    } 
+                    else if (num2 == start) {
+                        console.log('num==start'+ num2);
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    if (num2 < end) {
+                        console.log('num<end'+ num2);
+                        that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                    }
+                    else if (num2==end) {
+                        console.log('num==end'+ num2);
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+                    }
+                    
+                }
+
+                console.log('selected:'+selected_page);
+                var limit = $('#result_limit').attr('data-limit');
+                if (!limit) limit = 10;
+                if (window.location.pathname.startsWith('/awards/g/')) {
+                    window.location.replace(window.location.origin + '/awards?' + 'limit='+limit+'&page='+selected_page);
+                } else {
+                    window.location.search = 'limit='+limit+'&page='+selected_page;
+                }
+            });
+            
+            /*
+             Add listener to result limit selector
+             */
+            var limit=10;
+            $('#result_limit').change(function(){
+                console.log($(this).val());
+                limit = $(this).val();
+                if (window.location.pathname.startsWith('/awards/g/')) {
+                    window.location.replace(window.location.origin + '/awards?' + 'limit='+limit);
+                } else {
+                    window.location.search = 'limit='+limit;
+                }
+            });
+            
+            /*
+             sort by selected table header settings
+             */
+            $('.table-sort-header').click(function(){
+                console.log($(this).attr('name'));
+                console.log($(this).attr('data-sort-prop'));
+                if (!$(this).attr('data-sort-prop')){
+                    // if data-sort-prop not defined
+                    $(this).attr('data-sort-prop', 'asc');
+                    $(this).find('i').removeClass('fa fa-sort-desc').addClass('fa fa-sort-asc')
+                } else if ($(this).attr('data-sort-prop') == 'asc') {
+                    $(this).attr('data-sort-prop', 'desc');
+                    $(this).find('i').removeClass('fa fa-sort-asc').addClass('fa fa-sort-desc')
+                    console.log('desc');
+                } else if ($(this).attr('data-sort-prop') == 'desc') {
+                    $(this).attr('data-sort-prop', 'asc');
+                    $(this).find('i').removeClass('fa fa-sort-desc').addClass('fa fa-sort-asc')
+                    console.log('asc');
+                }             
+            });
+
+        });
+        
+        /*
+         prevent click event for disabled elements
+         */
+        $(document).on("click", ".disabled", function(e){
+            e.preventDefault();
+        });
+
+    </script>
+{%endblock%}
+
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div class="col-md-12" style="padding-bottom:15px;">
+            <div class="row" style="margin-bottom:15px;">
+                <div class="col-md-6">
+                    <div id="search">
+                        <div class="col-md-6">
+                            <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
+                        </div>
+                        <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
+                        <a href="{{url_for('awards_home')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Show awards table -->
+            <div class="col-md-8">
+            {%if total==0%}
+            <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
+            {%else%}
+            
+                <!-- Award table panel -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">Award Table</div>
+                    <div class="panel-body">
+                                <form class="form-inline">
+                                    <div class="form-group">
+                                        Show
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="result_limit" data-limit={{limit}}>
+                                            {% for i in [10,25,50,75,100] %}
+                                            <option {%if limit==i%}selected="selected"{%endif%} value={{i}}>{{i}}</option>
+                                            {%endfor%}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        results for each page.
+                                    </div>
+                                </form>
+                        <span class="label label-success">
+                            <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span> result found.
+                        </span>
+                        <table id="table" class="table table-hover">
+                            <tr>
+                                <th></th>
+                                {%for var in awardtable[1:]%}
+                                    {%if sortby['attr']==var%}
+                                    <th><a role="button" id="table-sort-icon" class="table-sort-header" name="{{var}}" data-sort-prop="{{sortby['property']}}" selected="selected">{{var}}<i class="fa fa-sort-{{sortby['property']}}"></i></a></th>
+                                    {%else%}
+                                    <th><a role="button" id="table-sort-icon" class="table-sort-header" name="{{var}}" >{{var}}<i></i></a></th>
+                                    {%endif%}
+                                {%endfor%}
+                                    <th></th>
+                            </tr>
+                            {%for l in awards%}
+                            <tr name="{{l._id}}">
+                                <td><input type="checkbox" name="{{l._id}}" ></td>
+                                <td>{{l.name}}</td>
+                            </tr>
+                            {%endfor%}
+                        </table>
+                        {%endif%}
+
+                        <nav>
+                            <ul class="pagination pagination-sm" id="pagination" data-end="{{((total/limit)+0.5)|round|int}}"name="aaa">
+                            <li {%if page==0 %}class="disabled"{%endif%}>
+                                <a aria-label="Previous" name="prev">
+                                <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {%for i in range((total/limit)|round(0,'ceil')|int)%}
+                                {%if i==page %}
+                                <li class=active><a name="{{i}}">{{i+1}}</a></li>
+                                {%else%}
+                                <li><a name="{{i}}">{{i+1}}</a></li>
+                                {%endif%}
+                            {%endfor%}
+                            <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
+                                <a aria-label="Next" name="next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                        </nav>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+{%endblock%}
+

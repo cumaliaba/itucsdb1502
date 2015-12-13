@@ -1,0 +1,7 @@
+INSERT INTO teams (name, coach_id) VALUES ('SAN ANTONIO SPURS', 1);
+INSERT INTO teams (name, coach_id) VALUES ('HOUSTON ROCKETS', 2);
+INSERT INTO teams (name, coach_id) VALUES ('GALATASARAY', 3);
+INSERT INTO teams (name, coach_id) VALUES ('UTAH JAZZ', 4);
+INSERT INTO teams (name, coach_id) VALUES ('BANVİT', 5);
+
+

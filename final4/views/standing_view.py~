@@ -10,10 +10,39 @@ from final4.models import team
 
 from flask import render_template
 from flask import request
+from flask import session
 
 # standing views
 @app.route('/standings', methods=['DEL','GET', 'POST'])
+def standing_home():
+    conn, cur = getDb()
+    standings = standing.Standings(conn, cur)
+    seasons = season.Seasons(conn, cur)
+    leagues = league.Leagues(conn, cur)
+    teams = team.Teams(conn, cur)
+    print('STANDINGS PAGE')
+    if request.method == 'GET':
+        # handle GET request
+        print ('GET REQUEST', request.args)
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        
+        if 'name' in request.args:
+            search_name = request.args['name']
+            l, total = standings.get_standings_search_by('name', search_name, limit=limit, offset=offset)
+        else:
+            l, total = standings.get_standings(limit=limit, offset=offset)
+    return render_template('standings_home.html', standingtable=standing.standingtable, standings=l, total=total, 
+                limit=limit, page=page)
+     
+@app.route('/standings/table', methods=['DEL','GET', 'POST'])
 def standing_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    
     conn, cur = getDb()
     standings = standing.Standings(conn, cur)
     seasons = season.Seasons(conn, cur)
@@ -84,6 +113,9 @@ def standing_page():
 
 @app.route('/standings/g/<standing_id>', methods=['GET','POST'])
 def standing_from_id(standing_id):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+        
     conn, cur = getDb()
     standings = standing.Standings(conn, cur)
     seasons=season.Seasons(conn,cur)

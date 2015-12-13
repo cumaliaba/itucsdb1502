@@ -27,7 +27,7 @@ def teamroster_page():
         
  
         teamroster_list, total = teamrosters.get_teamrosters(limit, offset)
-        player_list = players.get_players(100,0)
+        player_list, pp = players.get_players(100,0)
         team_list,tp = teams.get_teams(100,0)
         
         return render_template('teamrosters.html', teamrostertable=teamroster.teamrostertable, 
@@ -40,7 +40,6 @@ def teamroster_page():
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
-        
         teamroster_obj = teamroster.Teamroster(player_id, team_id)
         teamrosters.add_teamroster(teamroster_obj)
         

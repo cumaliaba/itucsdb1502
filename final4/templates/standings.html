@@ -1,4 +1,4 @@
-{%extends "layout.html"%}
+{%extends "admin_layout.html"%}
 
 {%block title%}Standings{%endblock%}
 
@@ -17,7 +17,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/standings',
+                    url: '/standings/table',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/standings',
+                    url: '/standings/table',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -102,8 +102,8 @@
                             $('#standing_item_update input[name=season_id]').val(standing['season_id']);
                             $('#standing_item_update select[name=league_id]').val(standing['league_id']);
                             $('#standing_item_update input[name=team_id]').val(standing['team_id']);
-                            var base_url = window.location.origin;1
-                            var newurl = base_url + "/standings/g/" + standing['id']; 
+                            var base_url = window.location.origin;
+                            var newurl = base_url + "/standings/g/" + standing['id'];  
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -260,7 +260,7 @@
             </div>
 
             <div class="col-md-6">
-
+                Searching is made according to name of league.
                 <div class="panel panel-success">
                     <div class="panel-heading">Add Standing</div>
                     <div class="panel-body">

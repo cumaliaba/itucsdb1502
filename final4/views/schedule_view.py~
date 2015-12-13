@@ -10,10 +10,43 @@ from final4.models import league
 
 from flask import render_template
 from flask import request
+from flask import session
 
 # schedule views
-@app.route('/schedules', methods=['DEL','GET', 'POST'])
+@app.route('/schedules', methods=['GET'])
+def schedule_home():
+    conn, cur = getDb()
+    schedules = schedule.Schedules(conn, cur)
+    teams = team.Teams(conn, cur)
+    seasons = season.Seasons(conn, cur)
+    leagues = league.Leagues(conn, cur)
+    print('SCHEDULES PAGE')
+    if request.method == 'GET':
+        # handle GET request
+        print ('GET REQUEST', request.args)
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+        order = request.args['order'] if 'order' in request.args else 'asc'
+        
+        if 'name' in request.args:
+        search_name = request.args['name']
+        l, total = schedules.get_schedules_search_by('name', search_name, limit=limit, offset=offset)
+    else:
+        l, total = schedules.get_schedules(limit=limit, offset=offset)
+    return render_template('schedules_home.html', scheduletable=schedule.scheduletable, schedules=l, total=total, 
+                limit=limit, page=page, sortby=sortby)
+ 
+        
+        
+@app.route('/schedules/table', methods=['DEL','GET', 'POST'])
 def schedule_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+        
     conn, cur = getDb()
     schedules = schedule.Schedules(conn, cur)
     teams = team.Teams(conn, cur)
@@ -57,7 +90,7 @@ def schedule_page():
         order = request.form['sortby'] if 'sortby' in request.form else 'name'
         order = request.form['order'] if 'order' in request.form else 'asc'
         print(team1_id, team2_id,league_id, season_id,date,saloon,score1,score2,state)
-        schedule_obj = schedule.Schedule(team1_id, team2_id,league_id, season_id,date,saloon,score1,score2,state)
+        schedule_obj = schedule.Schedule(team1_id, team2_id,season_id, league_id,date,saloon,score1,score2,state)
         schedules.add_schedule(schedule_obj)
         
         schedule_list, total = schedules.get_schedules(limit, offset)
@@ -92,6 +125,9 @@ def schedule_page():
 
 @app.route('/schedules/g/<schedule_id>', methods=['GET','POST'])
 def schedule_from_id(schedule_id):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)    
+    
     conn, cur = getDb()
     schedules = schedule.Schedules(conn, cur)
     teams = team.Teams(conn, cur)
@@ -140,6 +176,9 @@ def schedule_from_id(schedule_id):
 
 @app.route('/schedules/s/<key>', methods=['GET','POST'])
 def search_schedule(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+        
     conn, cur = getDb()
     schedules = schedule.Schedules(conn, cur)
     teams = team.Teams(conn, cur)

@@ -1,4 +1,4 @@
-{%extends "layout.html"%}
+{%extends "admin_layout.html"%}
 
 {%block title%}Seasons{%endblock%}
 {%block script%}
@@ -13,7 +13,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/seasons',
+                    url: '/seasons/table',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -47,7 +47,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/seasons',
+                    url: '/seasons/table',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -92,7 +92,8 @@
                             $('#season_item_update input[name=year]').val(season['year']);
                             $('#season_item_update input[name=id]').val(season['id']);
                             
-                            var newurl = $('#update_form').attr('action') +'/g/' +season['id'];
+                            var base_url = window.location.origin;
+                            var newurl = base_url + "/seasons/g/" + season['id']; 
                             $('#update_form').attr('action', newurl);
                         }
                         
@@ -114,12 +115,13 @@
     </script>
 
 {%endblock%}      
-
+            Searching is made according to name of leauge.
 {%block content%}
     {%if error%}<p>{{error}}</p>{%endif%}
         <div id="search">
             <input id="searchBox" type="text" name="search" placeholder="Enter search key">
             <button id="searchBtn">Search</button>
+            <a href="{{url_for('season_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
         </div>
         {%if seasons|length==0%}
         <p id="no_result"class="notice">No result found for selected criterias</p>
@@ -172,5 +174,6 @@
 
         {%if seasons|length>=1 %} 
             <button type="button" id="delete_selectedBtn">Delete Selections</button>
+            In organization of database, because of foreign key, before deletion of seasons, items which are correspond to season must be deleted.  
         {%endif%}
 {%endblock%}
