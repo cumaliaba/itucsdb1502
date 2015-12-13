@@ -61,7 +61,7 @@ def league_page():
         order = request.args['order'] if 'order' in request.args else 'asc'
  
         l, total = leagues.get_leagues(limit, offset)
-        c = countries.get_countries()
+        c, total_countries = countries.get_countries()
         sortby={'attr':'name', 'property':'asc'}
         return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c, total=total, 
                 limit=limit, page=page, sortby=sortby)
@@ -79,7 +79,7 @@ def league_page():
         leagues.add_league(lg)
         
         l, total = leagues.get_leagues(limit, offset)
-        c = countries.get_countries()
+        c, total_countries = countries.get_countries()
         sortby={'attr':'name', 'property':'asc'}
         return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c, total=total, 
                                 limit=limit, page=page, sortby=sortby)
@@ -137,7 +137,7 @@ def league_from_id(lid):
         leagues.update_league(lid, lg)
         
         l, total = leagues.get_leagues(limit, offset)
-        c = countries.get_countries()
+        c, total_countries = countries.get_countries()
         sortby={'attr':'name', 'property':'asc'}
         return render_template('leagues.html', leaguetable=league.leaguetable, leagues=l, countries=c, total=total, 
                                 limit=limit, page=page, sortby=sortby)
@@ -160,7 +160,7 @@ def search_league(key):
     offset = page*limit
 
     result,total = leagues.get_leagues_search_by('name', key,  limit, offset)
-    c = countries.get_countries()
+    c, total_countries = countries.get_countries()
     sortby={'attr':'name', 'property':'asc'}
     return render_template('leagues.html', leaguetable=league.leaguetable, leagues=result, countries=c, total=total, 
                             limit=limit, page=page, sortby=sortby)
