@@ -125,5 +125,6 @@ class Teams:
         for t in teams:
             td = dict(zip(teamtable, t))
             team = Team(td['name'], td['coach_id'], td['coach_name'], td['coach_surname'],td['id'])
+            teamlist.append(team)
         return teamlist, total
 

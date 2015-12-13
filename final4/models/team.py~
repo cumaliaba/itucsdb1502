@@ -58,7 +58,7 @@ class Teams:
         t = self.cur.fetchone()
         if t:
             td = dict(zip(teamtable, t[:len(teamtable)]))
-            team = Team(td['name'], td['coach_id'], td['coach_name'], td['id'])
+            team = Team(td['name'], td['coach_id'], td['coach_name'], td['coach_surname'], td['id'])
             return team
         else:
             return None
@@ -78,7 +78,7 @@ class Teams:
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'], td['coach_id'], td['coach_name'],td['id'])
+            team = Team(td['name'], td['coach_id'], td['coach_name'], td['coach_surname'],td['id'])
             teamlist.append(team)
         return teamlist, total
 
@@ -101,7 +101,7 @@ class Teams:
         teamlist = []
         for t in teams:
             td = dict(zip(teamtable, t))
-            team = Team(td['name'],  td['coach_id'], td['coach_name'],td['id'])
+            team = Team(td['name'],  td['coach_id'], td['coach_name'], td['coach_surname'],td['id'])
             teamlist.append(team)
         return teamlist, total
 
@@ -125,6 +125,5 @@ class Teams:
         for t in teams:
             td = dict(zip(teamtable, t))
             team = Team(td['name'], td['coach_id'], td['coach_name'], td['coach_surname'],td['id'])
-            teamlist.append(team)
         return teamlist, total
 
