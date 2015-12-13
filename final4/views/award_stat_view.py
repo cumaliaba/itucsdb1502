@@ -10,10 +10,42 @@ from final4.models import season
 
 from flask import render_template
 from flask import request
+from flask import session
 
 # award views
-@app.route('/award_stats', methods=['DEL','GET', 'POST'])
+
+@app.route('/award_stats', methods=['GET'])
+def award_stats_home():
+    ''' This view page list all award_stats in award_stats table.
+        This page doesn't allow editing.
+    '''
+    conn, cur = getDb()
+    award_stats = award_stat.AwardStats(conn, cur)
+    
+    # limit, page and order args
+    # required for each table page
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    offset = page*limit
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
+   
+    # check search value
+    if 'award_name' in request.args:
+        search_name = request.args['award_name']
+        award_stat_list, total = award_stats.get_award_stats_search_by('name', search_name, limit=limit, offset=offset)
+    else:
+        award_stat_list, total = award_stats.get_award_stats(limit=limit, offset=offset)
+    sortby={'attr':'name', 'property':'asc'}
+    return render_template('award_stats_home.html', award_stattable=award_stat.award_stattable, 
+			award_stats=award_stat_list, 
+			total=total, limit=limit, page=page, sortby=sortby)
+
+@app.route('/award_stats/table', methods=['DEL','GET', 'POST'])
 def award_stat_page():
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)    
+    
     conn, cur = getDb()
     award_stats = award_stat.AwardStats(conn, cur)
     awards = award.Awards(conn, cur)
@@ -32,7 +64,6 @@ def award_stat_page():
         order = request.args['order'] if 'order' in request.args else 'asc'
  
         award_stat_list, total = award_stats.get_award_stats(limit, offset)
-        print(award_stat_list[0].getAttrs())
         award_list, ta = awards.get_awards(limit, offset)
         player_list,tp = players.get_players(100,0) # get list object
         season_list = seasons.get_seasons() # get list object
@@ -87,6 +118,9 @@ def award_stat_page():
 
 @app.route('/award_stats/g/<award_stat_id>', methods=['GET','POST'])
 def award_stat_from_id(award_stat_id):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    
     conn, cur = getDb()
     award_stats = award_stat.AwardStats(conn, cur)
     awards = award.Awards(conn, cur)
@@ -129,6 +163,9 @@ def award_stat_from_id(award_stat_id):
 
 @app.route('/award_stats/s/<key>', methods=['GET','POST'])
 def search_award_stat(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+
     conn, cur = getDb()
     award_stats = award_stat.AwardStats(conn, cur)
     awards = award.Awards(conn, cur)
@@ -143,7 +180,7 @@ def search_award_stat(key):
     
     offset = page*limit
     
-    award_stat_list, total = award_stats.get_award_stats(limit, offset)
+    award_stat_list, total = award_stats.get_award_stats_search_by('name', key, limit, offset)
     award_list, ta = awards.get_awards(limit, offset)
     player_list,tp = players.get_players(100,0) # get list object
     season_list = seasons.get_seasons() # get list object

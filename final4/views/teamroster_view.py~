@@ -18,7 +18,6 @@ def teamroster_page():
     teams = team.Teams(conn, cur)
     print('TEAMROSTERS PAGE')
     if request.method == 'GET':
-        # handle GET request
         print ('GET REQUEST', request.args)
         limit = int(request.args['limit']) if 'limit' in request.args else 10
         page = int(request.args['page']) if 'page' in request.args else 0
@@ -28,7 +27,7 @@ def teamroster_page():
         
  
         teamroster_list, total = teamrosters.get_teamrosters(limit, offset)
-        player_list = players.get_players(100,0)
+        player_list, pp = players.get_players(100,0)
         team_list,tp = teams.get_teams(100,0)
         
         return render_template('teamrosters.html', teamrostertable=teamroster.teamrostertable, 
@@ -41,7 +40,7 @@ def teamroster_page():
         limit = int(request.form['limit']) if 'limit' in request.form else 10
         page = int(request.form['page']) if 'page' in request.form else 0
         offset = page*limit
-        
+        print(player_id,team_id)
         teamroster_obj = teamroster.Teamroster(player_id, team_id)
         teamrosters.add_teamroster(teamroster_obj)
         

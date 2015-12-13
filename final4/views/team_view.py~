@@ -26,7 +26,7 @@ def team_page():
         order = request.args['order'] if 'order' in request.args else 'asc'
 
         t, total_teams = teams.get_teams()
-        c = coaches.get_coaches()
+        c, total_coaches = coaches.get_coaches()
 
         sortby={'attr':'name', 'property':'asc'}
 
@@ -52,7 +52,7 @@ def team_page():
             team_img.save(app.config['APP_FOLDER']+save_path)
     
         t, total_teams = teams.get_teams()
-        c = coaches.get_coaches()
+        c,total_coaches = coaches.get_coaches()
 
         sortby={'attr':'name', 'property':'asc'}
 
@@ -126,7 +126,7 @@ def search_team(key):
     coaches = coach.Coaches(conn, cur)
 
     t, total_teams = teams.get_teams_search_by('name', key)
-    c = coaches.get_coaches()
+    c, total_coaches = coaches.get_coaches()
     
     limit = int(request.args['limit']) if 'limit' in request.args else 10
     page = int(request.args['page']) if 'page' in request.args else 0
