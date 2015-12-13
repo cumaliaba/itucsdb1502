@@ -5,6 +5,9 @@
 {%block script%}
     <script>
         $(document).ready(function(){
+            //initialize tooltip
+            $('[data-toggle="tooltip"]').tooltip();
+            
             $('#delete_selectedBtn').click(function(){
                 var ids=[];
                 $('#table input:checked').each(function(){
@@ -100,6 +103,11 @@
                 });
             });
 
+            $('#cancel_updateBtn').click(function(){
+                $('#coach_item_update').addClass('hidden');
+                //$('#cancel_updateBtn').addClass('hidden');
+            });
+
             $('#searchBox').change(function(){
                 var key=$('#searchBox').val();
 
@@ -108,7 +116,147 @@
                 window.location.replace(search_url); 
             });
 
+            /*
+             Add click listener to pagination
+             */
+            $('.pagination li a').click(function(){
+                var that = $(this).parent(); // li
+                var active = that.parent().find('li.active'); // active li element
+                active.removeClass('active'); // deactivete element
+                var num = parseInt(active.text()) - 1;
+                console.log('old-active:'+active.text());
+                // show pages between start end end
+                var start = 0; // ilk ayarlar deneme
+                var end = $('#pagination').attr('data-end')-1; // ilk ayarlar
+                var total = 5; // total pages
+                var selected_page = 0;
+
+                if ($(this).attr('name')=='prev') {
+                    console.log('prev button');
+                    // previous page button
+                    if (num==start) {
+                        // first page; no previous page
+                        active.addClass('active');
+                        return;
+                    }
+                    
+                    if ((num-1) == start) {
+                        console.log('num-1==start'+(num-1));
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    
+                    num = num - 1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+
+                    if (start!=end) {
+                        that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                    }
+                    selected_page=num; 
+
+                } else if ($(this).attr('name')=='next') {
+                    // next page button
+                    console.log('next button');
+                    if (num==end) {
+                        active.addClass('active');
+                        return;
+                    } 
+                    
+                    if ((num+1) == end) {
+                        console.log('num+1==start'+(num+1));
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+
+                    }
+
+                    num = num+1;
+                    
+                    that.parent().find('li a[name="' + num + '"]').parent().addClass('active');
+                    if (start!=end) {
+                        that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                    }
+                    selected_page=num; 
+                }
+                else {
+                    that.addClass('active');
+                    console.log($(this).text());
+                    console.log(num);
+                    
+                    var num2 = parseInt($(this).attr('name'));
+                    selected_page=num2; 
+                    
+                    if (num2 > start) {
+                        console.log('num>start'+ num2);
+                        that.parent().find('li a[name="prev"]').parent().removeClass('disabled');
+                    } 
+                    else if (num2 == start) {
+                        console.log('num==start'+ num2);
+                        that.parent().find('li a[name="prev"]').parent().addClass('disabled');
+                    }
+                    if (num2 < end) {
+                        console.log('num<end'+ num2);
+                        that.parent().find('li a[name="next"]').parent().removeClass('disabled');
+                    }
+                    else if (num2==end) {
+                        console.log('num==end'+ num2);
+                        that.parent().find('li a[name="next"]').parent().addClass('disabled');
+                    }
+                    
+                }
+
+                console.log('selected:'+selected_page);
+                var limit = $('#result_limit').attr('data-limit');
+                if (!limit) limit = 10;
+                if (window.location.pathname.startsWith('/coaches/g/')) {
+                    window.location.replace(window.location.origin + '/coaches/table?' + 'limit='+limit+'&page='+selected_page);
+                } else {
+                    window.location.search = 'limit='+limit+'&page='+selected_page;
+                }
+            });
+            
+            /*
+             Add listener to result limit selector
+             */
+            var limit=10;
+            $('#result_limit').change(function(){
+                console.log($(this).val());
+                limit = $(this).val();
+                if (window.location.pathname.startsWith('/coaches/g/')) {
+                    window.location.replace(window.location.origin + '/coaches/table?' + 'limit='+limit);
+                } else {
+                    window.location.search = 'limit='+limit;
+                }
+            });
+            
+            /*
+             sort by selected table header settings
+             */
+            $('.table-sort-header').click(function(){
+                console.log($(this).attr('name'));
+                console.log($(this).attr('data-sort-prop'));
+                if (!$(this).attr('data-sort-prop')){
+                    // if data-sort-prop not defined
+                    $(this).attr('data-sort-prop', 'asc');
+                    $(this).find('i').removeClass('fa fa-sort-desc').addClass('fa fa-sort-asc')
+                } else if ($(this).attr('data-sort-prop') == 'asc') {
+                    $(this).attr('data-sort-prop', 'desc');
+                    $(this).find('i').removeClass('fa fa-sort-asc').addClass('fa fa-sort-desc')
+                    console.log('desc');
+                } else if ($(this).attr('data-sort-prop') == 'desc') {
+                    $(this).attr('data-sort-prop', 'asc');
+                    $(this).find('i').removeClass('fa fa-sort-desc').addClass('fa fa-sort-asc')
+                    console.log('asc');
+                }             
+            });
+
         });
+
+        /*
+         prevent click event for disabled elements
+         */
+        $(document).on("click", ".disabled", function(e){
+            e.preventDefault();
+        });
+
     </script>
 {%endblock%}
 

@@ -111,22 +111,26 @@ def admin():
 
         if login_success(username, password):
             error = 'Logged in!'
-            cur.execute("SELECT role, lastlogin FROM users WHERE username='%s';"%username)
+            query = "SELECT role, lastlogin FROM users WHERE username=%s"
+            cur.execute(query, (username,))
             role,lastlogin = cur.fetchone()
             g.role = role
             g.lastlogin = lastlogin
             session['username'] = request.form['username']
             
             now = getCurrTimeStr()
-            cur.execute("UPDATE users SET lastlogin='%s' WHERE username='%s'"%(now, username))
-            cur.execute("UPDATE users SET online=TRUE WHERE username='%s'" % username)
+            query = "UPDATE users SET lastlogin=%s WHERE username=%s"
+            cur.execute(query, (now, username))
+            query = "UPDATE users SET online=TRUE WHERE username=%s" 
+            cur.execute(query, (username,))
             conn.commit()
         else:
             error = 'Invalid username or password!'
 
     if 'username' in session:
         username = session['username']
-        cur.execute("SELECT role, lastlogin FROM users WHERE username='%s';"%username)
+        query = "SELECT role, lastlogin FROM users WHERE username=%s"
+        cur.execute(query, (username,))
         role,lastlogin = cur.fetchone()
         g.role = role
         g.lastlogin = lastlogin
@@ -163,13 +167,13 @@ def signup():
             roles=None
             return render_template('adminpanel.html', error=error, roles=roles)
 
-
 @app.route('/logout')
 def logout():
     conn, cur = getDb()
     if 'username' in session:
         username = session['username']
-        cur.execute("UPDATE users SET online=FALSE WHERE username='%s'" % username)
+        query = "UPDATE users SET online=FALSE WHERE username=%s"
+        cur.execute(query, (username,))
         conn.commit()
     g.role = 'guest'
     session.pop('username', None)
