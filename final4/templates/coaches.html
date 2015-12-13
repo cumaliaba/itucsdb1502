@@ -1,6 +1,6 @@
-{%extends "table_template.html"%}
+{%extends "admin_layout.html"%}
 
-{%block title%}Coaches{%endblock%}
+{%block title%}Coaches Edit Page{%endblock%}
 
 {%block script%}
     <script>
@@ -16,7 +16,7 @@
                 console.log(ids);
                 
                 $.ajax({
-                    url: '/coaches',
+                    url: '/coaches/table',
                     data: {'ids': ids,
                     },
                     type: 'DEL',
@@ -46,7 +46,7 @@
                 console.log("deleteItem");
                 console.log(this.name);
                 $.ajax({
-                    url: '/coaches',
+                    url: '/coaches/table',
                     data: {'id': this.name,
                     },
                     type: 'DEL',
@@ -85,6 +85,11 @@
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
                             $('#update_item_div').removeClass('hidden');
+                            
+                            // scroll page to update element
+                            $('html, body').animate({
+                                        scrollTop: $("#update_item_div").offset().top
+                                                }, 1000);
                                                         
                             coach=data['coach'];
                             $('#update_item_div input[name=name]').val(coach['name']);
@@ -260,100 +265,178 @@
     </script>
 {%endblock%}
 
-{%block search_reset_link%}
-<a href="{{url_for('coach_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
-{%endblock%}
+{%block content%}
+    {%if error%}<p>{{error}}</p>{%endif%}
+        <div class="col-md-12" style="padding-bottom:15px;">
+            <div class="row" style="margin-bottom:15px;">
+                <div class="col-md-6">
+                    <div id="search">
+                        <div class="col-md-6">
+                            <input id="searchBox" class="form-control" type="text" name="search" placeholder="Enter search key">
+                        </div>
+                        <button id="searchBtn" class="btn btn-dark"><i class="fa fa-search fa-md"></i> Search</button>
+                        <a href="{{url_for('league_page')}}"><button class="btn btn-dark"><i class="fa fa-times fa-md"></i> Reset filter</button></a>
+                    </div>
+                </div>
+            </div>
 
-{%block add_item_panel_heading%}Add Coach{%endblock%}
+            <div class="col-md-6">
 
-{%block add_item_form%}
-            <form action="{{url_for('coach_page')}}" method="post" enctype="multipart/form-data">
-            <table id="add_item_table">
-                    {%for var in coachtable[1:] %}
-                    <tr>
-                    <td>
-                        {%if var=='country_id'%}
-                        {%elif var=='country'%}
-                        <select id="country" name="{{var}}" class="form-control">
-                                {%for c in countries%}
-                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                <div class="panel panel-success">
+                    <div class="panel-heading">Add League</div>
+                    <div class="panel-body">
+                        <div id="league_item_input" class="league_item_input">
+                            <form action="{{url_for('coach_page')}}" method="post" enctype="multipart/form-data">
+                            <table id="add_item_table">
+                                    {%for var in coachtable[1:] %}
+                                    <tr>
+                                    <td>
+                                        {%if var=='country_id'%}
+                                        {%elif var=='country'%}
+                                        <select id="country" name="{{var}}" class="form-control">
+                                                {%for c in countries%}
+                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                                {%endfor%}
+                                            </select>
+                                        {%else%}
+                                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control">
+                                        {%endif%}
+                                    </td> 
+                                    </tr>
+                                    {%endfor%}
+                                <tr>
+                                    <td>Select image file<input type="file" name="file"></td>
+                                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i> Add</button></td>
+                                </tr>
+                            </table>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Show coaches table -->
+            <div class="col-md-8">
+            {%if total==0%}
+            <p id="no_result"><span class="label label-danger">No result found for selected criterias</span></p>
+            {%else%}
+
+                <!-- League table panel -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">League Table</div>
+                    <div class="panel-body">
+                                <form class="form-inline">
+                                    <div class="form-group">
+                                        Show
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" id="result_limit" data-limit={{limit}}>
+                                            {% for i in [10,25,50,75,100] %}
+                                            <option {%if limit==i%}selected="selected"{%endif%} value={{i}}>{{i}}</option>
+                                            {%endfor%}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        results for each page.
+                                    </div>
+                                </form>
+                        <span class="label label-success">
+                            <span class="badge" style="color:#5CB85C; background-color:white">{{total}}</span> result found.
+                        </span>
+ 
+
+                        <table id="table" class="table table-hover">
+                            <tr>
+                                <th></th>
+                                <th>image</th>
+                                {%for var in coachtable[1:]%}
+                                    {%if var=='country_id'%}
+                                    {%else%}
+                                    <th>{{var}}</th>
+                                    {%endif%}
                                 {%endfor%}
-                            </select>
-                        {%else%}
-                        <input type="text" name="{{var}}" placeholder="{{var}}" class="form-control">
+                            </tr>
+                            {%for c in coaches%}
+                            <tr name="{{c._id}}">
+                                <td><input type="checkbox" name="{{c._id}}" ></td>
+                                <td><img src="{{c.img_path()}}" width="50px"></td>
+                                <td>{{c.name}}</td>
+                                <td>{{c.surname}}</td>
+                                <td>{{c.country}}</td>
+                                <td><button name="{{c._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
+                                    <button name="{{c._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
+                                    <button name="{{c._id}}" id="{{c._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
+                            </tr>
+                            {%endfor%}
+                        </table>
                         {%endif%}
-                    </td> 
-                    </tr>
-                    {%endfor%}
-                <tr>
-                    <td>Select image file<input type="file" name="file"></td>
-                    <td><button type="submit" name="Add" id="add_itemBtn" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Add"><i class="fa fa-plus fa-md"></i> Add</button></td>
-                </tr>
-            </table>
-            </form>
+
+                        <nav>
+                            <ul class="pagination pagination-sm" id="pagination" data-end="{{((total/limit)+0.5)|round|int}}"name="aaa">
+                            <li {%if page==0 %}class="disabled"{%endif%}>
+                                <a aria-label="Previous" name="prev">
+                                <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {%for i in range((total/limit)|round(0,'ceil')|int)%}
+                                {%if i==page %}
+                                <li class=active><a name="{{i}}">{{i+1}}</a></li>
+                                {%else%}
+                                <li><a name="{{i}}">{{i+1}}</a></li>
+                                {%endif%}
+                            {%endfor%}
+                            <li {%if page==(((total/limit))|round(0,'ceil')|int)-1 %}class="disabled"{%endif%}>
+                                <a aria-label="Next" name="next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                        </nav>
+
+                        <!-- Update item form. 
+                            * Primarily hidden. 
+                            * This form will be visible when edit button clicked 
+                        -->
+                        <div id="update_item_div" class="hidden">
+                            <form id="update_form" action="{{url_for('coach_page')}}" method="POST" enctype="multipart/form-data">
+                            <table id="update_item_table">
+                                    {%for var in coachtable[1:] %}
+                                <tr id="update_item_table_tr">
+                                    <td>
+                                        {% if var=='country_id'%}
+                                        {% elif var=='country'%}
+                                        <select id="country" name="{{var}}" class="form-control">
+                                                {%for c in countries%}
+                                                <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
+                                                {%endfor%}
+                                            </select>
+                                        {%else%}
+                                        <input type="text" class="form-control" name="{{var}}" placeholder="{{var}}">
+                                        {%endif%}
+                                    </td> 
+                                </tr>
+                                    {%endfor%}
+                                <tr>
+                                    <td>Select a file<input type="file" name="file"></td>
+                                </tr>
+                                <tr>
+                                        <td><input type="text" name="id" class="hidden"></td>
+                                        <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">
+                                        <button type="button" id="cancel_updateBtn" class="btn btn-danger cancel_updateBtn"><i class="fa fa-times fa-md"></i> Cancel</button></td>
+                                </tr>
+                            </table>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {%if total>=1 %} 
+                    <button type="button" id="delete_selectedBtn" class="btn btn-danger">Delete Selections</button>
+                {%endif%}
+            </div>
+        </div>
 
 
-{%endblock%}
- 
-{%block item_table_panel_heading%}Coach Table{%endblock%}
-
-{%block item_table_panel_table%}
-<table id="table" class="table table-hover">
-    <tr>
-        <th></th>
-        <th>image</th>
-        {%for var in coachtable[1:]%}
-            {%if var=='country_id'%}
-            {%else%}
-            <th>{{var}}</th>
-            {%endif%}
-        {%endfor%}
-    </tr>
-    {%for c in coaches%}
-    <tr name="{{c._id}}">
-        <td><input type="checkbox" name="{{c._id}}" ></td>
-        <td><img src="{{c.img_path()}}" width="50px"></td>
-        <td>{{c.name}}</td>
-        <td>{{c.surname}}</td>
-        <td>{{c.country}}</td>
-        <td><button name="{{c._id}}" class="btn btn-danger delete_itemBtn" data-toggle="tooltip" title="Delete"><i class="fa fa-trash fa-md"></i></button>
-            <button name="{{c._id}}" class="btn btn-warning update_itemBtn" data-toggle="tooltip" title="Edit"><i class="fa fa-pencil fa-md"></i></button>
-            <button name="{{c._id}}" id="{{c._id}}cancel_updateBtn" class="btn btn-info hidden cancel_updateBtn"><i class="fa fa-times fa-md"></i></button></td>
-    </tr>
-    {%endfor%}
-</table>
-
-{%endblock%}
-
-{%block update_item_form%}
-<form id="update_form" action="{{url_for('coach_page')}}" method="POST" enctype="multipart/form-data">
-<table id="update_item_table">
-        {%for var in coachtable[1:] %}
-    <tr id="update_item_table_tr">
-        <td>
-            {% if var=='country_id'%}
-            {% elif var=='country'%}
-            <select id="country" name="{{var}}" class="form-control">
-                    {%for c in countries%}
-                    <option value="{{c._id}}" name="{{c.name}}">{{c.name}}</option>
-                    {%endfor%}
-                </select>
-            {%else%}
-            <input type="text" class="form-control" name="{{var}}" placeholder="{{var}}">
-            {%endif%}
-        </td> 
-    </tr>
-        {%endfor%}
-    <tr>
-        <td>Select a file<input type="file" name="file"></td>
-    </tr>
-    <tr>
-            <td><input type="text" name="id" class="hidden"></td>
-            <td><input type="submit" class="btn btn-info" name="Update" id="update" value="Update">
-            <button type="button" id="cancel_updateBtn" class="btn btn-danger cancel_updateBtn"><i class="fa fa-times fa-md"></i> Cancel</button></td>
-    </tr>
-</table>
-</form>
- 
 {%endblock%}
 

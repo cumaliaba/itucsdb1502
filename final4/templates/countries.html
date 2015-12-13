@@ -84,7 +84,13 @@
                         var data=JSON.parse(response);
                         if (data.status == 'OK') {
                             $('#country_item_update').removeClass('hidden');
-                                                        
+                            
+                            // scroll page to update element
+                            $('html, body').animate({
+                                        scrollTop: $("#country_item_update").offset().top
+                                                }, 1000);
+                           
+
                             country=data['country'];
                             $('#country_item_update input[name=name]').val(country['name']);
                             $('#country_item_update input[name=code]').val(country['code']);
