@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# itucsdb documentation build configuration file, created by
+# Final4 documentation build configuration file, created by
 # sphinx-quickstart on Mon Aug 18 15:56:05 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -44,8 +44,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'itucsdb'
-copyright = '2015, Team Name'
+project = 'Final4'
+copyright = '2015, itucsdb1502'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -177,7 +177,7 @@ html_use_index = False
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'itucsdbdoc'
+htmlhelp_basename = 'final4doc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -197,7 +197,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'itucsdb.tex', 'itucsdb Documentation',
+  ('index', 'final4.tex', 'Final4 Documentation',
    'Team Name', 'manual'),
 ]
 
@@ -227,7 +227,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'itucsdb', 'itucsdb Documentation',
+    ('index', 'final4', 'Final4 Documentation',
      ['Team Name'], 1)
 ]
 
@@ -241,8 +241,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'itucsdb', 'itucsdb Documentation',
-   'Team Name', 'itucsdb', 'One line description of project.',
+  ('index', 'final4', 'Final4 Documentation',
+   'Team Name', 'itucsdb1502', 'Basketball database.',
    'Miscellaneous'),
 ]
 
