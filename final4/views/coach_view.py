@@ -14,6 +14,11 @@ from flask import session
 # coach views
 @app.route('/coaches', methods=['GET'])
 def coaches_home():
+    ''' Routing function for coaches-home page. 
+
+    This view page lists all coaches in coaches table.
+    This page doesn't allow editing.
+    '''
     conn, cur = getDb()
     coaches = coach.Coaches(conn, cur)
     countries = country.Countries(conn, cur)
@@ -46,6 +51,12 @@ def coaches_home():
 
 @app.route('/coaches/table', methods=['DEL','GET', 'POST'])
 def coach_page():
+    '''Routing function for coach-table page. 
+
+    This page has session control. see *session controlled pages*
+
+    This page lists coaches and allows adding, deleting, and updating on them.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     
@@ -129,6 +140,15 @@ def coach_page():
 
 @app.route('/coaches/g/<lid>', methods=['GET','POST'])
 def coach_from_id(lid):
+    '''Routing function for getting coach from its id.
+    
+    *GET request* returns JSON object.
+
+    *POST request* updates coach which has id equal to the *lid* with the 
+    values recieved from the request.form. After all it renders coaches.html
+
+    :param lid: id of the coach, int
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     
@@ -183,6 +203,10 @@ def coach_from_id(lid):
 
 @app.route('/coaches/s/<key>', methods=['GET','POST'])
 def search_coach(key):
+    '''Routing function for search coach by its name.
+
+    *GET request* renders the countries.html with coaches comes from the search result.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     

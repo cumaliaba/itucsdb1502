@@ -23,6 +23,7 @@ from psycopg2 import IntegrityError
 
 @app.route('/signin')
 def signin():
+    '''Routing function for signin page.'''
     conn, cur = getDb()
     error = None
     roles = None
@@ -57,6 +58,7 @@ def signin():
 
 @app.route('/users')
 def users():
+    '''Routing function for users page.'''
     conn, cur = getDb()
     usr = user.Users(conn, cur)
     users = usr.get_users()
@@ -67,6 +69,11 @@ def users():
 
 @app.route('/profile/<username>')
 def profile(username):
+    '''Routing function for user profile page.
+    Renders *templates/profile.html* for user which has given username.
+
+    :param username: username string
+    '''
     conn, cur = getDb()
     usr = user.Users(conn, cur)
     puser = usr.get_user(username)
@@ -74,6 +81,13 @@ def profile(username):
 
 @app.route('/updateUser', methods=['POST'])
 def updateUser():
+    '''Routing function for updating user. This url allows only POST request.
+    
+    Updates the user which attributes recieved from *request.form* and returns the JSON object.
+    
+    :returns: status and error
+    :rtype: JSON object
+    '''
     if 'username' not in session:
         return abort(403)
     
@@ -102,7 +116,16 @@ def updateUser():
 
 @app.route('/admin', methods=['POST', 'GET'])
 def admin():
+    '''Routing function for admin page. 
+    This page allows *POST* and *GET* requests.
     
+    *GET request:* If the user signed in adminpanel page is rendered. 
+    Otherwise signin page is rendered.
+
+    *POST request:* Checks the request.form values for registered 
+    users. If the values are valid it adds user to the session and 
+    renders the adminpanel. Otherwise error message is flashed.
+    '''
     conn, cur = getDb()
     error = None
     roles = None
@@ -144,6 +167,12 @@ def admin():
 
 @app.route('/signup', methods=['POST'])
 def signup():
+    '''Routing function for signup page. 
+    
+    It allows only *POST* request.
+    If the valid values are gotten from the request.form then new user is created and inserted 
+    to the db.
+    '''
     if request.method == 'POST':
         try:
             conn, cur = getDb()
@@ -174,6 +203,12 @@ def signup():
 
 @app.route('/logout')
 def logout():
+    '''Routing function for logout page.
+    
+    When this page called if there is a user logged in, then the user removed from the session.
+    
+    After all it redirects to the home page.
+    '''
     conn, cur = getDb()
     if 'username' in session:
         username = session['username']

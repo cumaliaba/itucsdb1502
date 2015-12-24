@@ -14,8 +14,10 @@ from flask import session
 
 @app.route('/leagues', methods=['GET'])
 def leagues_home():
-    ''' This view page list all leagues in leagues table.
-        This page doesn't allow editing.
+    ''' Routing function for leagues-home page. 
+
+    This view page lists all leagues in leagues table.
+    This page doesn't allow editing.
     '''
     conn, cur = getDb()
     leagues = league.Leagues(conn, cur)
@@ -42,6 +44,12 @@ def leagues_home():
 
 @app.route('/leagues/table', methods=['DEL','GET', 'POST'])
 def league_page():
+    '''Routing function for league-table page. 
+
+    This page has session control. see *session controlled pages*
+
+    This page lists leagues and allows adding, deleting, and updating on them.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
 
@@ -107,6 +115,15 @@ def league_page():
 
 @app.route('/leagues/g/<lid>', methods=['GET','POST'])
 def league_from_id(lid):
+    '''Routing function for getting league from its id.
+    
+    *GET request* returns JSON object.
+
+    *POST request* updates league which has id equal to the *lid* with the 
+    values recieved from the request.form. After all it renders leagues.html
+
+    :param lid: id of the league, int
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     conn, cur = getDb()
@@ -145,6 +162,10 @@ def league_from_id(lid):
 
 @app.route('/leagues/s/<key>', methods=['GET','POST'])
 def search_league(key):
+    '''Routing function for search league by its name.
+
+    *GET request* renders the leagues.html with leagues comes from the search result.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     conn, cur = getDb()
@@ -167,6 +188,10 @@ def search_league(key):
 
 @app.route('/leagues/league/<league_id>')
 def view_league(league_id):
+    '''Routing function for league info page.
+    
+    It renders the league_page.html with related statistical information.
+    '''
     conn, cur = getDb()
 
     leagues = league.Leagues(conn, cur)

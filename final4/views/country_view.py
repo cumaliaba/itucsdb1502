@@ -15,6 +15,12 @@ from flask import session
 
 @app.route('/countries', methods=['GET'])
 def countries_home():
+    ''' Routing function for countries-home page. 
+    
+    This view page lists all countries in countries table.
+    This page doesn't allow editing.
+    '''
+
     conn, cur = getDb()
     countries = country.Countries(conn, cur)
     print('countries PAGE for normal user')
@@ -40,6 +46,12 @@ def countries_home():
 
 @app.route('/countries/table', methods=['DEL','GET', 'POST'])
 def country_page():
+    '''Routing function for country-table page. 
+
+    This page has session control. see *session controlled pages*
+
+    This page lists countries and allows adding, deleting, and updating on them.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     
@@ -101,6 +113,15 @@ def country_page():
 
 @app.route('/countries/g/<cid>', methods=['GET','POST'])
 def country_from_id(cid):
+    '''Routing function for getting country from its id.
+    
+    *GET request* returns JSON object.
+
+    *POST request* updates country which has id equal to the *cid* with the 
+    values recieved from the request.form. After all it renders countries.html
+
+    :param cid: id of the country, int
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     
@@ -136,6 +157,10 @@ def country_from_id(cid):
 
 @app.route('/countries/s/<key>', methods=['GET','POST'])
 def search_country(key):
+    '''Routing function for search country by its name.
+
+    *GET request* renders the countries.html with leagues comes from the search result.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     
@@ -155,11 +180,12 @@ def search_country(key):
 
 @app.route('/countries/country/<country_name>')
 def view_country(country_name):
-    '''
-    country_arg (string): <country_name>
+    '''Routing function for country info page.
 
-    This view presents the general information and 
+    This view renders the country_page.html with the general information and 
     related table statistics for given country.
+
+    :param country_name: name of the country, string
     '''
     conn, cur = getDb()
     countries = country.Countries(conn, cur)
