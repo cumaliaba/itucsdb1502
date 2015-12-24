@@ -1,14 +1,18 @@
 Parts Implemented by OSMAN ÖZSOYLU
 ================================
+I implement player,team and teamroster class.
+
 PLAYER CLASS
 ------------
+Player class is a class which is using for holds player's attribute and serves this information to other classes and user. 
+
 DATABASE DESIGN
 ~~~~~~~~~~~~~~~
    .. figure:: PLAYER-ER.png
       :scale: 100 %
       :alt: map to buried treasure
 
-      ENTITY-RELATINSHIP DIAGRAM OF PLAYER CLASS
+      ENTITY-RELATIONSHIP DIAGRAM OF PLAYER CLASS
     
 This is the E-R diagram of player class. It takes country_id from countries table. Awardstat and teamroster table uses player_id it means that player_id is a foreign key of awardstat and teamroster table.There is one to many relationship with country class and player class.Countries can have a lot of player but every player has one country. Player class also have one to many relationship with teamroster class. Each player can have only one team but ın teams there are a lot of players. The last relationship with player class is with awardstat. Player class has one to many optional relationship with awardstat class. Player whether can have a lot of award or they have not a award.
 
@@ -27,49 +31,101 @@ CODE
         self.pp=pp
         self.country_id = country_id
         self.country = country
-This is definition of player class.Player class has primary key which is id and has one foreign key which is country_id comes from country class. Name,surname,pp(playing_position) is the other variables of player class. 
+    
+    def img_path(self, _id=None):
+        if _id==None and self._id==None:
+            return url_for('static',filename='.') + 'data/img/players/not_available.png'
+        if _id:
+            return url_for('static',filename='.') + 'data/img/players/' + str(_id) + '.png'
+        else:
+            return url_for('static',filename='.') +'data/img/players/' + str(self._id) + '.png'
+
+    def getAttrs(self):
+        return (dict(zip(playertable, (self._id, self.name, self.surname,self.age,self.pp,self.country_id, self.country))))
+        
+This is definition of player class.Player class has primary key which is id and has one foreign key which is country_id comes from country class. Name,surname,pp(playing_position) is the other variables of player class.
    .. code-block:: python
    
+        def add_player(self, player):
+        print("addplayer ", player)
         query = """INSERT INTO players (name, surname,age,pp, country_id) 
-                                    values (%s,%s,%s,%s,%s) RETURNING id"""
-This is player table add query. If player add command comes from the above sql query will executed. It add player with their name,surname,age,pp(playing_position) and their belonging country. country_id comes from countries table.  
+                                    values (%s,%s,%s,%s,%s) RETURNING id""" 
+
+        self.cur.execute(query, (player.name, player.surname,player.age,player.pp, player.country_id))
+        insert_id = self.cur.fetchone()[0]
+        self.conn.commit()
+        return insert_id
+This is player table add function. If player add command comes from user the above sql query will executed. It add player with their name,surname,age,pp(playing_position) and their belonging country. country_id comes from countries table.  
    .. code-block:: python
    
+          def delete_player(self, _id):
         query = """DELETE FROM players WHERE id=%s"""
-This is player table delete query. When deleting command comes from player id comes from and query delete player with that id. 
+        self.cur.execute(query, (_id,))
+        self.conn.commit()
+        query = """DELETE FROM players WHERE id=%s"""
+        
+This is player table delete function. When deleting command comes from user player id comes from and query delete player with that id. 
    .. code-block:: python
    
+          def update_player(self, _id, new):
+        print('update_player')
         query = """UPDATE players SET name=%s, surname=%s,age=%s,pp=%s,country_id=%s
                     WHERE id=%s"""
-This is player table update query. When updating command comes from updated values comes with and above sql command update player with that values.
+        self.cur.execute(query, (new.name, new.surname,new.age,new.pp, new.country_id, _id))
+        self.conn.commit()
+This is player class update function. When updating command comes from updated values comes with and above sql command update player with new values.
+
    .. code-block:: python
    
+          def get_player(self,_id):
         query = """SELECT players.id, players.name, players.surname,players.age,players.pp,countries.id, countries.name
                         FROM players,countries
                         WHERE players.id=%s AND countries.id=players.country_id
                         ORDER BY players.name
                         """
-This is player return sql command. It show player's name,surname,age,pp from players table and and country's id,name form countries table.
+        self.cur.execute(query, (_id,))
+        p = self.cur.fetchone()
+        if p:
+            pd = dict(zip(playertable, p[:len(playertable)]))
+            player = Player(pd['name'], pd['surname'],pd['age'],pd['pp'],pd['country_id'], pd['country'], pd['id'])
+            return player
+        else:
+            return None
+This is player return function and it is used to get player with its id. It show player's name,surname,age,pp from players table and and country's id,name form countries table. If there is no player function returns none value.
+
    .. code-block:: python
    
+         def get_players_by(self, attrib, search_key, limit=100, offset=0):
+        skey = str(search_key)
+        
         query = """SELECT count(players.id)
-                        FROM players,countries WHERE countries.id=players.country_id
-                          """
-This sql command returns the count value of player. It returns existing number player. Also this query join players and countries table with players.country_id and countries.id.
-   .. code-block:: python
-   
-         query = """SELECT players.id, players.name, players.surname,players.age,players.pp, players.country_id, countries.name
+                        FROM players,countries WHERE players.{attrib}=%s AND 
+                            countries.id=players.country_id""".format(attrib=attrib)
+        self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+        
+        query = """SELECT players.id, players.name, players.surname,players.age,players.pp, players.country_id, countries.name
                         FROM players,countries WHERE players.{attrib}=%s AND 
                             countries.id=players.country_id ORDER BY players.name 
                             LIMIT %s OFFSET %s""".format(attrib=attrib)
-This sql command for search. With above sql command players attribution returns and also country name which player belongs to return with that sql command.
+        self.cur.execute(query, (skey, limit, offset))
+        players = self.cur.fetchall()
+        print('players:', players)
+        playerlist = []
+        for p in players:
+            pd = dict(zip(playertable, p))
+            player = Player(pd['name'], pd['surname'],pd['age'],pd['pp'], pd['country_id'], pd['country'],pd['id'])
+            playerlist.append(player)
+        return playerlist, total
+
+This function for search. With above sql commands players count and player attribution returns.Also country name which player belongs to returns with that second sql command. Fınally, it returns finding playerlist and total value. Playerlist holds players and count value is used to hold player numbers. 
    .. code-block:: python
          
          from final4.config import app
          from final4.db_helper import getDb
          from final4.models import player
          from final4.models import country
-Player view page importing files.It import app,getDb and player as it should be and also import country because of player has country attribute and it take this value from country table.
+Player view page imports app,getDb and player as it should be and also import country because of player has country attribute and it take this value from country table.
 
    .. code-block:: python
           
@@ -186,7 +242,7 @@ DATABASE DESIGN
       :scale: 100 %
       :alt: map to buried treasure
 
-      ENTITY-RELATINSHIP DIAGRAM OF TEAM CLASS
+      ENTITY-RELATIONSHIP DIAGRAM OF TEAM CLASS
     
 This is the E-R diagram of team class. It takes coach_id from coaches. Schedule and teamroster table uses team_id it means that team_id is a foreign key of schedule and teamroster table.There is one to one relationship with coach class and player class.Coaches can have one team and a team can have at least one coach at that time. Team class also have one to many relationship with teamroster class. The last relationship with team class is with schedule. Team class has many to many optional relationship with schedule class. Beacuse of ın that schedule there will be so many teams, but there will some scedule zero team plays that schedule.
 
@@ -291,7 +347,7 @@ This is search function of team class. This class takes search_key and search th
          from final4.db_helper import getDb
          from final4.models import team
          from final4.models import coach
-Team view page importing files.It import app,getDb and team as it should be and also import coach because of player has coach attribute and it take this value from coach table.
+Team view page importing files.It import app,getDb and team as it should be and also import coach because of team has coach attribute and it take this value from coach table.
 
    .. code-block:: python
           
@@ -343,7 +399,7 @@ This function is getting team in teams table and coach from coaches table. It so
         return render_template('teams.html', teamtable=team.teamtable, teams=t, coaches=c, total=total_teams,
                 limit=limit, page=page)
 
-This function is adding team in teams table. It add team with their name and managing coach.Above code block is used for taking player values from html files and sends them to players table 
+This function is adding team in teams table. It adds team with their name and managing coach. It is also add team image to the teams with user choose their local files. After this function executed teams will added to the team tables.
   
    .. code-block:: python 
            
@@ -366,11 +422,11 @@ This function is adding team in teams table. It add team with their name and man
             teams.delete_team(_id)
         return json.dumps({'status':'OK', 'idlist':idlist})
   
-This function is deleting team. It deletes team from teams table with their id value. It sends id value of the will deleting team to delete sql command and so that deserving team will deleted from teams table.
+This function is deleting team function. It deletes team from teams table with their id value. It sends id value of the will deleting team to delete sql command and so that deserving team will deleted from teams table.
 
    .. code-block:: python
    
-   def search_team(key):
+      def search_team(key):
     conn, cur = getDb()
     teams = team.Teams(conn, cur)
     coaches = coach.Coaches(conn, cur)
@@ -403,7 +459,7 @@ DATABASE DESIGN
       :scale: 100 %
       :alt: map to buried treasure
 
-      ENTITY-RELATINSHIP DIAGRAM OF TEAM CLASS
+      ENTITY-RELATIONSHIP DIAGRAM OF TEAM CLASS
     
 This is the E-R diagram of teamroster class. It takes player_id from players and team_id from teams table.There is one to many obligatory relationship with teamroster class and player class. Every teamroster can have more than one player but in teamroster there will at least be one player.The other relationship with team class. It is same for player class. There are one to many obligatory relationship with teamroster class and team class.
 
