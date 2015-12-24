@@ -580,7 +580,7 @@ This function is deleting teamroster. It deletes teamroster from teamrosters tab
 
    .. code-block:: python
    
-     def search_teamroster(key):
+   def search_teamroster(key):
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     conn, cur = getDb()

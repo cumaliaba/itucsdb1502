@@ -132,7 +132,7 @@ def search_player(key):
     countries = country.Countries(conn, cur)
 
     p, total_players = players.get_players_search_by('name', key)
-    c = countries.get_countries()
+    c,total_countries = countries.get_countries()
     
     limit = int(request.args['limit']) if 'limit' in request.args else 10
     page = int(request.args['page']) if 'page' in request.args else 0
