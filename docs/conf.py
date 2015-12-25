@@ -229,7 +229,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'final4', 'Final4 Documentation',
-     ['Team Name'], 1)
+     ['itucsdb1502'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -243,7 +243,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'final4', 'Final4 Documentation',
-   'Team Name', 'itucsdb1502', 'Basketball database.',
+   'itucsdb1502', 'itucsdb1502', 'Basketball database.',
    'Miscellaneous'),
 ]
 
