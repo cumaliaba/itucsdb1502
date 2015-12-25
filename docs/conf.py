@@ -199,7 +199,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'final4.tex', 'Final4 Documentation',
-   'Team Name', 'manual'),
+   'itucsdb1502', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
