@@ -1,2 +1,661 @@
-Parts Implemented by Member Name
+Parts Implemented by OSMAN ÖZSOYLU
 ================================
+I implement player,team and teamroster class.
+
+PLAYER CLASS
+------------
+Player class is a class which is using for holds player's attribute and serves this information to other classes and user. 
+
+DATABASE DESIGN
+~~~~~~~~~~~~~~~
+   .. figure:: PLAYER-ER.png
+      :scale: 100 %
+      :alt: map to buried treasure
+
+      ENTITY-RELATIONSHIP DIAGRAM OF PLAYER CLASS
+    
+This is the E-R diagram of player class. It takes country_id from countries table. Awardstat and teamroster table uses player_id it means that player_id is a foreign key of awardstat and teamroster table.There is one to many relationship with country class and player class.Countries can have a lot of player but every player has one country. Player class also have one to many relationship with teamroster class. Each player can have only one team but ın teams there are a lot of players. The last relationship with player class is with awardstat. Player class has one to many optional relationship with awardstat class. Player whether can have a lot of award or they have not a award.
+
+
+CODE
+~~~~
+   .. code-block:: python
+
+      playertable = ['id', 'name', 'surname','age','pp','country_id', 'country']
+      class Player:
+    def __init__(self, name, surname,age,pp,country_id, country=None, _id=None):
+        self._id = _id
+        self.name = name
+        self.surname = surname
+        self.age=age
+        self.pp=pp
+        self.country_id = country_id
+        self.country = country
+    
+    def img_path(self, _id=None):
+        if _id==None and self._id==None:
+            return url_for('static',filename='.') + 'data/img/players/not_available.png'
+        if _id:
+            return url_for('static',filename='.') + 'data/img/players/' + str(_id) + '.png'
+        else:
+            return url_for('static',filename='.') +'data/img/players/' + str(self._id) + '.png'
+
+    def getAttrs(self):
+        return (dict(zip(playertable, (self._id, self.name, self.surname,self.age,self.pp,self.country_id, self.country))))
+        
+This is definition of player class.Player class has primary key which is id and has one foreign key which is country_id comes from country class. Name,surname,pp(playing_position) is the other variables of player class.
+   .. code-block:: python
+   
+        def add_player(self, player):
+        print("addplayer ", player)
+        query = """INSERT INTO players (name, surname,age,pp, country_id) 
+                                    values (%s,%s,%s,%s,%s) RETURNING id""" 
+
+        self.cur.execute(query, (player.name, player.surname,player.age,player.pp, player.country_id))
+        insert_id = self.cur.fetchone()[0]
+        self.conn.commit()
+        return insert_id
+This is player table add function. If player add command comes from user the above sql query will executed. It add player with their name,surname,age,pp(playing_position) and their belonging country. country_id comes from countries table.  
+   .. code-block:: python
+   
+          def delete_player(self, _id):
+        query = """DELETE FROM players WHERE id=%s"""
+        self.cur.execute(query, (_id,))
+        self.conn.commit()
+        query = """DELETE FROM players WHERE id=%s"""
+        
+This is player table delete function. When deleting command comes from user player id comes from and query delete player with that id. 
+   .. code-block:: python
+   
+          def update_player(self, _id, new):
+        print('update_player')
+        query = """UPDATE players SET name=%s, surname=%s,age=%s,pp=%s,country_id=%s
+                    WHERE id=%s"""
+        self.cur.execute(query, (new.name, new.surname,new.age,new.pp, new.country_id, _id))
+        self.conn.commit()
+This is player class update function. When updating command comes from updated values comes with and above sql command update player with new values.
+
+   .. code-block:: python
+   
+          def get_player(self,_id):
+        query = """SELECT players.id, players.name, players.surname,players.age,players.pp,countries.id, countries.name
+                        FROM players,countries
+                        WHERE players.id=%s AND countries.id=players.country_id
+                        ORDER BY players.name
+                        """
+        self.cur.execute(query, (_id,))
+        p = self.cur.fetchone()
+        if p:
+            pd = dict(zip(playertable, p[:len(playertable)]))
+            player = Player(pd['name'], pd['surname'],pd['age'],pd['pp'],pd['country_id'], pd['country'], pd['id'])
+            return player
+        else:
+            return None
+This is player return function and it is used to get player with its id. It show player's name,surname,age,pp from players table and and country's id,name form countries table. If there is no player function returns none value.
+
+   .. code-block:: python
+   
+         def get_players_by(self, attrib, search_key, limit=100, offset=0):
+        skey = str(search_key)
+        
+        query = """SELECT count(players.id)
+                        FROM players,countries WHERE players.{attrib}=%s AND 
+                            countries.id=players.country_id""".format(attrib=attrib)
+        self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+        
+        query = """SELECT players.id, players.name, players.surname,players.age,players.pp, players.country_id, countries.name
+                        FROM players,countries WHERE players.{attrib}=%s AND 
+                            countries.id=players.country_id ORDER BY players.name 
+                            LIMIT %s OFFSET %s""".format(attrib=attrib)
+        self.cur.execute(query, (skey, limit, offset))
+        players = self.cur.fetchall()
+        print('players:', players)
+        playerlist = []
+        for p in players:
+            pd = dict(zip(playertable, p))
+            player = Player(pd['name'], pd['surname'],pd['age'],pd['pp'], pd['country_id'], pd['country'],pd['id'])
+            playerlist.append(player)
+        return playerlist, total
+
+This function for search. With above sql commands players count and player attribution returns.Also country name which player belongs to returns with that second sql command. Fınally, it returns finding playerlist and total value. Playerlist holds players and count value is used to hold player numbers. 
+   .. code-block:: python
+         
+         from final4.config import app
+         from final4.db_helper import getDb
+         from final4.models import player
+         from final4.models import country
+Player view page imports app,getDb and player as it should be and also import country because of player has country attribute and it take this value from country table.
+
+   .. code-block:: python
+          
+        if request.method == 'GET':
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+        order = request.args['order'] if 'order' in request.args else 'asc'
+
+        p, total_players = players.get_players()
+        c,total_countries = countries.get_countries()
+
+        sortby={'attr':'name', 'property':'asc'}
+
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
+                limit=limit, page=page)
+                
+This code block is getting player in players table and country from countries table. It sort player with their name and with ascending order. This code block is used for getting player from table and sending them to html files.
+
+   .. code-block:: python
+          
+        elif request.method == 'POST':
+        print('ADD player')
+        name = request.form['name']
+        surname = request.form['surname']
+        age=request.form['age']
+        pp=request.form['pp']
+        country_id = request.form['country']
+        player_img = request.files['file']
+
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        order = request.form['sortby'] if 'sortby' in request.form else 'name'
+        order = request.form['order'] if 'order' in request.form else 'asc'
+
+        print(name, surname, player_img)
+        pl = player.Player(name, surname,age,pp,country_id)
+        insert_id = players.add_player(pl)
+        if player_img:
+            save_path = pl.img_path(insert_id)
+            player_img.save(app.config['APP_FOLDER']+save_path)
+    
+        p, total_players = players.get_players()
+        c,total_countries = countries.get_countries()
+
+        sortby={'attr':'name', 'property':'asc'}
+
+        return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
+                limit=limit, page=page)
+
+This method is adding player in players table. It add player with their attributes in right order(name,surname,age,pp,country_id,player_img).Above code block is used for taking player values from html files and sends them to players table 
+  
+   .. code-block:: python 
+           
+        elif request.method == 'DEL':
+        print ('DELETE REQUEST:players PAGE')
+        print (request.form)
+        idlist = request.form.getlist('ids[]')
+        print ('IDS: ', idlist)
+        if idlist == []:
+            try:
+                idlist = [request.form['id']]
+                print ('IDS: ', idlist)
+            except:
+                return json.dumps({'status':'OK', 'idlist':idlist})
+
+        print ('IDS: ', idlist)
+        print(json.dumps({'status':'OK', 'idlist':idlist}))
+        for _id in idlist:
+            print (_id)
+            players.delete_player(_id)
+        return json.dumps({'status':'OK', 'idlist':idlist})
+  
+This method is deleting player. It deletes player from players table with their id value. It sends id value of the deleting player to delete sql command and so that deserving player will deleted from players table.
+
+   .. code-block:: python
+   
+    def search_player(key):
+    conn, cur = getDb()
+    players = player.Players(conn, cur)
+    countries = country.Countries(conn, cur)
+
+    p, total_players = players.get_players_search_by('name', key)
+    c,total_countries = countries.get_countries()
+    
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    
+    offset = page*limit
+    print('page:',page,'limit',limit,'offset',offset)
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
+
+    sortby={'attr':'name', 'property':'asc'}
+
+    return render_template('players.html', playertable=player.playertable, players=p, countries=c, total=total_players,
+        limit=limit, page=page)
+        
+This method is searching player. It search player to players table and returns findings and send them to players.html to show which ones are finded.        
+         
+
+      
+
+TEAM CLASS
+------------
+
+DATABASE DESIGN
+~~~~~~~~~~~~~~~
+   .. figure:: TEAM-ER.png
+      :scale: 100 %
+      :alt: map to buried treasure
+
+      ENTITY-RELATIONSHIP DIAGRAM OF TEAM CLASS
+    
+This is the E-R diagram of team class. It takes coach_id from coaches. Schedule and teamroster table uses team_id it means that team_id is a foreign key of schedule and teamroster table.There is one to one relationship with coach class and player class.Coaches can have one team and a team can have at least one coach at that time. Team class also have one to many relationship with teamroster class. The last relationship with team class is with schedule. Team class has many to many optional relationship with schedule class. Beacuse of ın that schedule there will be so many teams, but there will some scedule zero team plays that schedule.
+
+
+CODE
+~~~~
+
+.. code-block:: python
+
+      teamtable = ['id', 'name','coach_id', 'coach_name','coach_surname']
+        
+        class Team:
+        def __init__(self, name,coach_id, coach_name=None,coach_surname=None, _id=None):
+        self._id = _id
+        self.name = name
+        self.coach_id = coach_id
+        self.coach_name = coach_name
+        self.coach_surname = coach_surname
+This is definition of team class.Team class has primary key which is id and has one foreign key which is coach_id comes from coach class. Nameis the other variable of team class. 
+   .. code-block:: python
+   
+        def add_team(self, team):
+        print("addteam ", team)
+        query = """INSERT INTO teams (name,coach_id) 
+                                    values (%s,%s) RETURNING id""" 
+
+        self.cur.execute(query, (team.name, team.coach_id))
+        insert_id = self.cur.fetchone()[0]
+        self.conn.commit()
+        return insert_id
+This is add team function. If team add command comes to the above sql query will executed. It add team with their name and its managing coach. coach_id comes from coaches table.
+  
+   .. code-block:: python
+   
+        def delete_team(self, _id):
+        query = """DELETE FROM teams WHERE id=%s"""
+        self.cur.execute(query, (_id,))
+        self.conn.commit()
+
+This is team table delete function. Team's id comes when deleting command executed and query delete team with that id.
+ 
+   .. code-block:: python
+   
+        def update_team(self, _id, new):
+        print('update_team')
+        query = """UPDATE teams SET name=%s, coach_id=%s
+                    WHERE id=%s"""
+        self.cur.execute(query, (new.name, new.coach_id, _id))
+        self.conn.commit()
+
+This is team class update function. New name and new coach's id comes to that function and it updates team with above sql command.
+
+   .. code-block:: python
+   
+        def get_team(self,_id):
+        query = """SELECT teams.id, teams.name, coaches.id, coaches.name,coaches.surname
+                        FROM teams,coaches
+                        WHERE teams.id=%s AND coaches.id=teams.coach_id
+                        ORDER BY teams.name
+                        """
+        self.cur.execute(query, (_id,))
+        t = self.cur.fetchone()
+        if t:
+            td = dict(zip(teamtable, t[:len(teamtable)]))
+            team = Team(td['name'], td['coach_id'], td['coach_name'], td['coach_surname'], td['id'])
+            return team
+        else:
+            return None
+
+                        """
+This is get_team function of team class.It used show team's name,coach name of that team from teams and coach table.
+
+   .. code-block:: python
+   
+        def get_teams_by(self, attrib, search_key, limit=100, offset=0):
+        skey = str(search_key)
+        
+        query = """SELECT count(teams.id)
+                        FROM teams,coaches WHERE teams.{attrib}=%s AND 
+                            coaches.id=teams.coach_id""".format(attrib=attrib)
+        self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+        
+        query = """SELECT teams.id, teams.name, teams.coach_id, coaches.name,coaches.surname
+                        FROM teams,coaches WHERE teams.{attrib}=%s AND 
+                            coaches.id=teams.coach_id ORDER BY teams.name 
+                            LIMIT %s OFFSET %s""".format(attrib=attrib)
+        self.cur.execute(query, (skey, limit, offset))
+        teams = self.cur.fetchall()
+        print('teams:', teams)
+        teamlist = []
+        for t in teams:
+            td = dict(zip(teamtable, t))
+            team = Team(td['name'],  td['coach_id'], td['coach_name'], td['coach_surname'],td['id'])
+            teamlist.append(team)
+        return teamlist, total
+This is search function of team class. This class takes search_key and search this key in the team table with above sql command for search. Thanks to the above sql command teams and managing coach attributes returns.
+
+   .. code-block:: python
+         
+         from final4.config import app
+         from final4.db_helper import getDb
+         from final4.models import team
+         from final4.models import coach
+Team view page importing files.It import app,getDb and team as it should be and also import coach because of team has coach attribute and it take this value from coach table.
+
+   .. code-block:: python
+          
+        if request.method == 'GET':
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+        print('page:',page,'limit',limit,'offset',offset)
+        sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+        order = request.args['order'] if 'order' in request.args else 'asc'
+
+        t, total_teams = teams.get_teams()
+        c, total_coaches = coaches.get_coaches()
+
+        sortby={'attr':'name', 'property':'asc'}
+
+        return render_template('teams.html', teamtable=team.teamtable, teams=t, coaches=c, total=total_teams,
+                limit=limit, page=page)
+                
+This function is getting team in teams table and coach from coaches table. It sort team with their name and with ascending order. This code block is used for getting team from table and sending them to html files.
+
+   .. code-block:: python
+          
+        elif request.method == 'POST':
+        print('ADD team')
+        name = request.form['name']
+        coach_id = request.form['coach']
+        team_img = request.files['file']
+
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        order = request.form['sortby'] if 'sortby' in request.form else 'name'
+        order = request.form['order'] if 'order' in request.form else 'asc'
+
+        print(name,team_img)
+        tm = team.Team(name, coach_id)
+        insert_id = teams.add_team(tm)
+        if team_img:
+            save_path =tm.img_path(insert_id)
+            team_img.save(app.config['APP_FOLDER']+save_path)
+    
+        t, total_teams = teams.get_teams()
+        c,total_coaches = coaches.get_coaches()
+
+        sortby={'attr':'name', 'property':'asc'}
+
+        return render_template('teams.html', teamtable=team.teamtable, teams=t, coaches=c, total=total_teams,
+                limit=limit, page=page)
+
+This function is adding team in teams table. It adds team with their name and managing coach. It is also add team image to the teams with user choose their local files. After this function executed teams will added to the team tables.
+  
+   .. code-block:: python 
+           
+        elif request.method == 'DEL':
+        print ('DELETE REQUEST:teams PAGE')
+        print (request.form)
+        idlist = request.form.getlist('ids[]')
+        print ('IDS: ', idlist)
+        if idlist == []:
+            try:
+                idlist = [request.form['id']]
+                print ('IDS: ', idlist)
+            except:
+                return json.dumps({'status':'OK', 'idlist':idlist})
+
+        print ('IDS: ', idlist)
+        print(json.dumps({'status':'OK', 'idlist':idlist}))
+        for _id in idlist:
+            print (_id)
+            teams.delete_team(_id)
+        return json.dumps({'status':'OK', 'idlist':idlist})
+  
+This function is deleting team function. It deletes team from teams table with their id value. It sends id value of the will deleting team to delete sql command and so that deserving team will deleted from teams table.
+
+   .. code-block:: python
+   
+      def search_team(key):
+    conn, cur = getDb()
+    teams = team.Teams(conn, cur)
+    coaches = coach.Coaches(conn, cur)
+
+    t, total_teams = teams.get_teams_search_by('name', key)
+    c, total_coaches = coaches.get_coaches()
+    
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    
+    offset = page*limit
+    print('page:',page,'limit',limit,'offset',offset)
+    sortby = request.args['sortby'] if 'sortby' in request.args else 'name'
+    order = request.args['order'] if 'order' in request.args else 'asc'
+
+    sortby={'attr':'name', 'property':'asc'}
+
+    return render_template('teams.html', teamtable=team.teamtable, teams=t, coaches=c, total=total_teams,
+            limit=limit, page=page)
+            
+This function is searching team. It search team to teams table and returns findings and send them to teams.html to show which ones are finded.        
+         
+
+TEAMROSTER CLASS
+------------
+
+DATABASE DESIGN
+~~~~~~~~~~~~~~~
+   .. figure:: TEAMROSTER-ER.png
+      :scale: 100 %
+      :alt: map to buried treasure
+
+      ENTITY-RELATIONSHIP DIAGRAM OF TEAM CLASS
+    
+This is the E-R diagram of teamroster class. It takes player_id from players and team_id from teams table.There is one to many obligatory relationship with teamroster class and player class. Every teamroster can have more than one player but in teamroster there will at least be one player.The other relationship with team class. It is same for player class. There are one to many obligatory relationship with teamroster class and team class.
+
+
+CODE
+~~~~
+
+.. code-block:: python
+
+      teamrostertable = ['id', 'player_id','player','team_id','team']
+
+        class Teamroster:
+    def __init__(self, player_id,team_id, player=None, team=None, _id=None):
+        self._id = _id
+        self.player_id = player_id
+        self.player = player
+        self.team_id = team_id
+        self.team = team
+        
+
+    def getAttrs(self):
+        return (dict(zip(teamrostertable, (self._id, self.player_id,self.player,self.team_id,self.team))))
+
+This is the definition of teamroster class.Teamroster class has primary key which is id and has two foreign key which are team_id comes from team class and player_id comes from player class. 
+   .. code-block:: python
+   
+         def add_teamroster(self, teamroster):
+        print("addteamroster ", teamroster)
+        query = """INSERT INTO teamrosters (player_id,team_id) 
+                                    values (%s,%s)""" 
+
+        self.cur.execute(query, (teamroster.player_id,teamroster.team_id))
+        self.conn.commit()
+This is add teamroster function. If teamroster add command comes,the above sql query will executed. It add teamroster with player and its playing team. player_id comes from players table and team_id comes from teams table.
+  
+   .. code-block:: python
+   
+        def delete_teamroster(self, _id):
+        query = """DELETE FROM teamrosters WHERE id=%s"""
+        self.cur.execute(query, (_id,))
+        self.conn.commit()
+
+This is teamroster class delete function. Teamroster's id comes when deleting command executed and query delete teamroster with that id.
+ 
+   .. code-block:: python
+   
+        def update_teamroster(self, _id, new):
+        query = """UPDATE teamrosters SET player_id=%s,team_id=%s WHERE id=%s"""
+        self.cur.execute(query, (new.player_id,new.team_id, _id))
+        self.conn.commit()
+This is teamroster class update function. New player_id and new team id comes to that function and it updates teamroster with above sql command.
+
+   .. code-block:: python
+   
+        def get_teamroster(self,_id):
+        query = """SELECT teamrosters.id, players.id, players.name,teams.id, teams.name
+                        FROM teamrosters,players,teams 
+                        WHERE teamrosters.id=%s AND players.id=teamrosters.player_id AND teams.id=teamrosters.team_id"""   
+                        
+        self.cur.execute(query, (_id,))
+        tr = self.cur.fetchone()
+        if tr:
+            trd = dict(zip(teamrostertable, tr[:len(teamrostertable)]))
+            teamroster = Teamroster(trd['player_id'],trd['team_id'], _id=trd['id'],team=trd['team'],player=trd['player'])
+            return teamroster
+        else:
+            return None
+            
+This is get_teamroster function of teamroster class.It is used to show teamroster's player,team name of that teamroster from teams and players table.
+
+   .. code-block:: python
+   
+        def get_teamrosters_by(self, attrib, search_key, limit=100, offset=0):
+        skey = str(search_key)
+        
+        query = """SELECT count(teamrosters.id)
+                        FROM teamrosters,teams,players WHERE teamrosters.player_id=players.id AND teamrosters.team_id = teams.id """.format(attrib=attrib)
+                        
+        self.cur.execute(query, (skey,))
+        total = self.cur.fetchone()[0]
+        
+        query = """SELECT teamrosters.id, players.id, players.name, teams.id, teams.name 
+                        FROM teamrosters,teams,players
+                        WHERE teamrosters.{attrib}=%s AND teamrosters.player_id=players.id AND teamrosters.team_id = teams.id
+			LIMIT %s OFFSET %s""".format(attrib=attrib)
+        self.cur.execute(query, (skey,limit, offset))
+        teamrosters= self.cur.fetchall()
+        print('teamrosters:',teamrosters)
+        teamrosterlist = []
+        for tr in teamrosters:
+            trd = dict(zip(teamrostertable, tr))
+            teamroster = Teamroster(trd['player_id'], trd['team_id'], _id=trd['id'], team=trd['team'],player=trd['player'])
+            teamrosterlist.append(teamroster)
+        return teamrosterlist, total
+        
+This is search function of teamroster class. This class takes search_key and search this key in the teamroster table with team and player name. Thanks to the above sql command teams and its players returns.
+
+   .. code-block:: python
+         
+         from final4.config import app
+         from final4.db_helper import getDb
+         from final4.models import teamroster
+         from final4.models import player
+         from final4.models import team
+Teamroster view page importing files.It import app,getDb and teamroster as it should be and also import player and team because of teamroster has player and team attributes and it take this value from player and team table.
+
+   .. code-block:: python
+          
+        
+         if request.method == 'GET':
+        print ('GET REQUEST', request.args)
+        limit = int(request.args['limit']) if 'limit' in request.args else 10
+        page = int(request.args['page']) if 'page' in request.args else 0
+        
+        offset = page*limit
+    if 'team_name' in request.args:
+        search_name = request.args['team_name']
+        teamroster_list,total = teamrosters.get_teamrosters_search_by('name', search_name,  limit, offset)        
+        
+    else:
+
+        teamroster_list, total = teamrosters.get_teamrosters(limit, offset)
+    
+    return render_template('teamrosters_home.html', teamrostertable=teamroster.teamrostertable, 
+			teamrosters=teamroster_list, 
+			total=total, limit=limit, page=page)
+
+This function is getting teamroster in teamrosters table. It sort teamroster with their team name. This code block is used for getting teamroster from table and sending them to html files to show them.
+
+   .. code-block:: python
+          
+         elif request.method == 'POST':
+        print('ADD TEAMROSTER')
+        player_id = request.form['player']
+        team_id = request.form['team']
+        limit = int(request.form['limit']) if 'limit' in request.form else 10
+        page = int(request.form['page']) if 'page' in request.form else 0
+        offset = page*limit
+        teamroster_obj = teamroster.Teamroster(player_id, team_id)
+        teamrosters.add_teamroster(teamroster_obj)
+        
+        teamroster_list, total= teamrosters.get_teamrosters(limit,offset)
+        player_list,pp = players.get_players(100,0)
+        team_list,tp = teams.get_teams(100,0)
+        
+        return render_template('teamrosters.html', teamrostertable=teamroster.teamrostertable, 
+			teamrosters=teamroster_list, players=player_list, teams=team_list, 
+			total=total, limit=limit, page=page)
+
+This function is adding teamroster in teamrosters table. It add teamroster player and their playing team.Above code block is used for taking teamroster values from html files and sends them to teamroster class
+  
+   .. code-block:: python 
+           
+        elif request.method == 'DEL':
+        print ('DELETE REQUEST:TEAMROSTERS PAGE')
+        print (request.form)
+        idlist = request.form.getlist('ids[]')
+        print ('IDS: ', idlist)
+        if idlist == []:
+            try:
+                idlist = [request.form['id']]
+                print ('IDS: ', idlist)
+            except:
+                return json.dumps({'status':'OK', 'idlist':idlist})
+
+        print ('IDS: ', idlist)
+        print(json.dumps({'status':'OK', 'idlist':idlist}))
+        for _id in idlist:
+            print (_id)
+            teamrosters.delete_teamroster(_id)
+        return json.dumps({'status':'OK', 'idlist':idlist})
+  
+This function is deleting teamroster. It deletes teamroster from teamrosters table with their id value. It sends id value of the will deleting teamroster to delete sql command and so that deserving teamroster will deleted from teamrosters table.
+
+   .. code-block:: python
+   
+     def search_teamroster(key):
+    if 'username' not in session:
+        return render_template('error.html', err_code=401)
+    conn, cur = getDb()
+    teamrosters = teamroster.Teamrosters(conn, cur)
+    players=player.Players(conn,cur)
+    teams=team.Teams(conn,cur)
+
+    limit = int(request.args['limit']) if 'limit' in request.args else 10
+    page = int(request.args['page']) if 'page' in request.args else 0
+    
+    offset = page*limit
+    
+    teamroster_list,total = teamrosters.get_teamrosters_search_by('name', key,  limit, offset)
+    player_list,pp = players.get_players(100,0)
+    team_list,tp = teams.get_teams(100,0)
+    
+    return render_template('teamrosters.html', teamrostertable=teamroster.teamrostertable, 
+			teamrosters=teamroster_list, players=player_list, teams=team_list, 
+			total=total, limit=limit, page=page)
+		
+            
+This function is searching teamroster. It search teamroster to teamrosters table and returns findings and send them to teamrosters.html to show which ones are finded.

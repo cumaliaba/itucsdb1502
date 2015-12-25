@@ -26,7 +26,7 @@ def player_page():
         order = request.args['order'] if 'order' in request.args else 'asc'
 
         p, total_players = players.get_players()
-        c = countries.get_countries()
+        c,total_countries = countries.get_countries()
 
         sortby={'attr':'name', 'property':'asc'}
 
@@ -55,7 +55,7 @@ def player_page():
             player_img.save(app.config['APP_FOLDER']+save_path)
     
         p, total_players = players.get_players()
-        c = countries.get_countries()
+        c,total_countries = countries.get_countries()
 
         sortby={'attr':'name', 'property':'asc'}
 
@@ -117,7 +117,7 @@ def player_from_id(pid):
             player_img.save(app.config['APP_FOLDER']+save_path)
 
         p, total_players = players.get_players()
-        c = countries.get_countries()
+        c,total_countries = countries.get_countries()
 
         sortby={'attr':'name', 'property':'asc'}
 
