@@ -894,12 +894,3 @@ This code is for providing facility of update to admin.
 
 This code is for providing facility of searching to admin.
 
-.. toctree::
-
-
-   member1
-   member2
-   member3
-   member4
-   member5
-

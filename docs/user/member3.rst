@@ -266,19 +266,3 @@ For searching, admin enters the home team (team_1) name and clicks the search bu
       :alt: schedule Page
 
 
-
-
-.. toctree::
-   
-   member1
-   member2
-   member3
-   member4
-   
-
-
-
-
-
-
-
