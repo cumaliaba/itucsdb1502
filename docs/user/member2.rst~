@@ -65,17 +65,4 @@ In this area existing team is shown. Existing team's attributes can be seen in t
  
 TEAMROSTER CLASS
 ----------------
-   .. figure:: teamroster.png
-      :scale: 50 %
-      :alt: map to buried treasure
-
-      TEAMROSTER
-This is the main page of the teamroster class. Player and their playing team is shown in this page.
-
-   .. figure:: update_teamroster.png
-      :scale: 50 %
-      :alt: map to buried treasure
-
-      UPDATE TEAMROSTER
-Update page of the teamroster class.User can update player and their playing teams with this page. In order to add team a new player team and player already have to be existed if user want to add new team or player user need to go players or teams page.
 
