@@ -459,7 +459,7 @@ DATABASE DESIGN
       :scale: 100 %
       :alt: map to buried treasure
 
-      ENTITY-RELATIONSHIP DIAGRAM OF TEAM CLASS
+      ENTITY-RELATINSHIP DIAGRAM OF TEAM CLASS
     
 This is the E-R diagram of teamroster class. It takes player_id from players and team_id from teams table.There is one to many obligatory relationship with teamroster class and player class. Every teamroster can have more than one player but in teamroster there will at least be one player.The other relationship with team class. It is same for player class. There are one to many obligatory relationship with teamroster class and team class.
 

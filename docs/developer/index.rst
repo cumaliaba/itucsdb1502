@@ -69,7 +69,7 @@ Skeleton of the source code
 .. toctree::
 
    member1
-   member2
+   OSMAN ÖZSOYLU
    member3
    member4
    member5

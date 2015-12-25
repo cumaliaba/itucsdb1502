@@ -20,4 +20,3 @@ We have different templates and permissions for these roles.
    member3
    member4
    member5
-   
