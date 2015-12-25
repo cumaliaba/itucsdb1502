@@ -146,3 +146,37 @@ Multiple Deletion
   :scale: 70 %
   :alt: Delete selected league
 
+How to search an item
+~~~~~~~~~~~~~~~~~~~~~
+**!!!**
+**In this section leagues page used as sample page. All steps are the same for leagues, coaches and countries pages.**
+
+Search function searches items by only one of its attributes and returns the items that attribute starts with search key.
+
+You can search either signed in or not.
+
+
+1. Follow links in the navbar go to the table page you want. eg. click *Leagues*
+ 
+.. figure:: ss/navbar-admin.png
+  :scale: 70 %
+  :alt: Admin role navbar
+
+2. After that you should see below page.
+
+.. figure:: ss/SS-league-admin.png
+  :scale: 70 %
+  :alt: Admin role navbar
+
+3. Enter search key to the search box that located head of the page.
+
+.. figure:: ss/searchbox.png
+  :scale: 70 %
+  :alt: searchbox
+
+4. Then click the search button to show results. Below page shows the result page after search.
+
+.. figure:: ss/searchresult.png
+  :scale: 70 %
+  :alt: search result
+
