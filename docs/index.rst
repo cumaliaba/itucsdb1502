@@ -10,7 +10,18 @@ Welcome to Final4's documentation!
    * Altay İnci
    * Abdullah Buldur
 
-**project description goes here (a few paragraphs)**
+**Final4 is a database application for basketball. The application provides necessary tables for saving information about 
+players, teams, leagues etc.**
+
+The running version can be visited from this `link`_.
+
+To take a tour in source code, visit `github`_.
+
+For installation instructions check the developer manual.
+
+.. _link: http://itucsdb1502.mybluemix.net 
+
+.. _github: http://github.com/itucsdb1502 
 
 Contents:
 
