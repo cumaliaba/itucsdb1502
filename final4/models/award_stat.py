@@ -1,6 +1,7 @@
 award_stattable = ['id', 'award_id', 'award_name', 'player_id', 'player_name', 'player_surname', 'season_id', 'season_year']
 
 class AwardStat:
+    '''Awartstat object'''
     def __init__(self, award_id, player_id, season_id, 
             award_name=None, player_name=None, player_surname=None, 
             season_year=None, _id=None):
@@ -14,17 +15,32 @@ class AwardStat:
         self.season_year = season_year
 
     def getAttrs(self):
+        '''returns attributes of the Awardstat class as a dictionary. Keys are 
+        taken from the awardstattable and corresponding values are taken from 
+        the Awardstat object attributes.
+        
+        :returns: attributes of the Awardstat object as a dictionary.
+        :rtype: dict'''
         return (dict(zip(award_stattable, (self._id, self.award_id, self.award_name, self.player_id, 
             self.player_name, self.player_surname, self.season_id, self.season_year))))
 
         
 class AwardStats:
+    '''the Awardstats object provides functions for database connections of awardstats table.
+    
+    :param conn: psycopg2 connection object
+    :param cur: psycopg2 cursor object
+    '''
     def __init__(self, conn, cur):
         self.conn = conn
         self.cur = cur
         self.last_key = None
 
     def add_award_stat(self, award_stat):
+        '''inserts a new row to the awardstats table with values of the given awardstat attributes.
+        
+        :param awardstat: new Awardstat object
+        '''
         query = """INSERT INTO award_stats (award_id, player_id, season_id) 
                                     values (%s,%s,%s)"""
 
@@ -32,13 +48,20 @@ class AwardStats:
         self.conn.commit()
 
     def delete_award_stat(self, _id):
+        '''deletes the row from the awardstats table whose id is given _id.
+
+        :param _id: id of the row - int
+        '''
         query = "DELETE FROM award_stats WHERE id=%s"
         self.cur.execute(query, (_id,))
         self.conn.commit()
 
     def update_award_stat(self, _id, new):
-        '''
-        new : AwardStat object
+        '''Updates the row from the awardstats table whose id is given _id. 
+        The new values is taken from given *new* Awardstat object.
+
+        :param _id: id of the row - int
+        :param new: Awardstat object with new values
         '''
         query = """UPDATE award_stats SET award_id=%s, 
                     player_id=%s, season_id=%s WHERE id=%s"""
@@ -48,6 +71,13 @@ class AwardStats:
 
         
     def get_award_stat(self,_id):
+        '''Returns :class:`final4.models.awardstat.Awardstat` object with values from
+        the awardstats table IF there is a record has a given _id ELSE returns None.
+
+        :param _id: id of the row - int
+        :returns: awardstat or None
+        :rtype: :class:`final4.models.awardstat.Awardstat` object or None
+        '''
         query = """SELECT award_stats.id, 
                           awards.id, awards.name, 
                           players.id, players.name, players.surname, 
@@ -71,6 +101,16 @@ class AwardStats:
             return None
 
     def get_award_stats(self, limit=100, offset=0):
+        '''Returns result list and total number of results.
+        Returning list is list of :class:`final4.models.awardstat.Awardstat` object. All objects
+        filled up with values from the rows of the awardstats table.
+        Also returns the total number of the result.
+        
+        :param limit: maximum number of the result
+        :param offset: skip beginning of the result
+        :returns: awardstatlist, total
+        :rtype: list, int
+        '''
 
         query = """SELECT count(award_stats.id)
                         FROM award_stats, awards, players, seasons 
@@ -106,6 +146,18 @@ class AwardStats:
         return award_statlist, total
 
     def get_award_stats_by(self, attrib, search_key, limit=100, offset=0):
+        '''Returns result list and total number of result.
+        Returning list is list of  :class:`final4.models.awardstat.Awardstat` object. All objects
+        filled up with values from the rows of the awardstats table. 
+        
+        The return list made up by **filtered results** with given parameters.
+       
+        :param limit: maximum number of the result
+        :param offset: skip beginning of the result
+        
+        :returns: awardstatlist, total
+        :rtype: list, int
+        '''
         skey = str(search_key)
 
         # WARNING !!! SQL INJECTION?
@@ -145,6 +197,18 @@ class AwardStats:
         return award_statslist, total
 
     def get_award_stats_search_by(self, attrib, search_key, limit=100, offset=0):
+        '''Returns result list and total number of result.
+        Returning list is list of  :class:`final4.models.awardstat.Awardstat` object. All objects
+        filled up with values from the rows of the awardstats table. 
+        
+        The return list made up by **filtered results** with given parameters.
+       
+        :param limit: maximum number of the result
+        :param offset: skip beginning of the result
+        
+        :returns: awardstatlist, total
+        :rtype: list, int
+        '''
         # convert search key to special sql search syntax that means
         # all matches that starts with search_key
         skey = str(search_key) + '%'

@@ -37,6 +37,12 @@ def matches_home():
 
 @app.route('/matches/table', methods=['DEL','GET', 'POST'])
 def match_page():
+    '''Routing function for match-table page. 
+
+    This page has session control. see *session controlled pages*
+
+    This page lists matches and allows adding, deleting, and updating on them.
+    '''
     conn, cur = getDb()
     matches = match.Matches(conn, cur)
     schedules = schedule.Schedules(conn, cur)
@@ -111,6 +117,15 @@ def match_page():
 
 @app.route('/matches/g/<match_id>', methods=['GET','POST'])
 def get_match_from_id(match_id):
+    '''Routing function for getting match from its id.
+    
+    *GET request* returns JSON object.
+
+    *POST request* updates match which has id equal to the *lid* with the 
+    values recieved from the request.form. After all it renders matches.html
+
+    :param lid: id of the match, int
+    '''
     conn, cur = getDb()
     matches = match.Matches(conn, cur)
     schedules = schedule.Schedules(conn, cur)
@@ -159,6 +174,10 @@ def get_match_from_id(match_id):
 
 @app.route('/matches/s/<key>', methods=['GET','POST'])
 def search_match(key):
+    '''Routing function for search match by its name.
+
+    *GET request* renders the matches.html with matches comes from the search result.
+    '''
     conn, cur = getDb()
     matches = match.Matches(conn, cur)
     schedules = schedule.Schedules(conn, cur)
@@ -179,6 +198,10 @@ def search_match(key):
 			
 @app.route('/matches/match/<match_id>')
 def view_match(match_id):
+    '''Routing function for match info page.
+    
+    It renders the match_page.html with related statistical information.
+    '''
     conn, cur = getDb()
     
     matches = match.Matches(conn, cur)

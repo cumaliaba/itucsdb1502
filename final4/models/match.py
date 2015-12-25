@@ -1,6 +1,7 @@
 matchtable = ['id', 'schedule_id', 'T1_name', 'T2_name', 'T1_3PT', 'T1_2PT', 'T1_block', 'T1_reb', 'T1_rate', 'T2_3PT', 'T2_2PT', 'T2_block', 'T2_reb', 'T2_rate']
 
 class Match:
+    '''Match object'''
     def __init__(self, schedule_id, T1_3PT, T1_2PT, T1_block, T1_reb, T1_rate, T2_3PT, T2_2PT, T2_block, T2_reb, T2_rate, T1_name=None, T2_name=None, _id=None):
         self._id = _id
         self.schedule_id = schedule_id
@@ -19,15 +20,30 @@ class Match:
         self.T2_name = T2_name
 
     def getAttrs(self):
+        '''returns attributes of the Match class as a dictionary. Keys are 
+        taken from the matchtable and corresponding values are taken from 
+        the Match object attributes.
+        
+        :returns: attributes of the Match object as a dictionary.
+        :rtype: dict'''
         return (dict(zip(matchtable, (self._id, self.schedule_id, self.T1_name, self.T2_name, self.T1_3PT, self.T1_2PT, self.T1_block, self.T1_reb, self.T1_rate, self.T2_3PT, self.T2_2PT, self.T2_block, self.T2_reb, self.T2_rate))))
 
 class Matches:
+    '''the Matches object provides functions for database connections of matches table.
+    
+    :param conn: psycopg2 connection object
+    :param cur: psycopg2 cursor object
+    '''
     def __init__(self, conn, cur):
         self.conn = conn
         self.cur = cur
         self.last_key = None
         
     def add_match(self, match):
+        '''inserts a new row to the matches table with values of the given match attributes.
+        
+        :param match: new Match object
+        '''
         query = """INSERT INTO matches (schedule_id, T1_3PT, T1_2PT, T1_block, T1_reb, T1_rate, T2_3PT, T2_2PT, T2_block, T2_reb, T2_rate) 
                                     values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
 
@@ -35,13 +51,20 @@ class Matches:
         self.conn.commit()
 
     def delete_match(self, _id):
+        '''deletes the row from the matches table whose id is given _id.
+
+        :param _id: id of the row - int
+        '''
         query = "DELETE FROM matches WHERE id=%s"
         self.cur.execute(query, (_id,))
         self.conn.commit()
         
     def update_match(self, _id, new):
-        '''
-        new : match object
+        '''Updates the row from the matches table whose id is given _id. 
+        The new values is taken from given *new* Match object.
+
+        :param _id: id of the row - int
+        :param new: Match object with new values
         '''
         print('update_match')
         query = """UPDATE matches SET schedule_id=%s, T1_3PT=%s, T1_2PT=%s, T1_block=%s, T1_reb=%s, T1_rate=%s, T2_3PT=%s, T2_2PT=%s, T2_block=%s, T2_reb=%s, T2_rate=%s
@@ -50,6 +73,13 @@ class Matches:
         self.conn.commit()
 
     def get_match(self,_id):
+        '''Returns :class:`final4.models.match.Match` object with values from
+        the matches table IF there is a record has a given _id ELSE returns None.
+
+        :param _id: id of the row - int
+        :returns: match or None
+        :rtype: :class:`final4.models.match.Match` object or None
+        '''
         query = """SELECT matches.id,
                           schedules.id,
                           teams1.name, teams2.name,
@@ -69,6 +99,16 @@ class Matches:
             return None
             
     def get_matches(self, limit=100, offset=0):
+        '''Returns result list and total number of results.
+        Returning list is list of :class:`final4.models.match.Match` object. All objects
+        filled up with values from the rows of the matches table.
+        Also returns the total number of the result.
+        
+        :param limit: maximum number of the result
+        :param offset: skip beginning of the result
+        :returns: matchlist, total
+        :rtype: list, int
+        '''
 
         query = """SELECT count(matches.id)
                         FROM matches, schedules
@@ -97,6 +137,18 @@ class Matches:
         return matchlist, total
 
     def get_matches_by(self, attrib, search_key, limit=100, offset=0):
+        '''Returns result list and total number of result.
+        Returning list is list of  :class:`final4.models.match.Match` object. All objects
+        filled up with values from the rows of the matches table. 
+        
+        The return list made up by **filtered results** with given parameters.
+       
+        :param limit: maximum number of the result
+        :param offset: skip beginning of the result
+        
+        :returns: matchlist, total
+        :rtype: list, int
+        '''
         skey = str(search_key)
 
         # WARNING !!! SQL INJECTION?
@@ -127,6 +179,18 @@ class Matches:
         return matchlist, total
 
     def get_matches_search_by(self, attrib, search_key, limit=100, offset=0):
+        '''Returns result list and total number of result.
+        Returning list is list of  :class:`final4.models.match.Match` object. All objects
+        filled up with values from the rows of the matches table. 
+        
+        The return list made up by **filtered results** with given parameters.
+       
+        :param limit: maximum number of the result
+        :param offset: skip beginning of the result
+        
+        :returns: matchlist, total
+        :rtype: list, int
+        '''
     
         skey = str(search_key) + '%'
 

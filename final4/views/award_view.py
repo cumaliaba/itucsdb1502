@@ -40,6 +40,12 @@ def awards_home():
 
 @app.route('/awards/table', methods=['DEL','GET', 'POST'])
 def award_page():
+    '''Routing function for award-table page. 
+
+    This page has session control. see *session controlled pages*
+
+    This page lists awards and allows adding, deleting, and updating on them.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
             
@@ -103,6 +109,15 @@ def award_page():
 
 @app.route('/awards/g/<award_id>', methods=['GET','POST'])
 def award_from_id(award_id):
+    '''Routing function for getting award from its id.
+    
+    *GET request* returns JSON object.
+
+    *POST request* updates award which has id equal to the *lid* with the 
+    values recieved from the request.form. After all it renders awards.html
+
+    :param lid: id of the award, int
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
 
@@ -140,6 +155,10 @@ def award_from_id(award_id):
 
 @app.route('/awards/s/<key>', methods=['GET','POST'])
 def search_award(key):
+    '''Routing function for search award by its name.
+
+    *GET request* renders the awards.html with awards comes from the search result.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)    
     
@@ -162,6 +181,10 @@ def search_award(key):
 
 @app.route('/awards/award/<award_id>')
 def view_award(award_id):
+    '''Routing function for award info page.
+    
+    It renders the award_page.html with related statistical information.
+    '''
     conn, cur = getDb()
 
     awards = award.Awards(conn, cur)

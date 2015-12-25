@@ -43,6 +43,12 @@ def award_stats_home():
 
 @app.route('/award_stats/table', methods=['DEL','GET', 'POST'])
 def award_stat_page():
+    '''Routing function for award_stat-table page. 
+
+    This page has session control. see *session controlled pages*
+
+    This page lists awardstats and allows adding, deleting, and updating on them.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)    
     
@@ -118,6 +124,15 @@ def award_stat_page():
 
 @app.route('/award_stats/g/<award_stat_id>', methods=['GET','POST'])
 def award_stat_from_id(award_stat_id):
+    '''Routing function for getting award_stat from its id.
+    
+    *GET request* returns JSON object.
+
+    *POST request* updates award_stat which has id equal to the *lid* with the 
+    values recieved from the request.form. After all it renders award_stats.html
+
+    :param lid: id of the award_stat, int
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
     
@@ -163,6 +178,10 @@ def award_stat_from_id(award_stat_id):
 
 @app.route('/award_stats/s/<key>', methods=['GET','POST'])
 def search_award_stat(key):
+    '''Routing function for search award_stat by its name.
+
+    *GET request* renders the award_stats.html with award_stat comes from the search result.
+    '''
     if 'username' not in session:
         return render_template('error.html', err_code=401)
 
@@ -191,6 +210,10 @@ def search_award_stat(key):
 
 @app.route('/award_stats/award_stat/<award_stat_id>')
 def view_award_stat(award_stat_id):
+    '''Routing function for award_stat info page.
+    
+    It renders the award_stat_page.html with related statistical information.
+    '''
     conn, cur = getDb()
 
     award_stats = award_stat.AwardStats(conn, cur)
