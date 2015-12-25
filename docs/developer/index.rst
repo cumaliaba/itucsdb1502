@@ -112,4 +112,3 @@ Skeleton of the source code
    member2
    member3
    member4
-   member5
