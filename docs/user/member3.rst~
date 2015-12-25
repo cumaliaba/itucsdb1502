@@ -250,7 +250,7 @@ Secondly, admin can delete an item with checkbox near it.
       :alt: schedule Page
 
 - Update operation
-For update, admin can click update button near the item will be updated. After this, update box exists below. New values are entered and this item is updated. 
+For update, admin can click update button near the item will be updated. After this, update box exists below. New value is entered and this item is updated. 
 
 .. figure:: update-schedule.png 
       :scale: 50 %
